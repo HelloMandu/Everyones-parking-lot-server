@@ -1,93 +1,95 @@
 module.exports = (sequelize, DataTypes) => {
     return sequelize.define(
-        'user',
+        'personal_payment',
         {
-            user_id: {
+            pp_id: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
+                comment: "결제 정보 id"
+            },
+            user_id: {
                 type: DataTypes.INTEGER,
-                comment: "유저 id"
+                comment: "결제 유저 id"
             },
-            email: {
+            rental_id: {
+                type: DataTypes.STRING(45),
+                comment: "결제 대여 주문 번호"
+            },
+            extension_id: {
+                type: DataTypes.STRING(45),
+                comment: "결제 연장 주문 번호"
+            },
+            pp_method: {
                 type: DataTypes.STRING(255),
-                unique: true,
-                allowNull: false,
-                comment: "이메일"
+                comment: "pay, cancel"
             },
-            email_verified_at: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW,
-                comment: "이메일인증날짜"
-            },
-            name: {
+            pp_trade_no: {
                 type: DataTypes.STRING(255),
-                allowNull: false,
-                comment: "고객이름"
+                comment: "거래번호"
             },
-            password: {
-                type: DataTypes.STRING(255),
-                allowNull: false,
-                comment: "패스워드"
-            },
-            phone_number: {
-                type: DataTypes.STRING(12),
-                allowNull: false,
-                comment: "전화번호"
-            },
-            birth: {
+            pp_price: {
                 type: DataTypes.DATE,
                 allowNull: false,
                 comment: "생년월일"
             },
-            car_location: {
+            pp_receipt_price: {
                 type: DataTypes.STRING(20),
                 comment: "차량 등록 지역"
             },
-            car_num: {
+            pp_settle_case: {
                 type: DataTypes.STRING(20),
                 allowNull: false,
                 comment: "차량 등록 번호"
             },
-            car_img: {
+            pp_bank_num: {
                 type: DataTypes.JSON,
                 allowNull: false,
                 comment: "차량 이미지"
             },
-            profile_img: {
+            pp_bank_name: {
                 type: DataTypes.JSON,
                 comment: "프로필 이미지"
             },
-            agree_mail: {
+            pp_bank_account: {
                 type: DataTypes.BOOLEAN(4),
                 comment: "0: 거부, 1: 동의"
             },
-            agree_sms: {
+            pp_bank_deposit: {
                 type: DataTypes.BOOLEAN(4),
                 comment: "0: 거부, 1: 동의"
             },
-            point: {
+            pp_receipt_time: {
                 type: DataTypes.INTEGER.UNSIGNED,
                 defaultValue: 0,
                 comment: "포인트"
             },
-            level: {
+            pp_cash: {
                 type: DataTypes.INTEGER,
                 defaultValue: 1,
                 comment: "10: 관리자, 1: 유저"
             },
-            register_type: {
+            pp_cash_no: {
                 type: DataTypes.STRING(150),
-                comment: "NULL: 일반가입자, naver:네이버, facebook:페이스북, kakao:카카오"
             },
-            native_token: {
+            pp_cash_info: {
+                type: DataTypes.STRING(255),
+            },
+            pp_pg: {
+                type: DataTypes.STRING(255),
+            },
+            pp_code: {
+                type: DataTypes.STRING(255),
+            },
+            pp_result: {
                 type: DataTypes.STRING(255),
             },
         },
         {
             timestamps: true,
             underscored: true,
-            tableName: 'user',
+            tableName: 'personal_payment',
         },
     );
 };
