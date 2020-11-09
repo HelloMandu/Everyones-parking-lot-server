@@ -9,11 +9,14 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 comment: "주차공간 id"
             },
+            /*
+            이렇게 외래키는 여기에 등록할 필요가 없는 듯.
             user_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 comment: "유저 id"
             },
+            */
             addr: {
                 type: DataTypes.STRING(255),
                 comment: "주차공간 주소"
@@ -61,12 +64,12 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "주차공간 요금(30분 기준)"
             },
             oper_start_time: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE, // DataTypes.Data 가 아니라 DATE 대문자에용.
                 allowNull: false,
                 comment: "운영 시작 시간"
             },
             oper_end_time: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE,
                 allowNull: false,
                 comment: "운영 종료 시간"
             },
