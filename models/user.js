@@ -46,12 +46,10 @@ module.exports = (sequelize, DataTypes) => {
             },
             car_num: {
                 type: DataTypes.STRING(20),
-                allowNull: false,
                 comment: "차량 등록 번호"
             },
             car_img: {
                 type: DataTypes.JSON,
-                allowNull: false,
                 comment: "차량 이미지"
             },
             profile_img: {
