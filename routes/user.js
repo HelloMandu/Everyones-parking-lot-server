@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -8,7 +9,6 @@ const verifyToken = require('./middlewares/verifyToken');
 
 const { User } = require('../models');
 
-const router = express.Router();
 require('dotenv').config();
 
 /*
