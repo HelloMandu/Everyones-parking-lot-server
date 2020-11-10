@@ -58,7 +58,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "입금자 명"
             },
             pp_receipt_time: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE,
                 comment: "결제 시간"
             },
             pp_ip: {

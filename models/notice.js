@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "공지사항 제목"
             },
             notice_body: {
-                type: DataTypes.LONGTEXT,
+                type: DataTypes.TEXT('long'),
                 comment: "공지사항 내용"
             },
             notice_img: {

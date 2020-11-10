@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "댓글 작성 유저 id"
             },
             comment_body: {
-                type: DataTypes.MEDIUMTEXT,
+                type: DataTypes.TEXT('medium'),
                 comment: "댓글 내용"
             },
             deleted: {

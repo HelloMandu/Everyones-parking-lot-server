@@ -26,11 +26,11 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "쿠폰 타겟"
             },
             cp_start_date: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE,
                 comment: "사용 시작일"
             },
             cp_end_date: {
-                type: DataTypes.date,
+                type: DataTypes.DATE,
                 comment: "사용 종료일"
             },
             cp_price: {
@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "사용 유무 = 0: 미사용, 1: 사용, 2: 회수"
             },
             use_date: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE,
                 comment: "쿠폰 사용 일자"
             },
         },

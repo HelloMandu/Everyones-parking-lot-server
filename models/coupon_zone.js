@@ -23,11 +23,11 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "쿠폰 다운로드 후 기간"
             },
             cz_start_date: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE,
                 comment: "쿠폰 존 시작일"
             },
             cz_end_date: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE,
                 comment: "쿠폰 존 종료일"
             },
             cz_price: {

@@ -18,15 +18,15 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "이벤트 상세 이미지"
             },
             event_title: {
-                type: DataTypes.MEDIUMTEXT,
+                type: DataTypes.TEXT('medium'),
                 comment: "이벤트 제목"
             },
             event_body: {
-                type: DataTypes.MEDIUMTEXT,
+                type: DataTypes.TEXT('medium'),
                 comment: "이벤트 내용"
             },
             warn: {
-                type: DataTypes.MEDIUMTEXT,
+                type: DataTypes.TEXT('medium'),
                 comment: "이벤트 경고 텍스트"
             },
             hit: {
@@ -35,11 +35,11 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "조회 수"
             },
             start_date: {
-                type: DataTypes.date,
+                type: DataTypes.DATE,
                 comment: "이벤트 시작 일자"
             },
             end_date: {
-                type: DataTypes.date,
+                type: DataTypes.DATE,
                 comment: "이벤트 종료 일자"
             },
         },

@@ -61,12 +61,12 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "주차공간 요금(30분 기준)"
             },
             oper_start_time: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE,
                 allowNull: false,
                 comment: "운영 시작 시간"
             },
             oper_end_time: {
-                type: DataTypes.Date,
+                type: DataTypes.DATE,
                 allowNull: false,
                 comment: "운영 종료 시간"
             },

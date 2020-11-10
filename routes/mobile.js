@@ -1,6 +1,5 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 const omissionChecker = require('../lib/omissionChecker');
 
@@ -14,7 +13,16 @@ require('dotenv').config();
 	phone_number: 유저 휴대폰 번호(String, 필수)
 */
 router.post('/auth', async (req, res, next) => {
-
+    if (req.body === {}) {
+        res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
+    }
+    const { phone_number } = req.body;
+    const omissionResult = omissionChecker({ phone_number });
+    if (!omissionResult.result) {
+        res.send({ msg: omissionResult.message });
+    }
+    /*todo: 인증번호 요청*/
+    res.send({ msg: 'success', auth_number: 1234 });
 });
 
 /*
@@ -23,6 +31,19 @@ router.post('/auth', async (req, res, next) => {
 	auth_number: 전달 받은 인증 번호(String, 필수)
 */
 router.post('/confirm', async (req, res, next) => {
+    if (req.body === {}) {
+        res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
+    }
+    const { phone_number, auth_number } = req.body;
+    const omissionResult = omissionChecker({ phone_number, auth_number });
+    if (!omissionResult.result) {
+        res.send({ msg: omissionResult.message });
+    }
+    const authConfirm = auth_number === 1234;
+    if (!authConfirm) {
+        res.send({ msg: '인증에 실패하였습니다' });
+    }
+    res.send({ msg: 'success' });
 });
 
 module.exports = router;

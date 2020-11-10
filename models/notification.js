@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "확인할 URL"
             },
             read_at: {
-                type: DataTypes.date,
+                type: DataTypes.DATE,
                 comment: "알림 읽은 시간"
             },
         },
