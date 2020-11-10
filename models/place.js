@@ -9,11 +9,14 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 comment: "주차공간 id"
             },
+            /*
+            이렇게 외래키는 여기에 등록할 필요가 없는 듯.
             user_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 comment: "유저 id"
             },
+            */
             addr: {
                 type: DataTypes.STRING(255),
                 comment: "주차공간 주소"
