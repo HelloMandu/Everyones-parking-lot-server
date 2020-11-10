@@ -7,7 +7,7 @@ const verifyToken = (req, res, next) => {
             res.status(401).json({ error: 'please request token' });
         }
         const CLIENT_TOKEN = req.headers.authorization.split('Bearer ')[1];
-        const decoded = jwt.verify(CLIENT_TOKEN, process.env.SECRET_KEY);
+        const decoded = jwt.verify(CLIENT_TOKEN, process.env.JWT_SECRET);
         if (decoded) {
             next();
         } else {
