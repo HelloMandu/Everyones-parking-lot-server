@@ -1,11 +1,8 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
+const router = express.Router();
 
 const omissionChecker = require('../lib/omissionChecker');
 
-const { User } = require('../models');
-
-const router = express.Router();
 require('dotenv').config();
 
 /*

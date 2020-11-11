@@ -1,10 +1,9 @@
 // const path = require('path');
 const Sequelize = require('sequelize');
 
-
 const env = process.env.NODE_ENV || 'development';
-// const config = require(__dirname + '/../config/config.json')[env];
-const config = require(__dirname + '/../config/config copy.json')[env];
+const config = require(__dirname + '/../config/config.json')[env];
+// const config = require(__dirname + '/../config/config copy.json')[env];
 const db = {};
 
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
@@ -37,6 +36,12 @@ db.Place = require('./place')(sequelize, Sequelize);
 db.User.hasMany(db.Place, { foreignKey: 'user_id', sourceKey: 'user_id' });
 db.Place.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
 // User : Place = 1 : N
+db.User.hasMany(db.Like, { foreignKey: 'user_id', sourceKey: 'user_id' });
+db.Like.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
+// User : Like = 1 : N
+db.Place.hasMany(db.Like, { foreignKey: 'place_id', sourceKey: 'place_id' });
+db.Like.belongsTo(db.Place, { foreignKey: 'place_id', targetKey: 'place_id' });
+// Place : Like = 1 : N
 
 /*
     IF 1 : 1 관계일 경우

@@ -3,11 +3,20 @@ const router = express.Router();
 
 const { Place, Sequelize: { Op } } = require('../models');
 
+const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
-const { default: calculateDistance } = require('../lib/calculateDistance');
+const calculateDistance = require('../lib/calculateDistance');
 
 require('dotenv').config();
 
+/* CREATE */
+router.post('/', async (req, res, next) => {
+    /*
+
+    */
+});
+
+/* READ */
 router.get('/', async (req, res, next) => {
     /*
         주차공간 리스트 요청 API(GET): /api/place
@@ -71,7 +80,6 @@ router.get('/', async (req, res, next) => {
         }
     }
 });
-
 router.get('/:place_id', async (req, res, next) => {
     /*
         주차공간 리스트 요청 API(GET): /api/place/:place_id
@@ -79,6 +87,7 @@ router.get('/:place_id', async (req, res, next) => {
         place_id: 상세 보기할 주차공간 id(필수)
 
         * 응답: place = (주차공간 Object)
+        좋아요 데이터와 리뷰 데이터를 추출해야 함.
     */
    
     if (req.params === {}) {
@@ -100,10 +109,23 @@ router.get('/:place_id', async (req, res, next) => {
             } else {
                 // 정상적으로 주차공간 응답.
                 res.send({ place: resultPlace });
+                // *** 좋아요 정보, 리뷰 리스트 추가. ***
             }
         }
     }
 });
+router.get('/like', verifyToken, async (req, res, next) => {
 
+});
+
+/* UPATE */
+router.put('/', async (req, res, next) => {
+
+});
+
+/* DELETE */
+router.delete('/', async (req, res, next) => {
+
+});
 
 module.exports = router;

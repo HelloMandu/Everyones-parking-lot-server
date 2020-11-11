@@ -41,12 +41,10 @@ module.exports = (sequelize, DataTypes) => {
             },
             a_created_at: {
                 type: DataTypes.DATE,
-                defaultValue: 0,
                 comment: "답변 작성 일지"
             },
             a_updated_at: {
                 type: DataTypes.DATE,
-                defaultValue: 0,
                 comment: "답변 수정 일자"
             },
         },

@@ -4,11 +4,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 
-const omissionChecker = require('../lib/omissionChecker');
-
 const { User } = require('../models');
 
-const router = express.Router();
+const omissionChecker = require('../lib/omissionChecker');
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/'); // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
@@ -44,8 +43,8 @@ router.post('/signin', async (req, res, next) => {
     }
     const token = jwt.sign(
         {
+            user_id: existUser.dataValues.user_id,
             email: email,
-            password: password,
         },
         process.env.JWT_SECRET,
     );
