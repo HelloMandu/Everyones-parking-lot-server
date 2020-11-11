@@ -9,6 +9,7 @@ const verifyToken = (req, res, next) => {
         const CLIENT_TOKEN = req.headers.authorization.split('Bearer ')[1];
         const decoded = jwt.verify(CLIENT_TOKEN, process.env.JWT_SECRET);
         if (decoded) {
+            req.decodedToken = decoded;
             next();
         } else {
             res.status(401).json({ error: 'unauthorized' });
