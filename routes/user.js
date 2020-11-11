@@ -7,6 +7,7 @@ const multer = require('multer');
 const { User } = require('../models');
 
 const omissionChecker = require('../lib/omissionChecker');
+const verifyToken = require('./middlewares/verifyToken');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -20,38 +21,64 @@ const upload = multer({ storage: storage });
 require('dotenv').config();
 
 /*
+- 유저 정보 요청 API(GET): /api/user
+	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+*/
+router.get('/', verifyToken, async (req, res, next) => {
+    const { user_id } = req.decodeToken;
+    try {
+        const existUser = await User.findOne({ where: { user_id } });
+        if (!existUser) {
+            return res.send({ msg: '가입되지 않은 이메일입니다.' });
+        }
+        res.send(existUser);
+    } catch (e) {
+        if (e.table) {
+            res.send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.send({ msg: 'database error', error });
+        }
+    }
+});
+
+/*
     로그인 요청 API(POST): /api/user/signin
 	email: 유저 이메일(String, 필수)
 	password: 유저 패스워드(String, 필수)
 */
 router.post('/signin', async (req, res, next) => {
-    if (req.body === {}) {
-        return res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
-    }
     const { email, password } = req.body;
     const omissionResult = omissionChecker({ email, password });
     if (!omissionResult.result) {
         return res.send({ msg: omissionResult.message });
     }
-    const existUser = await User.findOne({ where: { email } });
-    if (!existUser) {
-        return res.send({ msg: '가입되지 않은 이메일입니다.' });
+    try {
+        const existUser = await User.findOne({ where: { email } });
+        if (!existUser) {
+            return res.send({ msg: '가입되지 않은 이메일입니다.' });
+        }
+        const result = await bcrypt.compare(password, existUser.password);
+        if (!result) {
+            return res.send({ msg: '비밀번호가 일치하지 않습니다.' });
+        }
+        const token = jwt.sign(
+            {
+                user_id: existUser.dataValues.user_id,
+                email: email,
+            },
+            process.env.JWT_SECRET,
+        );
+        if (!token) {
+            return res.send({ msg: 'token을 생성하지 못했습니다' });
+        }
+        res.send({ msg: 'success', token: token });
+    } catch (e) {
+        if (e.table) {
+            res.send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.send({ msg: 'database error', error });
+        }
     }
-    const result = await bcrypt.compare(password, existUser.password);
-    if (!result) {
-        return res.send({ msg: '비밀번호가 일치하지 않습니다.' });
-    }
-    const token = jwt.sign(
-        {
-            user_id: existUser.dataValues.user_id,
-            email: email,
-        },
-        process.env.JWT_SECRET,
-    );
-    if (!token) {
-        return res.send({ msg: 'token을 생성하지 못했습니다' });
-    }
-    res.send({ msg: 'success', token: token });
 });
 
 /*
@@ -63,10 +90,6 @@ router.post('/signin', async (req, res, next) => {
 	phone_number: 유저 휴대폰 번호(String, 필수)
 */
 router.post('/', async (req, res, next) => {
-    if (req.body === {}) {
-        // 데이터를 보내지 않았을 때.
-        return res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
-    }
     const { email, name, birth, phone_number, password } = req.body;
     const omissionResult = omissionChecker({
         email,
@@ -86,22 +109,30 @@ router.post('/', async (req, res, next) => {
         // 이미 가입된 이메일이 있는지 화인.
         return res.send({ msg: '이미 가입한 이메일입니다.' });
     }
-    const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱
-    if (!hash) {
-        return res.send({ msg: '비밀번호를 설정하지 못했습니다' });
-    }
-    const createUser = await User.create({
-        email,
-        name,
-        password: hash,
-        phone_number,
-        birth: new Date(birth),
-    });
+    try {
+        const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱
+        if (!hash) {
+            return res.send({ msg: '비밀번호를 설정하지 못했습니다' });
+        }
+        const createUser = await User.create({
+            email,
+            name,
+            password: hash,
+            phone_number,
+            birth: new Date(birth),
+        });
 
-    if (!createUser) {
-        return res.send({ msg: '회원가입에 실패하였습니다' });
+        if (!createUser) {
+            return res.send({ msg: '회원가입에 실패하였습니다' });
+        }
+        res.send({ msg: 'success' }); // 가입 성공이라는 메세지 보냄.
+    } catch (e) {
+        if (e.table) {
+            res.send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.send({ msg: 'database error', error });
+        }
     }
-    res.send({ msg: 'success' }); // 가입 성공이라는 메세지 보냄.
 });
 
 /* 
@@ -110,21 +141,25 @@ router.post('/', async (req, res, next) => {
     phone_number: 유저 휴대폰 번호(String, 필수)
 */
 router.post('/find/user_id', async (req, res, next) => {
-    if (req.body === {}) {
-        return res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
-    }
     const { name, phone_number } = req.body;
-
     const omissionResult = omissionChecker({ name, phone_number });
     if (!omissionResult.result) {
         return res.send({ msg: omissionResult.message });
     }
-    const existUser = await User.findOne({ where: { name, phone_number } });
-    if (!existUser) {
-        return res.send({ msg: '가입되지 않은 이메일입니다.' });
+    try {
+        const existUser = await User.findOne({ where: { name, phone_number } });
+        if (!existUser) {
+            return res.send({ msg: '가입되지 않은 이메일입니다.' });
+        }
+        const { email } = existUser;
+        res.send(email);
+    } catch (e) {
+        if (e.table) {
+            res.send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.send({ msg: 'database error', error });
+        }
     }
-    const { email } = existUser;
-    res.send(email);
 });
 
 /*
@@ -134,22 +169,26 @@ router.post('/find/user_id', async (req, res, next) => {
 	phone_number: 유저 휴대폰 번호(String, 필수)
 */
 router.post('/find/user_pw', async (req, res, next) => {
-    if (req.body === {}) {
-        return res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
-    }
     const { name, email, phone_number } = req.body;
-
     const omissionResult = omissionChecker({ name, phone_number });
     if (!omissionResult.result) {
         return res.send({ msg: omissionResult.message });
     }
-    const existUser = await User.findOne({
-        where: { name, email, phone_number },
-    });
-    if (!existUser) {
-        return res.send({ msg: '가입되지 않은 이메일입니다.' });
+    try {
+        const existUser = await User.findOne({
+            where: { name, email, phone_number },
+        });
+        if (!existUser) {
+            return res.send({ msg: '가입되지 않은 이메일입니다.' });
+        }
+        res.send({ msg: 'success' });
+    } catch (e) {
+        if (e.table) {
+            res.send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.send({ msg: 'database error', error });
+        }
     }
-    res.send({ msg: 'success' });
 });
 
 /*
@@ -160,12 +199,8 @@ router.post('/find/user_pw', async (req, res, next) => {
 	car_img: 차량 이미지(ImageFile, 필수)
 */
 router.put('/car_info', upload.single('car_img'), async (req, res, next) => {
-    if (req.body === {}) {
-        return res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
-    }
-    console.log(req.file);
-    console.log(req.body);
     const { email, car_location, car_num } = req.body;
+    const car_img = req.file.path;
     const omissionResult = omissionChecker({
         email,
         car_location,
@@ -174,18 +209,26 @@ router.put('/car_info', upload.single('car_img'), async (req, res, next) => {
     if (!omissionResult.result) {
         return res.send({ msg: omissionResult.message });
     }
-    const existUser = User.findOne({ where: { email } });
-    if (!existUser) {
-        return res.send({ msg: '가입되지 않은 이메일입니다' });
+    try {
+        const existUser = User.findOne({ where: { email } });
+        if (!existUser) {
+            return res.send({ msg: '가입되지 않은 이메일입니다' });
+        }
+        const isUpdate = await User.update(
+            { car_location, car_num, car_img },
+            { where: { email } },
+        );
+        if (!isUpdate) {
+            return res.send({ msg: '차량정보를 등록하지 못했습니다' });
+        }
+        res.send({ msg: 'success' }); // object를 리턴함
+    } catch (e) {
+        if (e.table) {
+            res.send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.send({ msg: 'database error', error });
+        }
     }
-    const isUpdate = await User.update(
-        { car_location, car_num },
-        { where: { email } },
-    );
-    if (!isUpdate) {
-        return res.send({ msg: '차량정보를 등록하지 못했습니다' });
-    }
-    res.send({ msg: 'success' }); // object를 리턴함
 });
 
 /*
@@ -193,9 +236,6 @@ router.put('/car_info', upload.single('car_img'), async (req, res, next) => {
 	password: 새 비밀번호(String, 필수)
 */
 router.put('/password', async (req, res, next) => {
-    if (req.body === {}) {
-        return res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
-    }
     const { name, email, phone_number, password } = req.body;
     const omissionResult = omissionChecker({
         name,
@@ -206,22 +246,30 @@ router.put('/password', async (req, res, next) => {
     if (!omissionResult.result) {
         return res.send({ msg: omissionResult.message });
     }
-    const existUser = await User.findOne({ where: { email } });
-    if (!existUser) {
-        return res.send({ msg: '가입되지 않은 이메일입니다' });
+    try {
+        const existUser = await User.findOne({ where: { email } });
+        if (!existUser) {
+            return res.send({ msg: '가입되지 않은 이메일입니다' });
+        }
+        const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱
+        if (!hash) {
+            return res.send({ msg: '비밀번호를 설정하지 못했습니다' });
+        }
+        const isUpdate = await User.update(
+            { password: hash },
+            { where: { email, phone_number, name } },
+        );
+        if (!isUpdate) {
+            return res.send({ msg: '비밀번호를 설정하지 못했습니다' });
+        }
+        res.send({ msg: 'success' });
+    } catch (e) {
+        if (e.table) {
+            res.send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.send({ msg: 'database error', error });
+        }
     }
-    const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱
-    if (!hash) {
-        return res.send({ msg: '비밀번호를 설정하지 못했습니다' });
-    }
-    const isUpdate = await User.update(
-        { password: hash },
-        { where: { email, phone_number, name } },
-    );
-    if (!isUpdate) {
-        return res.send({ msg: '비밀번호를 설정하지 못했습니다' });
-    }
-    res.send({ msg: 'success' });
 });
 
 module.exports = router;

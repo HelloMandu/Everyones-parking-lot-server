@@ -10,9 +10,6 @@ require('dotenv').config();
 	phone_number: 유저 휴대폰 번호(String, 필수)
 */
 router.post('/auth', async (req, res, next) => {
-    if (req.body === {}) {
-        return res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
-    }
     const { phone_number } = req.body;
     const omissionResult = omissionChecker({ phone_number });
     if (!omissionResult.result) {
@@ -28,9 +25,6 @@ router.post('/auth', async (req, res, next) => {
 	auth_number: 전달 받은 인증 번호(String, 필수)
 */
 router.post('/confirm', async (req, res, next) => {
-    if (req.body === {}) {
-        return res.send({ msg: '정상적으로 데이터를 전송하지 않음.' });
-    }
     const { phone_number, auth_number } = req.body;
     const omissionResult = omissionChecker({ phone_number, auth_number });
     if (!omissionResult.result) {
