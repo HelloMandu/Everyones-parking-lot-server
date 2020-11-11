@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const multer = require('multer');
 
 const { User } = require('../models');
@@ -43,6 +43,7 @@ router.get('/', verifyToken, async (req, res, next) => {
 
 /*
     로그인 요청 API(POST): /api/user/signin
+
 	email: 유저 이메일(String, 필수)
 	password: 유저 패스워드(String, 필수)
 */
@@ -83,6 +84,7 @@ router.post('/signin', async (req, res, next) => {
 
 /*
     회원가입 요청 API(POST): /api/user
+
 	email: 유저 이메일(String, 필수)
 	name: 유저 이름(String, 필수)
 	password: 유저 비밀번호(String, 필수)
@@ -136,7 +138,8 @@ router.post('/', async (req, res, next) => {
 });
 
 /* 
-아이디 찾기 (POST): /api/user/find/user_id
+    아이디 찾기 (POST): /api/user/find/user_id
+
 	name: 유저 이름(String, 필수)
     phone_number: 유저 휴대폰 번호(String, 필수)
 */
@@ -163,7 +166,8 @@ router.post('/find/user_id', async (req, res, next) => {
 });
 
 /*
-비밀번호 찾기 API(POST): /api/user/find/user_pw
+    비밀번호 찾기 API(POST): /api/user/find/user_pw
+
 	name: 유저 이름(String, 필수)
 	email: 유저 이메일(String, 필수)
 	phone_number: 유저 휴대폰 번호(String, 필수)
@@ -192,7 +196,8 @@ router.post('/find/user_pw', async (req, res, next) => {
 });
 
 /*
-차량 정보 등록 요청 API(PUT): /api/user
+    차량 정보 등록 요청 API(PUT): /api/user
+    
     email: 유저 이메일(String, 필수)
 	car_location: 차량 등록 지역(String, 필수)
 	car_num: 차량 등록 번호(String, 필수)
