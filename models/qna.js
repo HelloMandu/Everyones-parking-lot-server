@@ -39,6 +39,11 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 comment: "0: 답변대기, 1: 답변완료"
             },
+            hit: {
+                type: DataTypes.INTEGER.UNSIGNED,
+                defaultValue: 0,
+                comment: "조회 수"
+            },
             a_created_at: {
                 type: DataTypes.DATE,
                 comment: "답변 작성 일지"

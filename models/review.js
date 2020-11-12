@@ -31,6 +31,11 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.JSON,
                 comment: "리뷰 이미지"
             },
+            hit: {
+                type: DataTypes.INTEGER.UNSIGNED,
+                defaultValue: 0,
+                comment: "조회 수"
+            },
             deleted: {
                 type: DataTypes.BOOLEAN(2),
                 defaultValue: 0,
