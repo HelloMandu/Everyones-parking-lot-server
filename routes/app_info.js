@@ -5,11 +5,20 @@ const { AppInfo } = require('../models');
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
-    const appInfo = await AppInfo.findOne({ where: { id: 1 } });
-    if (!appInfo) {
-        res.send({ msg: '애플리케이션 정보가 없습니다.' });
+    try{
+        const appInfo = await AppInfo.findOne({ where: { id: 1 } });
+        if (!appInfo) {
+            res.status(202).send({ msg: '애플리케이션 정보가 없습니다.' });
+        }
+        res.status(200).send(appInfo);
+    } catch(e){
+        if (e.table) {
+            res.status(500).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.status(500).send({ msg: 'database error', error });
+        }
     }
-    res.send(appInfo);
+
 });
 
 module.exports = router;
