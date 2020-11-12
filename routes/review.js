@@ -22,9 +22,9 @@ router.get('/', verifyToken, async (req, res, next) => {
         res.send(reviews);
     } catch (e) {
         if (e.table) {
-            res.send({ msg: foreignKeyChecker(e.table) });
+            res.status(500).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.send({ msg: 'database error', error });
+            res.status(500).send({ msg: 'database error', error });
         }
     }
 });
@@ -40,14 +40,14 @@ router.get('/:review_id', async (req, res, next) => {
     try {
         const review = await Review.findOne({ where: { review_id } });
         if (!review) {
-            return res.send({ msg: '리뷰 정보가 없습니다.' });
+            return res.status(401).send({ msg: '리뷰 정보가 없습니다.' });
         }
         res.send(review);
     } catch (e) {
         if (e.table) {
-            res.send({ msg: foreignKeyChecker(e.table) });
+            res.status(500).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.send({ msg: 'database error', error });
+            res.status(500).send({ msg: 'database error', error });
         }
     }
 });
@@ -79,14 +79,14 @@ router.post('/', verifyToken, async (req, res, next) => {
             review_rating,
         });
         if (!newReview) {
-            return res.send({ msg: '리뷰를 등록하지 못했습니다.' });
+            return res.status(401).send({ msg: '리뷰를 등록하지 못했습니다.' });
         }
         res.send({ msg: 'success' });
     } catch (e) {
         if (e.table) {
-            res.send({ msg: foreignKeyChecker(e.table) });
+            res.status(401).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.send({ msg: 'database error', error });
+            res.status(401).send({ msg: 'database error', error });
         }
     }
 });
@@ -106,7 +106,7 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
         review_rating,
     });
     if (!omissionResult.result) {
-        return res.send({ msg: omissionResult.message });
+        return res.status(401).send({ msg: omissionResult.message });
     }
     try {
         const review = await Review.update(
@@ -114,14 +114,14 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
             { where: { review_id } },
         );
         if (!review) {
-            return res.send({ msg: '리뷰를 수정하지 못했습니다.' });
+            return res.status(401).send({ msg: '리뷰를 수정하지 못했습니다.' });
         }
         res.send({ msg: 'success' });
     } catch (e) {
         if (e.table) {
-            res.send({ msg: foreignKeyChecker(e.table) });
+            res.status(401).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.send({ msg: 'database error', error });
+            res.status(401).send({ msg: 'database error', error });
         }
     }
 });
