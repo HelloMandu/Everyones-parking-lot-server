@@ -64,6 +64,9 @@ db.Review.belongsTo(db.RentalOrder, { foreignKey: 'rental_id', targetKey: 'renta
 db.User.hasMany(db.Review, { foreignKey: 'user_id', sourceKey: 'user_id' });
 db.Review.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
 // User : Review = 1 : N
+db.Place.hasMany(db.Review, { foreignKey: 'place_id', sourceKey: 'place_id' });
+db.Review.belongsTo(db.Place, { foreignKey: 'place_id', targetKey: 'place_id' });
+// Place : Review = 1 : N
 
 db.Review.hasMany(db.Comment, { foreignKey: 'review_id', sourceKey: 'review_id' });
 db.Comment.belongsTo(db.Review, { foreignKey: 'review_id', targetKey: 'review_id' });
@@ -83,11 +86,11 @@ db.Qna.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
 db.User.hasMany(db.PointLog, { foreignKey: 'user_id', sourceKey: 'user_id' });
 db.PointLog.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
 // User : PointLog = 1 : N
-db.RentalOrder.hasMany(db.PointLog, { foreignKey: 'user_id', sourceKey: 'user_id' });
-db.PointLog.belongsTo(db.RentalOrder, { foreignKey: 'user_id', targetKey: 'user_id' });
+db.RentalOrder.hasMany(db.PointLog, { foreignKey: 'rental_id', sourceKey: 'rental_id' });
+db.PointLog.belongsTo(db.RentalOrder, { foreignKey: 'rental_id', targetKey: 'rental_id' });
 // RentalOrder : PointLog = 1 : N
-db.ExtensionOrder.hasMany(db.PointLog, { foreignKey: 'user_id', sourceKey: 'user_id' });
-db.PointLog.belongsTo(db.ExtensionOrder, { foreignKey: 'user_id', targetKey: 'user_id' });
+db.ExtensionOrder.hasMany(db.PointLog, { foreignKey: 'extension_id', sourceKey: 'extension_id' });
+db.PointLog.belongsTo(db.ExtensionOrder, { foreignKey: 'extension_id', targetKey: 'extension_id' });
 // ExtensionOrder : PointLog = 1 : N
 
 db.User.hasMany(db.PersonalPayment, { foreignKey: 'user_id', sourceKey: 'user_id' });
