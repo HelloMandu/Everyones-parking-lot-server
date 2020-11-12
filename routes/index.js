@@ -14,7 +14,7 @@ router.use('/mobile', mobile);
 router.use('/place', place);
 router.use('/like', like);
 router.use('/review', review);
-router.user('/comment', comment);
-router.user('/coupon', coupon);
+router.use('/comment', comment);
+router.use('/coupon', coupon);
 
 module.exports = router;

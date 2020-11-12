@@ -29,9 +29,9 @@ router.get('/', verifyToken, async (req, res, next) => {
     try {
         const existUser = await User.findOne({ where: { user_id } });
         if (!existUser) {
-            return res.status(403).send({ msg: '가입되지 않은 이메일입니다.' });
+            return res.status(400).send({ msg: '가입되지 않은 이메일입니다.' });
         }
-        res.send(existUser);
+        res.status(200).send(existUser);
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });
@@ -51,16 +51,16 @@ router.post('/signin', async (req, res, next) => {
     const { email, password } = req.body;
     const omissionResult = omissionChecker({ email, password });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({ where: { email } });
         if (!existUser) {
-            return res.status(401).send({ msg: '가입되지 않은 이메일입니다.' });
+            return res.status(202).send({ msg: '가입되지 않은 이메일입니다.' });
         }
         const result = await bcrypt.compare(password, existUser.password);
         if (!result) {
-            return res.status(401).send({ msg: '비밀번호가 일치하지 않습니다.' });
+            return res.status(202).send({ msg: '비밀번호가 일치하지 않습니다.' });
         }
         const token = jwt.sign(
             {
@@ -70,9 +70,9 @@ router.post('/signin', async (req, res, next) => {
             process.env.JWT_SECRET,
         );
         if (!token) {
-            return res.status(401).send({ msg: 'token을 생성하지 못했습니다' });
+            return res.status(202).send({ msg: 'token을 생성하지 못했습니다' });
         }
-        res.send({ msg: 'success', token: token });
+        res.status(201).send({ msg: 'success', token: token });
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });
@@ -102,19 +102,19 @@ router.post('/', async (req, res, next) => {
     });
     if (!omissionResult.result) {
         // 데이터가 올바르게 모두 넘어왔는지 검사.
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     /* 모든 데이터가 정상적으로 넘어왔으면 회원가입 절차 실행.*/
     const existUser = await User.findOne({ where: { email } });
 
     if (existUser) {
         // 이미 가입된 이메일이 있는지 화인.
-        return res.status(401).send({ msg: '이미 가입한 이메일입니다.' });
+        return res.status(202).send({ msg: '이미 가입한 이메일입니다.' });
     }
     try {
         const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱
         if (!hash) {
-            return res.status(401).send({ msg: '비밀번호를 설정하지 못했습니다' });
+            return res.status(202).send({ msg: '비밀번호를 설정하지 못했습니다' });
         }
         const createUser = await User.create({
             email,
@@ -125,9 +125,9 @@ router.post('/', async (req, res, next) => {
         });
 
         if (!createUser) {
-            return res.status(401).send({ msg: '회원가입에 실패하였습니다' });
+            return res.status(202).send({ msg: '회원가입에 실패하였습니다' });
         }
-        res.send({ msg: 'success' }); // 가입 성공이라는 메세지 보냄.
+        res.status(201).send({ msg: 'success' }); // 가입 성공이라는 메세지 보냄.
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });
@@ -147,15 +147,15 @@ router.post('/find/user_id', async (req, res, next) => {
     const { name, phone_number } = req.body;
     const omissionResult = omissionChecker({ name, phone_number });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({ where: { name, phone_number } });
         if (!existUser) {
-            return res.status(401).send({ msg: '가입되지 않은 이메일입니다.' });
+            return res.status(202).send({ msg: '가입되지 않은 이메일입니다.' });
         }
         const { email } = existUser;
-        res.send(email);
+        res.status(202).send(email);
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });
@@ -176,16 +176,16 @@ router.post('/find/user_pw', async (req, res, next) => {
     const { name, email, phone_number } = req.body;
     const omissionResult = omissionChecker({ name, phone_number });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({
             where: { name, email, phone_number },
         });
         if (!existUser) {
-            return res.status(401).send({ msg: '가입되지 않은 이메일입니다.' });
+            return res.status(202).send({ msg: '가입되지 않은 이메일입니다.' });
         }
-        res.send({ msg: 'success' });
+        res.status(201).send({ msg: 'success' });
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });
@@ -212,21 +212,21 @@ router.put('/car_info', upload.single('car_img'), async (req, res, next) => {
         car_num,
     });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     try {
         const existUser = User.findOne({ where: { email } });
         if (!existUser) {
-            return res.status(401).send({ msg: '가입되지 않은 이메일입니다' });
+            return res.status(202).send({ msg: '가입되지 않은 이메일입니다' });
         }
         const isUpdate = await User.update(
             { car_location, car_num, car_img },
             { where: { email } },
         );
         if (!isUpdate) {
-            return res.status(401).send({ msg: '차량정보를 등록하지 못했습니다' });
+            return res.status(202).send({ msg: '차량정보를 등록하지 못했습니다' });
         }
-        res.send({ msg: 'success' }); // object를 리턴함
+        res.status(201).send({ msg: 'success' }); // object를 리턴함
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });
@@ -249,25 +249,25 @@ router.put('/password', async (req, res, next) => {
         password,
     });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({ where: { email } });
         if (!existUser) {
-            return res.status(401).send({ msg: '가입되지 않은 이메일입니다' });
+            return res.status(202).send({ msg: '가입되지 않은 이메일입니다' });
         }
         const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱
         if (!hash) {
-            return res.status(401).send({ msg: '비밀번호를 설정하지 못했습니다' });
+            return res.status(202).send({ msg: '비밀번호를 설정하지 못했습니다' });
         }
         const isUpdate = await User.update(
             { password: hash },
             { where: { email, phone_number, name } },
         );
         if (!isUpdate) {
-            return res.status(401).send({ msg: '비밀번호를 설정하지 못했습니다' });
+            return res.status(202).send({ msg: '비밀번호를 설정하지 못했습니다' });
         }
-        res.send({ msg: 'success' });
+        res.status(201).send({ msg: 'success' });
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });

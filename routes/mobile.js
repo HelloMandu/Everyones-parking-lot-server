@@ -13,10 +13,10 @@ router.post('/auth', async (req, res, next) => {
     const { phone_number } = req.body;
     const omissionResult = omissionChecker({ phone_number });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     /*todo: 인증번호 요청*/
-    res.send({ msg: 'success', auth_number: 1234 });
+    res.status(200).send({ msg: 'success', auth_number: 1234 });
 });
 
 /*
@@ -28,13 +28,13 @@ router.post('/confirm', async (req, res, next) => {
     const { phone_number, auth_number } = req.body;
     const omissionResult = omissionChecker({ phone_number, auth_number });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     const authConfirm = auth_number === 1234;
     if (!authConfirm) {
         return res.status(401).send({ msg: '인증에 실패하였습니다' });
     }
-    res.send({ msg: 'success' });
+    res.status(200).send({ msg: 'success' });
 });
 
 module.exports = router;

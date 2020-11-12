@@ -18,14 +18,14 @@ router.get('/', verifyToken, async (req, res, next) => {
     const { place_id } = req.query;
     const omissionResult = omissionChecker({ place_id });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     try {
         const existCoupon = await Coupon.findOne({ where: { place_id } });
         if (!existCoupon) {
-            return res.status(401).send({ msg: '사용 가능한 쿠폰이 없습니다.' });
+            return res.status(202).send({ msg: '사용 가능한 쿠폰이 없습니다.' });
         }
-        res.send(existCoupon);
+        res.status(200).send(existCoupon);
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });

@@ -20,9 +20,9 @@ router.get('/', verifyToken, async (req, res, next) => {
     try {
         const existPointLog = await PointLog.findAll({ where: { user_id } });
         if (!existPointLog) {
-            return res.status(401).send({ msg: 'Point 사용기록이 없습니다' });
+            return res.status(202).send({ msg: 'Point 사용기록이 없습니다' });
         }
-        res.send({ msg: 'success', pointlogs: existPointLog });
+        res.status(200).send({ msg: 'success', pointlogs: existPointLog });
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });
@@ -47,11 +47,11 @@ router.post('/', verifyToken, async (req, res, next) => {
         if (!omissionResult.result) {
             return res.send({ msg: omissionResult.message });
         } else if (price === 0) {
-            return res.status(401).send({ msg: '출금가능한 금액을 입력하세요' });
+            return res.status(202).send({ msg: '출금가능한 금액을 입력하세요' });
         }
         const existUser = await User.findOne({ user_id });
         if (!existUser) {
-            return res.status(401).send({ msg: '가입되지 않은 이메일입니다.' });
+            return res.status(202).send({ msg: '가입되지 않은 이메일입니다.' });
         }
         const remainPoint = existUser.price - price;
         const updateUser = await User.update(
@@ -59,7 +59,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             { where: user_id },
         );
         if (!updateUser) {
-            return res.status(401).send({ msg: '출금에 실패하엿습니다' });
+            return res.status(202).send({ msg: '출금에 실패하엿습니다' });
         }
         const createPointLog = await PointLog.create({
             user_id,
@@ -67,13 +67,13 @@ router.post('/', verifyToken, async (req, res, next) => {
             remain_point: remainPoint,
         });
         if (!createPointLog) {
-            return res.status(401).send({ msg: '출금에 실패하엿습니다' });
+            return res.status(202).send({ msg: '출금에 실패하엿습니다' });
         }
         const existPointLog = await PointLog.findAll({ where: { user_id } });
         if (!existPointLog) {
-            return res.status(401).send({ msg: 'Point 사용기록이 없습니다' });
+            return res.status(202).send({ msg: 'Point 사용기록이 없습니다' });
         }
-        res.send({ msg: 'success', pointlogs: existPointLog });
+        res.status(201).send({ msg: 'success', pointlogs: existPointLog });
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });

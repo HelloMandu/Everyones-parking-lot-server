@@ -22,7 +22,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken;
     const omissionResult = omissionChecker({ review_id });
     if (!omissionResult.result) {
-        return res.status(401).send({ msg: omissionResult.message });
+        return res.status(400).send({ msg: omissionResult.message });
     }
     try {
         const createComment = await Comment.create({
@@ -31,9 +31,9 @@ router.post('/', verifyToken, async (req, res, next) => {
             comment_body,
         });
         if (!createComment) {
-            return res.status(401).send({ msg: '코멘트를 작성하지 못했습니다.' });
+            return res.status(202).send({ msg: '코멘트를 작성하지 못했습니다.' });
         }
-        res.send({ msg: 'success' });
+        res.status(201).send({ msg: 'success' });
     } catch (e) {
         if (e.table) {
             res.status(500).send({ msg: foreignKeyChecker(e.table) });
