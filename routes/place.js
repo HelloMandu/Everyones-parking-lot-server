@@ -65,7 +65,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             if (e.table) {
                 res.send({ msg: foreignKeyChecker(e.table) });
             } else {
-                res.send({ msg: 'database error', error });
+                res.send({ msg: 'database error', error: e });
             }
         }
     }
@@ -283,7 +283,7 @@ router.put('/:place_id', verifyToken, async (req, res, next) => {
                 if (e.table) {
                     res.send({ msg: foreignKeyChecker(e.table) });
                 } else {
-                    res.send({ msg: 'database error', err: e });
+                    res.send({ msg: 'database error', error: e });
                 }
             }
         }
@@ -333,7 +333,7 @@ router.delete('/:place_id', verifyToken, async (req, res, next) => {
                 if (e.table) {
                     res.send({ msg: foreignKeyChecker(e.table) });
                 } else {
-                    res.send({ msg: 'database error', err: e });
+                    res.send({ msg: 'database error', error: e });
                 }
             }
         }
