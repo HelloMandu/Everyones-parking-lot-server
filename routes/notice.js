@@ -29,7 +29,7 @@ router.post('/', async (req, res, next) => {
         try {
             const createNotice = await Notice.create({
                 notice_title, notice_body, notice_img
-            });
+            }); // 공지사항 생성.
             if (createNotice) {
                 res.send({ msg: 'success' });
             } else {
@@ -52,7 +52,7 @@ router.get('/', async (req, res, next) => {
 
         * 응답: notices = [공지사항 Array...]
     */
-    const resultNotices = await Notice.findAll();
+    const resultNotices = await Notice.findAll(); // 공지사항 리스트 조회
     res.send({ notices: resultNotices });
 })
 router.get('/:notice_id', async (req, res, next) => {
@@ -72,7 +72,7 @@ router.get('/:notice_id', async (req, res, next) => {
     } else {
         const resultNotice = await Notice.findOne({
             where: { notice_id: parseInt(notice_id) }
-        });
+        }); // 공지사항 상세 조회
         if (!resultNotice) {
             // 해당 공지사항 id가 DB에 없음.
             res.send({ msg: '조회할 수 없는 공지사항입니다.' });

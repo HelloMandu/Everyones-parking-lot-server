@@ -78,9 +78,14 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(150),
                 comment: "NULL: 일반가입자, naver:네이버, facebook:페이스북, kakao:카카오"
             },
+            agree_push: {
+                type: DataTypes.BOOLEAN(4),
+                comment: "0: 거부, 1: 동의"
+            },
             native_token: {
                 type: DataTypes.STRING(255),
             },
+
         },
         {
             timestamps: true,
