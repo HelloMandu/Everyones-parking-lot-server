@@ -8,14 +8,6 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 comment: "연장 주문 번호"
             },
-            rental_id: {
-                type: DataTypes.STRING(45),
-                comment: "대여 주문 번호"
-            },
-            cp_id: {
-                type: DataTypes.STRING(255),
-                comment: "쿠폰 id"
-            },
             total_price: {
                 type: DataTypes.INTEGER.UNSIGNED,
                 defaultValue: 0,

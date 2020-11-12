@@ -9,13 +9,13 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "1:1문의 id"
             },
-            user_id: {
-                type: DataTypes.INTEGER,
-                comment: "문의 유저 id"
-            },
             user_ip: {
                 type: DataTypes.STRING(255),
                 comment: "문의 유저 ip"
+            },
+            email: {
+                type: DataTypes.STRING(255),
+                comment: "답변 받을 email"
             },
             subject: {
                 type: DataTypes.STRING(255),

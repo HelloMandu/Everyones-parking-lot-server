@@ -9,15 +9,6 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "리뷰 id"
             },
-            user_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                comment: "리뷰 작성 유저 id"
-            },
-            rental_id: {
-                type: DataTypes.STRING(45),
-                comment: "대여 주문 번호"
-            },
             review_body: {
                 type: DataTypes.TEXT('long'),
                 comment: "리뷰 내용"

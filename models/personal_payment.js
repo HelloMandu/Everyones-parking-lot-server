@@ -9,18 +9,6 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 comment: "결제 정보 id"
             },
-            user_id: {
-                type: DataTypes.INTEGER,
-                comment: "결제 유저 id"
-            },
-            rental_id: {
-                type: DataTypes.STRING(45),
-                comment: "결제 대여 주문 번호"
-            },
-            extension_id: {
-                type: DataTypes.STRING(45),
-                comment: "결제 연장 주문 번호"
-            },
             pp_method: {
                 type: DataTypes.STRING(255),
                 comment: "pay, cancel"

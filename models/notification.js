@@ -9,10 +9,6 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "알림 id"
             },
-            user_id: {
-                type: DataTypes.INTEGER,
-                comment: "유저 id"
-            },
             notification_body: {
                 type: DataTypes.STRING(255),
                 comment: "알림 내용"

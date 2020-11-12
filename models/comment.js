@@ -9,16 +9,6 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "댓글 id"
             },
-            review_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                comment: "리뷰 id"
-            },
-            user_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                comment: "댓글 작성 유저 id"
-            },
             comment_body: {
                 type: DataTypes.TEXT('medium'),
                 comment: "댓글 내용"
