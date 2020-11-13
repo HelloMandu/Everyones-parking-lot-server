@@ -283,66 +283,73 @@
 ```
 
 ---------------------------------------
-# 리뷰 상세 보기 페이지
+### 리뷰 상세 보기 페이지
 
-##	리뷰 상세 정보 요청 API(GET): /api/review/:review_id
+#### 리뷰 상세 정보 요청 API(GET): /api/review/:review_id
+```
 +	{ params: review_id }: 상세 보기할 리뷰 id
 
 	* 응답: review = 리뷰 상세 정보 Object
-
-##	댓글 작성 요청 API(POST): /api/comment
+```
+#### 댓글 작성 요청 API(POST): /api/comment
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	review_id: 댓글을 작성할 리뷰 id(Integer, 필수)
 -	comment_body: 댓글 내용(String, 필수)
 
 	* 응답: comment = { 댓글 정보 Object }
-
-
+```
 ---------------------------------------
-# 나의 수익금 페이지
+### 나의 수익금 페이지
 
-##	나의 수익금 기록 요청 API(GET): /api/point_log
+#### 나의 수익금 기록 요청 API(GET): /api/point_log
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
 	* 응답: point_logs = [포인트 사용 기록 Array…]
-
-##	출금 신청 API(POST): /api/point_log
+```
+#### 출금 신청 API(POST): /api/point_log
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	price: 출금할 액수(Integer, 필수)
 
 	* 응답: point_logs = [새로운 포인트 사용 기록 Array…]
-
-
+```
 ---------------------------------------
-# 내 정보 수정 페이지
+### 내 정보 수정 페이지
 
-##	이름 변경 요청 API(PUT): /api/user/name
+#### 이름 변경 요청 API(PUT): /api/user/name
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	name: 변경할 이름(String, 필수)
 
 	* 응답: success / failure
-
-##	비밀번호 변경 요청 API(PUT): /api/user/password
+```
+#### 비밀번호 변경 요청 API(PUT): /api/user/password
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	password: 변경할 패스워드(String, 필수)
 
 	* 응답: success / failure
-
-##	연락처 변경 요청 API(PUT): /api/user/phone_number
+```
+#### 연락처 변경 요청 API(PUT): /api/user/phone_number
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	phone_number: 변경할 휴대폰 번호(String, 필수)
 
 	* 응답: success / failure
-
-##	차랑 정보 변경 요청 API(PUT): /api/user/car_info
+```
+#### 차랑 정보 변경 요청 API(PUT): /api/user/car_info
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	car_location: 차량 등록 지역(String, 필수)
 -	car_num: 차량 등록 번호(String, 필수)
 -	car_image: 차량 이미지([ImageFIleList], 필수)
 
 	* 응답: success / failure
-
-##	생년월일 변경 요청 API(PUT): /api/user/birth
+```
+#### 생년월일 변경 요청 API(PUT): /api/user/birth
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	birth: 변경할 생년월일(DateString, 필수)
 
@@ -352,21 +359,23 @@
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
 	* 응답: success / failure
-
+```
 
 ---------------------------------------
-# 내 주차공간 관리 페이지
+### 내 주차공간 관리 페이지
 
-##	내 주차공간 리스트 요청 API(GET): /api/place/my
+####	내 주차공간 리스트 요청 API(GET): /api/place/my
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
 	* 응답: places = [주차공간 Array…]
-
+```
 
 ---------------------------------------
-# 주차공간 등록 페이지
+### 주차공간 등록 페이지
 
-##	주차공간 등록 요청 API(POST): /api/place
+#### 주차공간 등록 요청 API(POST): /api/place
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -    addr: 주차공간 주소(String, 필수)
 -    addr_detail: 주차공간 상세주소(String)
@@ -382,8 +391,9 @@
 -    oper_end_time: 운영 종료 시간(DateTimeString, 필수)
 
 	* 응답: success / failure
-
-##	주차공간 수정 요청 API(PUT): /api/place/:place_id
+```
+#### 주차공간 수정 요청 API(PUT): /api/place/:place_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: place_id }: 수정할 주차공간 id(Integer, 필수)
 -   addr: 주차공간 주소(String)
@@ -400,153 +410,172 @@
 -   oper_end_time: 운영 종료 시간(DateTimeString)
 	
 	* 응답: success / failure
-
-##	주차공간 삭제 요청 API(DELETE): /api/place/:place_id
+```
+#### 주차공간 삭제 요청 API(DELETE): /api/place/:place_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 	
 	* 응답: success / failure
-
-
+```
 ---------------------------------------
-# 알림함 페이지
+### 알림함 페이지
 
-##	알림 리스트 요청 API(GET): /api/notification
+#### 알림 리스트 요청 API(GET): /api/notification
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 		
 	* 응답: notifications = [알림 Array…]
-
-##	알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id
+```
+#### 알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: notification_id }: 읽음 처리할 알림 id
 
 	* 응답: success / failure
+```
 
-##	알림 삭제 요청 API(DELETE): /api/notification/:notification_id
+#### 알림 삭제 요청 API(DELETE): /api/notification/:notification_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: notification_id }: 삭제 처리할 알림 id
 
 	* 응답: success / failure
+```
+---------------------------------------
+### 환경설정 페이지
 
+####	메일 수신 동의 변경 API(PUT): /api/user/agree_mail
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+-	state: 변경할 동의 상태
+
+	* 응답: state = 변경된 동의 상태
+```
+#### SMS 수신 동의 변경 API(PUT): /api/user/agree_sms
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+-	state: 변경할 동의 상태
+
+	* 응답: state = 변경된 동의 상태
+```
+#### 푸시알림 수신 동의 변경 API(PUT): /api/user/agree_push
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+-	state: 변경할 동의 상태
+
+	* 응답: state = 변경된 동의 상태
+```
 
 ---------------------------------------
-# 환경설정 페이지
+## 쿠폰 페이지
 
-##	메일 수신 동의 변경 API(PUT): /api/user/agree_mail
-+	{ headers }: JWT_TOKEN(유저 로그인 토큰)
--	state: 변경할 동의 상태
-
-	* 응답: state = 변경된 동의 상태
-
-##	SMS 수신 동의 변경 API(PUT): /api/user/agree_sms
-+	{ headers }: JWT_TOKEN(유저 로그인 토큰)
--	state: 변경할 동의 상태
-
-	* 응답: state = 변경된 동의 상태
-
-##	푸시알림 수신 동의 변경 API(PUT): /api/user/agree_push
-+	{ headers }: JWT_TOKEN(유저 로그인 토큰)
--	state: 변경할 동의 상태
-
-	* 응답: state = 변경된 동의 상태
-
-
----------------------------------------
-# 쿠폰 페이지
-
-##	내 쿠폰 리스트 요청 API(GET): /api/coupon/my
+#### 내 쿠폰 리스트 요청 API(GET): /api/coupon/my
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	order_type: 정렬 방식
 	
 	* 응답: coupons = [쿠폰 Array…]
-
-##	쿠폰 코드 입력 요청 API(POST): /api/coupon
+```
+#### 쿠폰 코드 입력 요청 API(POST): /api/coupon
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	cp_code: 쿠폰 코드(String, 필수)
 
 	* 응답: success / failure
-
-##	쿠폰북 리스트 요청 API(GET): /api/coupon/book
+```
+#### 쿠폰북 리스트 요청 API(GET): /api/coupon/book
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	order_type: 정렬 방식
 
 	* 응답: coupons = [쿠폰북 Array…]
-
-##	쿠폰 사용 내역 리스트 요청 API(GET): /api/coupon/use
+```
+#### 쿠폰 사용 내역 리스트 요청 API(GET): /api/coupon/use
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
 	* 응답: coupons = [쿠폰 사용 내역 Array…]
-
+```
 
 ---------------------------------------
-# 이벤트 페이지
+### 이벤트 페이지
 
-##	이벤트 리스트 요청 API(GET): /api/event
-
+#### 이벤트 리스트 요청 API(GET): /api/event
+```
 	* 응답: events = [이벤트 Array…]
-
-##	이벤트 상세 정보 요청 API(GET): /api/event/:event_id
+```
+#### 이벤트 상세 정보 요청 API(GET): /api/event/:event_id
+```
 +	{ params: event_id }: 상세 보기할 이벤트 id
 
 	* 응답: event = { 이벤트 상세 정보 Object }
-
+```
 
 ---------------------------------------
-# 공지사항 페이지
+### 공지사항 페이지
 
-##	공지사항 작성 요청 API(POST): /api/notice
+#### 공지사항 작성 요청 API(POST): /api/notice
+```
 -   notice_title: 공지사항 제목(String, 필수)
 -   notice_body: 공지사항 내용(String)
 -   notice_img: 공지사항 첨부 이미지(ImageFileList)
     
     * 응답: success / failure
-
-##	공지사항 리스트 요청 API(GET): /api/notice
-
+```
+#### 공지사항 리스트 요청 API(GET): /api/notice
+```
     * 응답: notices = [공지사항 Array...]
-
-##	공지사항 상세 정보 요청 API(GET): /api/notice/:notice_id
+```
+#### 공지사항 상세 정보 요청 API(GET): /api/notice/:notice_id
+```
 +   { params: notice_id }: 상세 정보를 가져올 공지사항 id(Integer, 필수)
 
     * 응답: notice = { 공지사항 상세 정보 Object }
-
-##	공지사항 수정 요청 API(PUT): /api/notice/:notice_id
+```
+#### 공지사항 수정 요청 API(PUT): /api/notice/:notice_id
+```
 +   { params: notice_id }: 수정할 공지사항 id(Integer, 필수)
 -   notice_title: 공지사항 제목(String)
 -   notice_body: 공지사항 내용(String)
 -   notice_img: 공지사항 첨부 이미지(ImageFileList)
 
     * 응답: success / failure
-
-##	공지사항 삭제 요청 API(DELETE): /api/notice/:notice_id
+```
+#### 공지사항 삭제 요청 API(DELETE): /api/notice/:notice_id
+```
 +   { params: notice_id }: 삭제할 공지사항 id(Integer, 필수)
 
     * 응답: success / failure
-
+```
 
 ---------------------------------------
-# 자주 묻는 질문 페이지
+### 자주 묻는 질문 페이지
 
-##	자주 묻는 질문 리스트 요청 API(GET): /api/faq
+#### 자주 묻는 질문 리스트 요청 API(GET): /api/faq
+```
 -	faq_type: 가져올 자주 묻는 질문 타입(Integer, 필수)
 
 	* 응답: faqs = [자주 묻는 질문 Array…]
-
+```
 
 ---------------------------------------
-# 1:1 문의 페이지
+### 1:1 문의 페이지
 
-##	1:1 문의 리스트 요청 API(GET): /api/qna
+#### 1:1 문의 리스트 요청 API(GET): /api/qna
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
 	* 응답: qnas = [1:1 문의 Array…]
-
-##	1:1 문의 상세 정보 요청 API(GET): /api/qna/:qna_id
+```
+#### 1:1 문의 상세 정보 요청 API(GET): /api/qna/:qna_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: qna_id }: 상세 보기할 1:1 문의 id
 
 	* 응답: qna = { 1:1 문의 상세 정보 Object }
-
-##	1:1 문의 작성 요청 API(POST): /api/qna
+```
+#### 1:1 문의 작성 요청 API(POST): /api/qna
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	email: 답변 받을 이메일(String)
 -	subject: 1:1 문의 제목(String, 필수)
@@ -554,8 +583,9 @@
 -	q_files: 1:1 문의 첨부 파일(ImageFileList)
 
 	* 응답: success / failure
-
-##	1:1 문의 수정 요청 API(PUT): /api/qna/:qna_id
+```
+#### 1:1 문의 수정 요청 API(PUT): /api/qna/:qna_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: qna_id }: 수정할 1:1 문의 id
 -	email: 답변 받을 이메일(String)
@@ -564,9 +594,11 @@
 -	q_files: 1:1 문의 첨부 파일(ImageFileList)
 
 	* 응답: success / failure
-
-##	1:1 문의 삭제 요청 API(DELETE): /api/qna/:qna_id
+```
+#### 1:1 문의 삭제 요청 API(DELETE): /api/qna/:qna_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: qna_id }: 삭제할 1:1 문의 id
 
 	* 응답: success / failure
+```
