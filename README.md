@@ -380,8 +380,8 @@
 ```
 
 #### 회원 탈퇴 요청 API(DELETE): /api/user
-+	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 ```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 	=> 응답: success / failure
 ```
 
