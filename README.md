@@ -367,7 +367,7 @@
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	car_location: 차량 등록 지역(String, 필수)
 -	car_num: 차량 등록 번호(String, 필수)
--	car_image: 차량 이미지([ImageFIleList], 필수)
+-	car_image: 차량 이미지([ImageFileList], 필수)
 
 	=> 응답: success / failure
 ```
