@@ -1,14 +1,16 @@
 # parking-server
 
 ---------------------------------------
-# —————— 공통 ——————
+## —————— 공통 ——————
 
-# 휴대폰 인증번호 요청
+### 휴대폰 인증번호 요청
 
-##	휴대폰 인증 번호 요청 API(POST): /api/mobile/auth
+####	휴대폰 인증 번호 요청 API(POST): /api/mobile/auth
+```
 -	phone_number: 유저 휴대폰 번호(String, 필수)
 
 	* 응답: success / failure
+```
 	
 ##	휴대폰 인증 번호 확인 API(POST): /api/mobile/confirm
 -	phone_number: 유저 휴대폰 번호(String, 필수)
