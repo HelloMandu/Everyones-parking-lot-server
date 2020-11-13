@@ -21,22 +21,24 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 /*
-- 유저 정보 요청 API(GET): /api/user
-	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+    유저 정보 요청 API(GET): /api/user
+    { headers }: JWT_TOKEN(유저 로그인 토큰)
+    
+    * 응답: user = 유저 정보 Object
 */
 router.get('/', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken;
     try {
-        const existUser = await User.findOne({ where: { user_id } });
-        if (!existUser) {
-            return res.status(400).send({ msg: '가입되지 않은 이메일입니다.' });
+        const user = await User.findOne({ where: { user_id } });
+        if (!user) {
+            return res.status(404).send({ msg: '가입되지 않은 이메일입니다.' });
         }
-        res.status(200).send(existUser);
+        res.status(200).send({ msg: 'success', user });
     } catch (e) {
         if (e.table) {
-            res.status(500).send({ msg: foreignKeyChecker(e.table) });
+            res.status(400).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(500).send({ msg: 'database error', error });
+            res.status(400).send({ msg: 'database error', error });
         }
     }
 });
@@ -45,7 +47,9 @@ router.get('/', verifyToken, async (req, res, next) => {
     로그인 요청 API(POST): /api/user/signin
 
 	email: 유저 이메일(String, 필수)
-	password: 유저 패스워드(String, 필수)
+    password: 유저 패스워드(String, 필수)
+    
+    * 응답: token = 유저 로그인 토큰
 */
 router.post('/signin', async (req, res, next) => {
     const { email, password } = req.body;
@@ -56,7 +60,7 @@ router.post('/signin', async (req, res, next) => {
     try {
         const existUser = await User.findOne({ where: { email } });
         if (!existUser) {
-            return res.status(202).send({ msg: '가입되지 않은 이메일입니다.' });
+            return res.status(404).send({ msg: '가입되지 않은 이메일입니다.' });
         }
         const result = await bcrypt.compare(password, existUser.password);
         if (!result) {
@@ -70,14 +74,14 @@ router.post('/signin', async (req, res, next) => {
             process.env.JWT_SECRET,
         );
         if (!token) {
-            return res.status(202).send({ msg: 'token을 생성하지 못했습니다' });
+            return res.status(202).send({ msg: 'token을 생성하지 못했습니다.' });
         }
-        res.status(201).send({ msg: 'success', token: token });
+        res.status(200).send({ msg: 'success', token: token });
     } catch (e) {
         if (e.table) {
-            res.status(500).send({ msg: foreignKeyChecker(e.table) });
+            res.status(400).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(500).send({ msg: 'database error', error });
+            res.status(400).send({ msg: 'database error', error });
         }
     }
 });
@@ -89,7 +93,9 @@ router.post('/signin', async (req, res, next) => {
 	name: 유저 이름(String, 필수)
 	password: 유저 비밀번호(String, 필수)
 	birth: 유저 생년월일(DateString, 필수)
-	phone_number: 유저 휴대폰 번호(String, 필수)
+    phone_number: 유저 휴대폰 번호(String, 필수)
+    
+    * 응답: success / failure
 */
 router.post('/', async (req, res, next) => {
     const { email, name, birth, phone_number, password } = req.body;
@@ -130,78 +136,22 @@ router.post('/', async (req, res, next) => {
         res.status(201).send({ msg: 'success' }); // 가입 성공이라는 메세지 보냄.
     } catch (e) {
         if (e.table) {
-            res.status(500).send({ msg: foreignKeyChecker(e.table) });
+            res.status(400).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(500).send({ msg: 'database error', error });
-        }
-    }
-});
-
-/* 
-    아이디 찾기 (POST): /api/user/find/user_id
-
-	name: 유저 이름(String, 필수)
-    phone_number: 유저 휴대폰 번호(String, 필수)
-*/
-router.post('/find/user_id', async (req, res, next) => {
-    const { name, phone_number } = req.body;
-    const omissionResult = omissionChecker({ name, phone_number });
-    if (!omissionResult.result) {
-        return res.status(400).send({ msg: omissionResult.message });
-    }
-    try {
-        const existUser = await User.findOne({ where: { name, phone_number } });
-        if (!existUser) {
-            return res.status(202).send({ msg: '가입되지 않은 이메일입니다.' });
-        }
-        const { email } = existUser;
-        res.status(202).send(email);
-    } catch (e) {
-        if (e.table) {
-            res.status(500).send({ msg: foreignKeyChecker(e.table) });
-        } else {
-            res.status(500).send({ msg: 'database error', error });
+            res.status(400).send({ msg: 'database error', error });
         }
     }
 });
 
 /*
-    비밀번호 찾기 API(POST): /api/user/find/user_pw
-
-	name: 유저 이름(String, 필수)
-	email: 유저 이메일(String, 필수)
-	phone_number: 유저 휴대폰 번호(String, 필수)
-*/
-router.post('/find/user_pw', async (req, res, next) => {
-    const { name, email, phone_number } = req.body;
-    const omissionResult = omissionChecker({ name, phone_number });
-    if (!omissionResult.result) {
-        return res.status(400).send({ msg: omissionResult.message });
-    }
-    try {
-        const existUser = await User.findOne({
-            where: { name, email, phone_number },
-        });
-        if (!existUser) {
-            return res.status(202).send({ msg: '가입되지 않은 이메일입니다.' });
-        }
-        res.status(201).send({ msg: 'success' });
-    } catch (e) {
-        if (e.table) {
-            res.status(500).send({ msg: foreignKeyChecker(e.table) });
-        } else {
-            res.status(500).send({ msg: 'database error', error });
-        }
-    }
-});
-
-/*
-    차량 정보 등록 요청 API(PUT): /api/user
+    차량 정보 등록 요청 API(PUT): /api/user/car_info
     
     email: 유저 이메일(String, 필수)
 	car_location: 차량 등록 지역(String, 필수)
 	car_num: 차량 등록 번호(String, 필수)
-	car_img: 차량 이미지(ImageFile, 필수)
+    car_img: 차량 이미지(ImageFile, 필수)
+    
+    * 응답: success / failure
 */
 router.put('/car_info', upload.single('car_img'), async (req, res, next) => {
     const { email, car_location, car_num } = req.body;
@@ -217,62 +167,133 @@ router.put('/car_info', upload.single('car_img'), async (req, res, next) => {
     try {
         const existUser = User.findOne({ where: { email } });
         if (!existUser) {
-            return res.status(202).send({ msg: '가입되지 않은 이메일입니다' });
+            return res.status(404).send({ msg: '가입되지 않은 이메일입니다' });
         }
-        const isUpdate = await User.update(
+        const updateUser = await User.update(
             { car_location, car_num, car_img },
             { where: { email } },
         );
-        if (!isUpdate) {
+        if (!updateUser) {
             return res.status(202).send({ msg: '차량정보를 등록하지 못했습니다' });
         }
-        res.status(201).send({ msg: 'success' }); // object를 리턴함
+        res.status(201).send({ msg: 'success' });
     } catch (e) {
         if (e.table) {
-            res.status(500).send({ msg: foreignKeyChecker(e.table) });
+            res.status(400).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(500).send({ msg: 'database error', error });
+            res.status(400).send({ msg: 'database error', error });
         }
     }
 });
 
 /*
-비밀번호 재설정 API(PUT): /api/user
-	password: 새 비밀번호(String, 필수)
+    아이디 찾기 (POST): /api/user/find/user_id
+
+	name: 유저 이름(String, 필수)
+    phone_number: 유저 휴대폰 번호(String, 필수)
+
+    * 응답: email = 찾은 email
 */
-router.put('/password', async (req, res, next) => {
-    const { name, email, phone_number, password } = req.body;
+router.post('/find/user_id', async (req, res, next) => {
+    const { name, phone_number } = req.body;
+    const omissionResult = omissionChecker({ name, phone_number });
+    if (!omissionResult.result) {
+        return res.status(400).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({ where: { name, phone_number } });
+        if (!existUser) {
+            return res.status(404).send({ msg: '가입되지 않은 이메일입니다.' });
+        }
+        const { email } = existUser;
+        res.status(200).send({ msg: 'success', email });
+    } catch (e) {
+        if (e.table) {
+            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.status(400).send({ msg: 'database error', error });
+        }
+    }
+});
+
+/*
+    비밀번호 찾기 API(POST): /api/user/find/user_pw
+
+	name: 유저 이름(String, 필수)
+	email: 유저 이메일(String, 필수)
+    phone_number: 유저 휴대폰 번호(String, 필수)
+    
+    * 응답: token = 유저 임시 토큰
+*/
+router.post('/find/user_pw', async (req, res, next) => {
+    const { name, email, phone_number } = req.body;
+    const omissionResult = omissionChecker({ name, phone_number });
+    if (!omissionResult.result) {
+        return res.status(400).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({
+            where: { name, email, phone_number },
+        });
+        if (!existUser) {
+            return res.status(404).send({ msg: '가입되지 않은 이메일입니다.' });
+        }
+        const token = jwt.sign(
+            {
+                user_id: existUser.dataValues.user_id,
+                email: email,
+            },
+            process.env.JWT_SECRET,
+        );
+        if (!token) {
+            return res.status(202).send({ msg: 'token을 생성하지 못했습니다' });
+        }
+        res.status(200).send({ msg: 'success', token: token });
+    } catch (e) {
+        if (e.table) {
+            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            res.status(400).send({ msg: 'database error', error });
+        }
+    }
+});
+
+/*
+    비밀번호 재설정 API(PUT): /api/user/password
+    { headers }: JWT_TOKEN(유저 임시 토큰)
+
+    password: 새 비밀번호(String, 필수)
+    
+    * 응답: success / failure
+*/
+router.put('/password', verifyToken, async (req, res, next) => {
+    const { password } = req.body;
     const omissionResult = omissionChecker({
-        name,
-        email,
-        phone_number,
         password,
     });
     if (!omissionResult.result) {
         return res.status(400).send({ msg: omissionResult.message });
     }
     try {
-        const existUser = await User.findOne({ where: { email } });
+        const { user_id } = req.decodeToken;
+        const existUser = await User.findOne({ where: { user_id } });
         if (!existUser) {
-            return res.status(202).send({ msg: '가입되지 않은 이메일입니다' });
+            return res.status(404).send({ msg: '가입되지 않은 이메일입니다' });
         }
         const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱
-        if (!hash) {
-            return res.status(202).send({ msg: '비밀번호를 설정하지 못했습니다' });
-        }
-        const isUpdate = await User.update(
+        const updateUser = await User.update(
             { password: hash },
-            { where: { email, phone_number, name } },
+            { where: { user_id } },
         );
-        if (!isUpdate) {
+        if (!updateUser) {
             return res.status(202).send({ msg: '비밀번호를 설정하지 못했습니다' });
         }
-        res.status(201).send({ msg: 'success' });
+        res.status(200).send({ msg: 'success' });
     } catch (e) {
         if (e.table) {
-            res.status(500).send({ msg: foreignKeyChecker(e.table) });
+            res.status(400).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(500).send({ msg: 'database error', error });
+            res.status(400).send({ msg: 'database error', error });
         }
     }
 });

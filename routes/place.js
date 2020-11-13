@@ -148,10 +148,10 @@ router.get('/:place_id', async (req, res, next) => {
         res.send({ msg: omissionResult.message });
     } else {
         const placeID = parseInt(place_id);
-        const resultPlace = await Place.findOne({
+        const place = await Place.findOne({
             where: { place_id: placeID }
         }); // 주차공간을 DB에서 조회
-        if (!resultPlace) {
+        if (!place) {
             // 해당 주차공간 id가 DB에 없음.
             res.send({ msg: '조회할 수 없는 주차공간입니다.' });
         } else {
@@ -162,7 +162,7 @@ router.get('/:place_id', async (req, res, next) => {
                 where: { place_id: placeID }
             }); // 해당 주차공간의 좋아요 수 가져옴
             res.send({
-                place: resultPlace,
+                place,
                 reviews, likes: likes.length
             }); // 정상적으로 주차공간 응답.
         }
@@ -186,12 +186,12 @@ router.get('/like', verifyToken, async (req, res, next) => {
         const wherePlaceId = resultLikes.map(({ place_id }) => ({
             place_id
         })); // 좋아요 한 모든 주차공간 ID를 가져옴.
-        const resultPlaces = Place.findAll({
+        const places = Place.findAll({
             where: {
                 [Op.or]: wherePlaceId
             }
         }); // 그 주차공간 ID를 통해 주차공간 리스트 뽑음.
-        res.send({ msg: 'success', places: resultPlaces });
+        res.send({ msg: 'success', places });
     } else {
         // 좋아요 한 주차공간이 없으면.
         res.send({ msg: 'success', places: [] });
@@ -206,10 +206,10 @@ router.get('/my', verifyToken, async (req, res, next) => {
         * 응답: places = [주차공간 Array...]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
-    const resultPlaces = Place.findAll({
+    const places = Place.findAll({
         where: { user_id }
     }); // user_id에 해당하는 주차공간 리스트를 가져옴.
-    res.send({ msg: 'success', places: resultPlaces });
+    res.send({ msg: 'success', places });
 });
 
 /* UPDATE */
