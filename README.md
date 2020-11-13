@@ -377,10 +377,11 @@
 -	birth: 변경할 생년월일(DateString, 필수)
 
 	=> 응답: success / failure
+```
 
-##	회원 탈퇴 요청 API(DELETE): /api/user
+#### 회원 탈퇴 요청 API(DELETE): /api/user
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-
+```
 	=> 응답: success / failure
 ```
 
