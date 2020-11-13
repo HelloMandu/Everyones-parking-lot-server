@@ -3,58 +3,60 @@
 ---------------------------------------
 ## —————— 공통 ——————
 
+
 ### 휴대폰 인증번호 요청
 
-####	휴대폰 인증 번호 요청 API(POST): /api/mobile/auth
+#### 휴대폰 인증 번호 요청 API(POST): /api/mobile/auth
 ```
 -	phone_number: 유저 휴대폰 번호(String, 필수)
 
 	* 응답: success / failure
 ```
 	
-##	휴대폰 인증 번호 확인 API(POST): /api/mobile/confirm
+#### 휴대폰 인증 번호 확인 API(POST): /api/mobile/confirm
+```
 -	phone_number: 유저 휴대폰 번호(String, 필수)
 -	auth_number: 전달 받은 인증 번호(String, 필수)
 
 	* 응답: success / failure
+```
+### 앱 정보 요청
 
-
----------------------------------------
-# 앱 정보 요청
-
-## 앱 정보 요청 API(GET): /api/app_info
-
+#### 앱 정보 요청 API(GET): /api/app_info
+```
 	* 응답: info = { 앱 정보 Object }
+```
+### 유저 정보 요청
 
-
----------------------------------------
-# 유저 정보 요청
-
-##	유저 정보 요청 API(GET): /api/user
+#### 유저 정보 요청 API(GET): /api/user
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
 	* 응답: user = { 유저 정보 Object }
-
+```
 ---------------------------------------
-# —————— 로그인 / 회원가입 ——————
+## —————— 로그인 / 회원가입 ——————
 
-# 이메일 로그인 페이지
+### 이메일 로그인 페이지
 
-##	로그인 요청 API(POST): /api/user/signin
+#### 로그인 요청 API(POST): /api/user/signin
+```
 -	email: 유저 이메일(String, 필수)
 -	password: 유저 패스워드(String, 필수)
 
 	* 응답: success / failure
+```
 
-###	카카오 로그인 요청 API(POST): /api/user/kakao 
-###	네이버 로그인 요청 API(POST): /api/user/naver
-###	페이스북 로그인 요청 API(POST): /api/user/facebook
+#### 카카오 로그인 요청 API(POST): /api/user/kakao 
+#### 네이버 로그인 요청 API(POST): /api/user/naver
+#### 페이스북 로그인 요청 API(POST): /api/user/facebook
 
 
 ---------------------------------------
-# 회원가입 페이지
+### 회원가입 페이지
 
-##	회원가입 요청 API(POST): /api/user
+#### 회원가입 요청 API(POST): /api/user
+```
 -	email: 유저 이메일(String, 필수)
 -	name: 유저 이름(String, 필수)
 -	password: 유저 비밀번호(String, 필수)
@@ -62,56 +64,59 @@
 -	phone_number: 유저 휴대폰 번호(String, 필수)
 
 	* 응답: success / failure
-
+```
 ---------------------------------------
-# 차량정보 등록 페이지
+### 차량정보 등록 페이지
 
-##	차량 정보 등록 요청 API(PUT): /api/user/car_info
+#### 차량 정보 등록 요청 API(PUT): /api/user/car_info
+```
 -	email: 유저 이메일(String, 필수)
 -	car_location: 차량 등록 지역(String, 필수)
 -	car_num: 차량 등록 번호(String, 필수)
 -	car_image: 차량 이미지(ImageFIleList, 필수)
 
 	* 응답: success / failure
-
-
+```
 ---------------------------------------
-# 아이디 찾기 페이지
+### 아이디 찾기 페이지
 
-##	아이디 찾기 API(POST): /api/user/find/user_id
+#### 아이디 찾기 API(POST): /api/user/find/user_id
+```
 -	name: 유저 이름(String, 필수)
 -	phone_number: 유저 휴대폰 번호(String, 필수)
 -	auth_number: 인증 번호(String, 필수) => 일단 무시
 	
 	* 응답: email = 유저 이메일 String
-
-
+```
 ---------------------------------------
-# 비밀번호 찾기 페이지
+### 비밀번호 찾기 페이지
 
-##	비밀번호 찾기 API(POST): /api/user/find/user_pw
+#### 비밀번호 찾기 API(POST): /api/user/find/user_pw
+```
 -	name: 유저 이름(String, 필수)
 -	email: 유저 이메일(String, 필수)
 -	phone_number: 유저 휴대폰 번호(String, 필수)
 -	auth_number: 인증 번호(String, 필수) => 일단 무시
 
 	* 응답: success / failure
-
-##	비밀번호 재설정 API(PUT): /api/user/password
+```
+#### 비밀번호 재설정 API(PUT): /api/user/password
+```
 -	name: 유저 이름(String, 필수)
 -	email: 유저 이메일(String, 필수)
 -	phone_number: 유저 휴대폰 번호(String, 필수)
 -	password: 새 비밀번호(String, 필수)
 
 	* 응답: success / failure
-
-
+```
 ---------------------------------------
-# —————— 메인 페이지 ——————
 
-# 기본 지도 페이지
+## —————— 메인 페이지 ——————
 
-##	주차공간 리스트 요청 API(GET): /api/place
+### 기본 지도 페이지
+
+#### 주차공간 리스트 요청 API(GET): /api/place
+```
 -	lat: 요청할 주차공간의 기준 위도(Float, 필수) => 세로
 -	lng: 요청할 주차공간의 기준 경도(Float, 필수) => 가로
 -	range: 요청할 주차공간의 거리 범위(Float, km 단위, default 값은 1000km)
@@ -122,8 +127,8 @@
 -	filter: 필터링 항목([type…])
 
 	* 응답: places = [주차공간 Array…]
-  
-##	즐겨찾는 주차공간 리스트 요청 API(GET): /api/place/like => 로그인 후 이용 가능
+```
+#### 즐겨찾는 주차공간 리스트 요청 API(GET): /api/place/like => 로그인 후 이용 가능
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	filter: 필터링(현재 정체를 모르겠음.)
 
@@ -131,38 +136,42 @@
 
 
 ---------------------------------------
-# 주차공간 상세보기 페이지
+### 주차공간 상세보기 페이지
 
-##	주차공간 상세 정보 요청 API(GET): /api/place/:place_id
+#### 주차공간 상세 정보 요청 API(GET): /api/place/:place_id
+```
 +	{ params: place_id }: 상세 보기할 주차공간 id(필수)
 	
 	* 응답: place = { 주차공간 데이터 Object(리뷰 리스트 데이터도 포함) }
-
-##	주차공간 좋아요 추가 요청 API(POST): /api/like
+```
+#### 주차공간 좋아요 추가 요청 API(POST): /api/like
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 주차공간 id(Integer, 필수)
 
 	* 응답: status = 변경된 좋아요 상태
-
-##	주차공간 좋아요 제거 요청 API(DELETE): /api/like
+```
+#### 주차공간 좋아요 제거 요청 API(DELETE): /api/like
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 주차공간 id(Integer, 필수)
 
 	* 응답: status = 변경된 좋아요 상태
-
-
+```
 ---------------------------------------
-# 결제 정보 확인 페이지
+### 결제 정보 확인 페이지
 
-##	결제 정보 요청 API(GET): /api/order
+##### 결제 정보 요청 API(GET): /api/order
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Integer, 필수)
 -	start_time: 대여 시작 시간(DateTimeString, 필수)
 -	end_time: 대여 종료 시간(DateTimeString, 필수)
 
 	* 응답: place = { 주차공간 정보 Object(요금, 보증금) }
-
-##	결제 및 대여 등록 요청 API(POST): /api/rental
+```
+#### 결제 및 대여 등록 요청 API(POST): /api/rental
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Interger, 필수)
 -	coupon_id: 사용할 쿠폰 id(String)
@@ -176,52 +185,52 @@
 -	phone_number: 대여자 연락처(String, 필수)
 
 	* 응답: rental_id = 대여 주문 번호
-
-
+```
 ---------------------------------------
-# 적용 쿠폰 선택 모달
+### 적용 쿠폰 선택 모달
 
-##	사용 가능한 쿠폰 요청 API(GET): /api/coupon
+#### 사용 가능한 쿠폰 요청 API(GET): /api/coupon
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Integer, 필수)
 
 	* 응답: coupons = [사용가능한 쿠폰 Array…]
-
-
+```
 ---------------------------------------
-# 대여/결제 완료 페이지
+### 대여/결제 완료 페이지
 
-##	결제 및 대여 확인 요청 API(GET): /api/rental/:rental_id
+#### 결제 및 대여 확인 요청 API(GET): /api/rental/:rental_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	{ params: rental_id }: 대여 주문 번호(Integer, 필수)
 	
 	* 응답: order = { 주문 정보 Object }
-
-
+```
 ---------------------------------------
-# 이용 내역 페이지
+### 이용 내역 페이지
 
-##	이용 내역 요청 API(GET): /api/rental
+#### 이용 내역 요청 API(GET): /api/rental
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	filter: 필터링 항목(아마도 날짜?)
 
 	* orders: = [주문 정보 Array…]
-
-
+```
 ---------------------------------------
-# 이용 내역 상세 보기 페이지
+### 이용 내역 상세 보기 페이지
 
-##	이용 내역 상세 정보 요청 API(GET): /api/rental/:rental_id
+#### 이용 내역 상세 정보 요청 API(GET): /api/rental/:rental_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: rental_id }: 대여 주문 번호(Integer, 필수)
 	
 	* 응답: order = { 주문 정보 Object }
-
-
+```
 ---------------------------------------
-# 리뷰 작성 모달
+### 리뷰 작성 모달
 
-##	리뷰 작성 요청 API(POST): /api/review
+#### 리뷰 작성 요청 API(POST): /api/review
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	rental_id: 대여 주문 번호(Integer, 필수)
 -	place_id: 대여한 주차공간 id(Integer, 필수)
@@ -229,30 +238,32 @@
 -	review_rating: 리뷰 평점(Float, 필수)
 
 	* 응답: success / failure
-
-##	리뷰 수정 요청 API(PUT): /api/review/:review_id
+```
+#### 리뷰 수정 요청 API(PUT): /api/review/:review_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: review_id }: 수정할 리뷰 id(Integer, 필수)
 -	review_body: 수정할 리뷰 내용(String, 필수)
 -	review_rating: 수정할 리뷰 평점(Float, 필수)
 
 	* 응답: success / failure
-
-
+```
 ---------------------------------------
-# 대여 취소 신청 모달
+### 대여 취소 신청 모달
 
-##	대여 취소 신청 API(PUT): /api/rental/:rental_id
+#### 대여 취소 신청 API(PUT): /api/rental/:rental_id
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: rental_id }: 대여 주문 번호(Integer, 필수)
 	
 	* 응답: success / failure
-
+```
 
 ---------------------------------------
-# 연장 신청 모달
+### 연장 신청 모달
 
-##	연장 신청 API(POST): /api/extension
+#### 연장 신청 API(POST): /api/extension
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	rental_id: 대여 주문 번호(Integer, 필수)
 -	end_time: 연장 종료 시간(DateTImeString, 필수)
@@ -260,16 +271,16 @@
 -	extension_price: 연장 추가비(Integer, 필수)
 
 	* 응답: success / failure
-
-
+```
 ---------------------------------------
-# 내가 작성한 리뷰 페이지
+### 내가 작성한 리뷰 페이지
 
-##	리뷰 리스트 요청 API(GET): /api/review
+#### 리뷰 리스트 요청 API(GET): /api/review
+```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 	
 	* 응답: reviews = [리뷰 Array…]
-
+```
 
 ---------------------------------------
 # 리뷰 상세 보기 페이지
