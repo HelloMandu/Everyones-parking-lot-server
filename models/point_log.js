@@ -2,7 +2,7 @@ module.exports = (sequelize, DataTypes) => {
     return sequelize.define(
         'point_log',
         {
-            pl_id: {
+            plog_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
@@ -23,11 +23,14 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(255),
                 comment: "포인트 사용 설명"
             },
-        },
+            use_type: {
+                type: DataTypes.BOOLEAN,
+                comment: "포인트 사용 타입"
+            },
+        }, 
         {
             timestamps: true,
             underscored: true,
-            tableName: 'point_log',
         },
     );
 };

@@ -2,78 +2,78 @@ module.exports = (sequelize, DataTypes) => {
     return sequelize.define(
         'personal_payment',
         {
-            pp_id: {
+            ppayment_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 comment: "결제 정보 id"
             },
-            pp_method: {
+            method: {
                 type: DataTypes.STRING(255),
                 comment: "pay, cancel"
             },
-            pp_trade_no: {
+            trade_no: {
                 type: DataTypes.STRING(255),
                 comment: "거래번호"
             },
-            pp_price: {
+            payment_price: {
                 type: DataTypes.INTEGER,
                 comment: "결제 금액"
             },
-            pp_receipt_price: {
+            receipt_price: {
                 type: DataTypes.INTEGER,
                 comment: "미수금액"
             },
-            pp_settle_case: {
+            settle_case: {
                 type: DataTypes.STRING(255),
                 comment: "결제 방식"
             },
-            pp_bank_num: {
+            bank_num: {
                 type: DataTypes.INTEGER,
                 comment: "은행 번호"
             },
-            pp_bank_name: {
+            bank_name: {
                 type: DataTypes.STRING(255),
                 comment: "은행 이름"
             },
-            pp_bank_account: {
+            bank_account: {
                 type: DataTypes.STRING(255),
                 comment: "계좌 번호"
             },
-            pp_bank_deposit: {
+            bank_deposit: {
                 type: DataTypes.STRING(255),
                 comment: "입금자 명"
             },
-            pp_receipt_time: {
+            receipt_time: {
                 type: DataTypes.DATE,
                 comment: "결제 시간"
             },
-            pp_ip: {
+            ppayment_ip: {
                 type: DataTypes.STRING(255),
                 comment: "결제 ip"
             },
-            pp_cash: {
+            ppayment_cash: {
                 type: DataTypes.BOOLEAN(4),
                 comment: "현금 영수증 0: 발행안함, 1:소득공제, 2:지출증빙"
             },
-            pp_cash_no: {
+            ppayment_cash_no: {
                 type: DataTypes.STRING(255),
                 comment: "현금 영수증 번호"
             },
-            pp_cash_info: {
+            ppayment_cash_info: {
                 type: DataTypes.TEXT,
                 comment: "현금 영수증 정보"
             },
-            pp_pg: {
+            ppayment_pg: {
                 type: DataTypes.STRING(255),
-                comment: "pg사"
+                comment: "PG사"
             },
-            pp_code: {
+            ppayment_code: {
                 type: DataTypes.STRING(255),
                 comment: "결제 결과 코드"
             },
-            pp_result: {
+            ppayment_result: {
                 type: DataTypes.JSON,
                 comment: "결제 결과"
             },

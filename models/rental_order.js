@@ -50,14 +50,6 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(255),
                 comment: "입금대기(주문접수): deposit_wait / 주문취소: order_cancel / 배송중: shipping / 배송완료 : place_complete / 정산완료: order_complete"
             },
-            trade_no: {
-                type: DataTypes.STRING(255),
-                comment: "거래번호"
-            },
-            payment_time: {
-                type: DataTypes.DATE,
-                comment: "결제시간"
-            },
             rental_start_time: {
                 type: DataTypes.DATE,
                 comment: "대여 시작 시간"
@@ -65,6 +57,10 @@ module.exports = (sequelize, DataTypes) => {
             rental_end_time: {
                 type: DataTypes.DATE,
                 comment: "대여 종료 시간"
+            },
+            cancel_reason: {
+                type: DataTypes.DATE,
+                comment: "취소 사유"
             },
             cancel_time: {
                 type: DataTypes.DATE,
@@ -74,17 +70,9 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.DATE,
                 comment: "정산시간"
             },
-            cancel_reason: {
+            payment_time: {
                 type: DataTypes.DATE,
-                comment: "취소 사유"
-            },
-            pg: {
-                type: DataTypes.DATE,
-                comment: "PG사"
-            },
-            pg_result: {
-                type: DataTypes.DATE,
-                comment: "PG 결과"
+                comment: "결제시간"
             },
             deleted: {
                 type: DataTypes.DATE,

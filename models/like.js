@@ -5,7 +5,6 @@ module.exports = (sequelize) => {
         {
             timestamps: true,
             underscored: true,
-            tableName: 'like',
         },
     );
 };
