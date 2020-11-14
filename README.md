@@ -42,7 +42,7 @@
 -	email: 유저 이메일(String, 필수)
 -	password: 유저 패스워드(String, 필수)
 
-	=> 응답: success / failure
+	=> 응답: token = 유저 로그인 토큰
 ```
 
 #### 카카오 로그인 요청 API(POST): /api/user/kakao 
@@ -72,7 +72,7 @@
 -	email: 유저 이메일(String, 필수)
 -	car_location: 차량 등록 지역(String, 필수)
 -	car_num: 차량 등록 번호(String, 필수)
--	car_image: 차량 이미지(ImageFIleList, 필수)
+-	car_img: 차량 이미지(ImageFile, 필수)
 
 	=> 응답: success / failure
 ```
@@ -84,7 +84,6 @@
 ```
 -	name: 유저 이름(String, 필수)
 -	phone_number: 유저 휴대폰 번호(String, 필수)
--	auth_number: 인증 번호(String, 필수) 	=> 일단 무시
 	
 	=> 응답: email = 유저 이메일 String
 ```
@@ -97,15 +96,12 @@
 -	name: 유저 이름(String, 필수)
 -	email: 유저 이메일(String, 필수)
 -	phone_number: 유저 휴대폰 번호(String, 필수)
--	auth_number: 인증 번호(String, 필수) 	=> 일단 무시
 
-	=> 응답: success / failure
+	=> 응답: token = 유저 임시 토큰
 ```
 #### 비밀번호 재설정 API(PUT): /api/user/password
 ```
--	name: 유저 이름(String, 필수)
--	email: 유저 이메일(String, 필수)
--	phone_number: 유저 휴대폰 번호(String, 필수)
++	{ headers }: JWT_TOKEN(임시 토큰)
 -	password: 새 비밀번호(String, 필수)
 
 	=> 응답: success / failure
