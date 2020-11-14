@@ -21,7 +21,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         return res.status(400).send({ msg: omissionResult.message });
     }
     try {
-        const existCoupon = await Coupon.findOne({ where: { place_id } });
+        const existCoupon = await Coupon.findAll({ where: { place_id } });
         if (!existCoupon) {
             return res.status(202).send({ msg: '사용 가능한 쿠폰이 없습니다.' });
         }
