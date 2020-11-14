@@ -6,6 +6,8 @@ const { Notice } = require('../models');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
+
+
 /* CREATE */
 router.post('/', async (req, res, next) => {
     /*
@@ -18,27 +20,25 @@ router.post('/', async (req, res, next) => {
         * 응답: success / failure
     */
     const { notice_title, notice_body, notice_img } = req.body;
-
     const omissionResult = omissionChecker({ notice_title });
     if (!omissionResult.result) {
-        // 필수 데이터가 올바르게 넘어왔는지 검사.
-        res.send({ msg: omissionResult.message });
-    } else {
-        try {
-            const createNotice = await Notice.create({
-                notice_title, notice_body, notice_img
-            }); // 공지사항 생성.
-            if (createNotice) {
-                res.send({ msg: 'success' });
-            } else {
-                res.send({ msg: 'failure' });
-            }
-        } catch (e) {
-            if (e.table) {
-                res.send({ msg: foreignKeyChecker(e.table) });
-            } else {
-                res.send({ msg: 'database error', error: e });
-            }
+        // 필수 항목이 누락됨.
+        return res.status(400).send({ msg: omissionResult.message });
+    }
+    try {
+        const createNotice = await Notice.create({
+            notice_title, notice_body, notice_img
+        }); // 공지사항 생성.
+        if (!createNotice) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(201).send({ msg: 'success' });
+    } catch (e) {
+        // DB 삽입 도중 오류 발생.
+        if (e.table) {
+            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(400).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -50,8 +50,17 @@ router.get('/', async (req, res, next) => {
 
         * 응답: notices = [공지사항 Array...]
     */
-    const resultNotices = await Notice.findAll(); // 공지사항 리스트 조회
-    res.send({ notices: resultNotices });
+    try {
+        const notices = await Notice.findAll(); // 공지사항 리스트 조회.
+        res.status(200).send({ msg: 'success', notices });
+    } catch (e) {
+        // DB 조회 도중 오류 발생.
+        if (e.table) {
+            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(400).send({ msg: 'database error', error: e });
+        }
+    }
 })
 router.get('/:notice_id', async (req, res, next) => {
     /*
@@ -62,20 +71,22 @@ router.get('/:notice_id', async (req, res, next) => {
         * 응답: notice = { 공지사항 상세 정보 Object }
     */
     const { notice_id } = req.params;
-
-    const omissionResult = omissionChecker({ notice_id });
-    if (!omissionResult.result) {
-        // 필수 항목인 notice_id가 누락됨.
-        res.send({ msg: omissionResult.message });
-    } else {
-        const resultNotice = await Notice.findOne({
-            where: { notice_id: parseInt(notice_id) }
-        }); // 공지사항 상세 조회
-        if (!resultNotice) {
+    try {
+        const noticeID = parseInt(notice_id) // int 형 변환
+        const notice = await Notice.findOne({
+            where: { notice_id: noticeID }
+        }); // 공지사항 상세 정보 조회.
+        if (!notice) {
             // 해당 공지사항 id가 DB에 없음.
-            res.send({ msg: '조회할 수 없는 공지사항입니다.' });
+            return res.status(404).send({ msg: '조회할 수 없는 공지사항입니다.' });
+        }
+        return res.status(200).send({ msg: 'success', notice });
+    } catch (e) {
+        // DB 조회 도중 오류 발생.
+        if (e.table) {
+            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.send({ notice: resultNotice });
+            return res.status(400).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -84,8 +95,7 @@ router.get('/:notice_id', async (req, res, next) => {
 router.put('/:notice_id', async (req, res, next) => {
     /*
         공지사항 수정 요청 API(PUT): /api/notice/:notice_id
-
-        notice_id: 수정할 공지사항 id
+        { params: notice_id }: 수정할 공지사항 id
 
         notice_title: 공지사항 제목(String)
         notice_body: 공지사항 내용(String)
@@ -94,45 +104,37 @@ router.put('/:notice_id', async (req, res, next) => {
         * 응답: success / failure
     */
     const { notice_id } = req.params;
-    const omissionResult = omissionChecker({ notice_id });
-    if (!omissionResult.result) {
-        // 필수 항목인 notice_id가 누락됨.
-        res.send({ msg: omissionResult.message });
-    } else {
-        const noticeID = parseInt(notice_id);
+    const {
+        notice_title, notice_body, notice_img
+    } = req.body;
+    try {
+        const noticeID = parseInt(notice_id); // int 형 변환
         const existNotice = await Notice.findOne({ where: {
             notice_id: noticeID
-        }});
+        }}); // 수정할 공지사항이 존재하는지 확인.
         if (!existNotice) {
             // 공지사항이 없으면 수정할 수 없음.
-            res.send({ msg: '수정할 수 없는 공지사항입니다.' });
+            return res.status(404).send({ msg: '조회할 수 없는 공지사항입니다.' });
+        } 
+        const preValue = existNotice.dataValues;
+        // 기존 값으로 업데이트하기 위한 객체.
+        const updateNotice = Notice.update({
+            notice_title: notice_title ? notice_title : preValue.notice_title,
+            notice_body: notice_body ? notice_body : preValue.notice_body,
+            notice_img: notice_img ? notice_img : preValue.notice_img,
+        }, {
+            where: { notice_id: noticeID }
+        }); // 공지사항 수정.
+        if (!updateNotice) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(201).send({ msg: 'success' });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            try {
-                const preValue = existNotice.dataValues;
-                const {
-                    notice_title, notice_body, notice_img
-                } = req.body;
-                const updateNotice = Notice.update({
-                    notice_title: notice_title ? notice_title : preValue.notice_title,
-                    notice_body: notice_body ? notice_body : preValue.notice_body,
-                    notice_img: notice_img ? notice_img : preValue.notice_img,
-                }, {
-                    where: { notice_id: noticeID }
-                }); // 공지사항 수정.
-                
-                if (!updateNotice) {
-                    res.send({ msg: 'failure' });
-                } else {
-                    res.send({ msg: 'success' });
-                }
-            } catch (e) {
-                // DB 수정 도중 오류 발생.
-                if (e.table) {
-                    res.send({ msg: foreignKeyChecker(e.table) });
-                } else {
-                    res.send({ msg: 'database error', error: e });
-                }
-            }
+            return res.status(400).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -141,46 +143,33 @@ router.put('/:notice_id', async (req, res, next) => {
 router.delete('/:notice_id', async (req, res, next) => {
     /*
         공지사항 삭제 요청 API(DELETE): /api/notice/:notice_id
-
-        notice_id: 삭제할 공지사항 id
+        { params: notice_id }: 삭제할 공지사항 id
 
         * 응답: success / failure
     */
     const { notice_id } = req.params;
-    const omissionResult = omissionChecker({ notice_id });
-    if (!omissionResult.result) {
-        // 필수 항목인 place_id가 누락됨.
-        res.send({ msg: omissionResult.message });
-    } else {
-        const noticeID = parseInt(notice_id);
+    try {
+        const noticeID = parseInt(notice_id); // int 형 변환
         const existNotice = await Notice.findOne({ where: {
             notice_id: noticeID
-        }});
+        }}); // 삭제할 공지사항이 존재하는지 확인.
         if (!existNotice) {
             // 공지사항이 없으면 삭제할 수 없음.
-            res.send({ msg: '이미 삭제된 공지사항입니다.' });
+            return res.status(404).send({ msg: '조회할 수 없는 공지사항입니다.' });
+        }
+        const deleteNotice = await Notice.destroy({
+            where: { notice_id: noticeID }
+        }); // 공지사항 삭제.
+        if (deleteNotice) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(200).send({ msg: 'success' });
+    } catch (e) {
+        // DB 삭제 도중 오류 발생.
+        if (e.table) {
+            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            try {
-                const destroyNotice = await Notice.destroy({
-                    where: {
-                        notice_id: noticeID
-                    }
-                }); // 공지사항 삭제.
-                if (destroyNotice) {
-                    // 성공 시 상태 보냄.
-                    res.send({ msg: 'success' });
-                } else {
-                    // 실패
-                    res.send({ msg: 'failure' });
-                }
-            } catch (e) {
-                // DB 삭제 도중 오류 발생.
-                if (e.table) {
-                    res.send({ msg: foreignKeyChecker(e.table) });
-                } else {
-                    res.send({ msg: 'database error', error: e });
-                }
-            }
+            return res.status(400).send({ msg: 'database error', error: e });
         }
     }
 });

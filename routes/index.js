@@ -17,4 +17,8 @@ router.use('/review', review);
 router.use('/comment', comment);
 router.use('/coupon', coupon);
 
+
+const test = require('./test');
+router.use('/test', test);
+
 module.exports = router;

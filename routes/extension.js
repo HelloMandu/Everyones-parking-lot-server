@@ -18,8 +18,8 @@ extension_price: 연장 추가비(Integer, 필수)
 * 응답: success / failure
 */
 router.post('/', verifyToken, async (req, res, next) => {
-    const { user_id } = req.decodeToken;
     const { rental_id, end_time, payment_type, extension_price } = req.body;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
         const existUser = await User.findOne({ where: { user_id } });
         if (!existUser) {

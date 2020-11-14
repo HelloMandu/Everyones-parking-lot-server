@@ -318,6 +318,21 @@
 
 	=> 응답: comment = { 댓글 정보 Object }
 ```
+#### 댓글 수정 요청 API(PUT): /api/comment/:comment_id
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
++	{ params: comment_id }: 수정할 댓글 id(Integer, 필수)
+-	comment_body: 수정할 댓글 내용(String, 필수)
+
+	=> 응답: comment = { 댓글 정보 Object }
+```
+#### 댓글 삭제 요청 API(DELETE): /api/comment/:comment_id
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
++	{ params: comment_id }: 삭제할 댓글 id(Integer, 필수)
+
+	=> 응답: success /failure
+```
 ---------------------------------------
 ### 나의 수익금 페이지
 
