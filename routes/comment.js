@@ -7,8 +7,6 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
-require('dotenv').config();
-
 /*
 - 댓글 작성 요청 API(POST): /api/comment
 { headers }: JWT_TOKEN(유저 로그인 토큰)

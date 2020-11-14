@@ -8,8 +8,6 @@ const omissionChecker = require('../lib/omissionChecker');
 const calculateDistance = require('../lib/calculateDistance');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
-require('dotenv').config();
-
 /* CREATE */
 router.post('/', verifyToken, async (req, res, next) => {
     /*

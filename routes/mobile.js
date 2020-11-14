@@ -3,8 +3,6 @@ const router = express.Router();
 
 const omissionChecker = require('../lib/omissionChecker');
 
-require('dotenv').config();
-
 /*
     휴대폰 인증 번호 요청 API(POST): /api/mobile/auth
 	phone_number: 유저 휴대폰 번호(String, 필수)

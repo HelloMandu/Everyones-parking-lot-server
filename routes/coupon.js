@@ -7,8 +7,6 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
-require('dotenv').config();
-
 /*
 - 사용 가능한 쿠폰 요청 API(GET): /api/coupon
 { headers }: JWT_TOKEN(유저 로그인 토큰)

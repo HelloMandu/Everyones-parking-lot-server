@@ -8,7 +8,6 @@ const verifyToken = require('./middlewares/verifyToken');
 const { Review } = require('../models');
 
 const router = express.Router();
-require('dotenv').config();
 
 /*
 - 리뷰 리스트 요청 API(GET): /api/review

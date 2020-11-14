@@ -7,8 +7,6 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
-require('dotenv').config();
-
 /*
 - 나의 수익금 기록 요청 API(GET): /api/point_log
 { headers }: JWT_TOKEN(유저 로그인 토큰)

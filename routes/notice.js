@@ -6,8 +6,6 @@ const { Notice } = require('../models');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
-require('dotenv').config();
-
 /* CREATE */
 router.post('/', async (req, res, next) => {
     /*
