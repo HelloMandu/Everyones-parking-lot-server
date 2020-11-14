@@ -76,11 +76,15 @@ module.exports = (sequelize, DataTypes) => {
             place_status: {
                 type: DataTypes.STRING(255),
             },
+            hit: {
+                type: DataTypes.INTEGER.UNSIGNED,
+                defaultValue: 0,
+                comment: "조회 수"
+            },
         },
         {
             timestamps: true,
             underscored: true,
-            tableName: 'place',
         },
     );
 };

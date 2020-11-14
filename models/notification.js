@@ -7,17 +7,17 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 primaryKey: true,
                 autoIncrement: true,
-                comment: "댓글 id"
-            },
-            user_id: {
-                type: DataTypes.INTEGER,
-                comment: "유저 id"
+                comment: "알림 id"
             },
             notification_body: {
                 type: DataTypes.STRING(255),
                 comment: "알림 내용"
             },
-            notification_url: {
+            notification_type: {
+                type: DataTypes.STRING(255),
+                comment: "알림 타입"
+            },
+            url: {
                 type: DataTypes.STRING(255),
                 comment: "확인할 URL"
             },
@@ -29,7 +29,6 @@ module.exports = (sequelize, DataTypes) => {
         {
             timestamps: true,
             underscored: true,
-            tableName: 'notification',
         },
     );
 };

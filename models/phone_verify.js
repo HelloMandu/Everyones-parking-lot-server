@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             pv_phone_number: {
                 type: DataTypes.STRING(12),
+                unique: true,
                 comment: "휴대폰 번호"
             },
             pv_verify_number: {

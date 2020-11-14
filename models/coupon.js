@@ -8,15 +8,6 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 comment: "쿠폰 번호"
             },
-            cz_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                comment: "쿠폰 존 id"
-            },
-            user_id: {
-                type: DataTypes.INTEGER,
-                comment: "유저 id"
-            },
             cp_subject: {
                 type: DataTypes.STRING(255),
                 comment: "쿠폰 제목"
@@ -56,7 +47,6 @@ module.exports = (sequelize, DataTypes) => {
         {
             timestamps: true,
             underscored: true,
-            tableName: 'coupon',
         },
     );
 };

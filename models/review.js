@@ -9,15 +9,6 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "리뷰 id"
             },
-            user_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                comment: "리뷰 작성 유저 id"
-            },
-            rental_id: {
-                type: DataTypes.STRING(45),
-                comment: "대여 주문 번호"
-            },
             review_body: {
                 type: DataTypes.TEXT('long'),
                 comment: "리뷰 내용"
@@ -31,6 +22,11 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.JSON,
                 comment: "리뷰 이미지"
             },
+            hit: {
+                type: DataTypes.INTEGER.UNSIGNED,
+                defaultValue: 0,
+                comment: "조회 수"
+            },
             deleted: {
                 type: DataTypes.BOOLEAN(2),
                 defaultValue: 0,
@@ -40,7 +36,6 @@ module.exports = (sequelize, DataTypes) => {
         {
             timestamps: true,
             underscored: true,
-            tableName: 'review',
         },
     );
 };

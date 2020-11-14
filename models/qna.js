@@ -9,13 +9,13 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "1:1문의 id"
             },
-            user_id: {
-                type: DataTypes.INTEGER,
-                comment: "문의 유저 id"
-            },
             user_ip: {
                 type: DataTypes.STRING(255),
                 comment: "문의 유저 ip"
+            },
+            email: {
+                type: DataTypes.STRING(255),
+                comment: "답변 받을 email"
             },
             subject: {
                 type: DataTypes.STRING(255),
@@ -39,6 +39,11 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 comment: "0: 답변대기, 1: 답변완료"
             },
+            hit: {
+                type: DataTypes.INTEGER.UNSIGNED,
+                defaultValue: 0,
+                comment: "조회 수"
+            },
             a_created_at: {
                 type: DataTypes.DATE,
                 comment: "답변 작성 일지"
@@ -51,7 +56,6 @@ module.exports = (sequelize, DataTypes) => {
         {
             timestamps: true,
             underscored: true,
-            tableName: 'qna',
         },
     );
 };

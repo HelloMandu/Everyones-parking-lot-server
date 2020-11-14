@@ -3,13 +3,14 @@ module.exports = (sequelize, DataTypes) => {
         'notice',
         {
             notice_id: {
-                type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
                 autoIncrement: true,
+                type: DataTypes.INTEGER,
                 comment: "공지사항 id"
             },
             notice_title: {
+                allowNull: false,
                 type: DataTypes.STRING(255),
                 comment: "공지사항 제목"
             },
@@ -21,11 +22,15 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.JSON,
                 comment: "공지사항 첨부 이미지"
             },
+            hit: {
+                type: DataTypes.INTEGER.UNSIGNED,
+                defaultValue: 0,
+                comment: "조회 수"
+            },
         },
         {
             timestamps: true,
             underscored: true,
-            tableName: 'notice',
         },
     );
 };

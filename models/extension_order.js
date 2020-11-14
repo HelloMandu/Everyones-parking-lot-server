@@ -8,14 +8,6 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 comment: "연장 주문 번호"
             },
-            rental_id: {
-                type: DataTypes.STRING(45),
-                comment: "대여 주문 번호"
-            },
-            cp_id: {
-                type: DataTypes.STRING(255),
-                comment: "쿠폰 id"
-            },
             total_price: {
                 type: DataTypes.INTEGER.UNSIGNED,
                 defaultValue: 0,
@@ -51,18 +43,6 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: 0,
                 comment: "결제방식"
             },
-            order_status: {
-                type: DataTypes.STRING(255),
-                comment: "입금대기(주문접수): deposit_wait / 입금확인: order_apply / 주문취소: order_cancel / 배송중: shipping / 배송완료 : place_complete / 정산완료: order_complete"
-            },
-            trade_no: {
-                type: DataTypes.STRING(255),
-                comment: "거래번호"
-            },
-            payment_time: {
-                type: DataTypes.DATE,
-                comment: "결제시간"
-            },
             extension_start_time: {
                 type: DataTypes.DATE,
                 comment: "연장 시작 시간"
@@ -70,6 +50,10 @@ module.exports = (sequelize, DataTypes) => {
             extension_end_time: {
                 type: DataTypes.DATE,
                 comment: "연장 종료 시간"
+            },
+            cancel_reason: {
+                type: DataTypes.DATE,
+                comment: "취소 사유"
             },
             cancel_time: {
                 type: DataTypes.DATE,
@@ -79,17 +63,9 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.DATE,
                 comment: "정산시간"
             },
-            cancel_reason: {
+            payment_time: {
                 type: DataTypes.DATE,
-                comment: "취소 사유"
-            },
-            pg: {
-                type: DataTypes.DATE,
-                comment: "PG사"
-            },
-            pg_result: {
-                type: DataTypes.DATE,
-                comment: "PG 결과"
+                comment: "결제시간"
             },
             deleted: {
                 type: DataTypes.DATE,
