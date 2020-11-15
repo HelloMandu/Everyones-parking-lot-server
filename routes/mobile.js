@@ -7,7 +7,10 @@ const DECIMAL = 10; // 10진수
 const AUTH_NUMBER_LENGTH = 6; // 인중번호 길이
 
 const omissionChecker = require('../lib/omissionChecker');
+const { isCellPhoneForm } = require('../lib/formatChecker');
+
 const createAuthNumber = NUMBER_LENTH => [...new Array(NUMBER_LENTH).keys()].map(() => Math.floor(Math.random() * DECIMAL)).join('');
+
 
 
 router.post('/auth', async (req, res, next) => {
@@ -23,6 +26,9 @@ router.post('/auth', async (req, res, next) => {
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
+    }
+    if (!isCellPhoneForm(phone_number)) {
+        return res.status(202).send({ msg: '휴대폰 번호 형식에 맞지 않습니다.' });
     }
     try {
         const auth_number = createAuthNumber(AUTH_NUMBER_LENGTH); // 인증 번호 생성.
@@ -72,6 +78,9 @@ router.post('/confirm', async (req, res, next) => {
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
+    }
+    if (!isCellPhoneForm(phone_number)) {
+        return res.status(202).send({ msg: '휴대폰 번호 형식에 맞지 않습니다.' });
     }
     try {
         const existPhoneVerify = await PhoneVerify.findOne({

@@ -24,7 +24,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     */
 
     const { account_number, withdraw_point } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const omissionResult = omissionChecker({ account_number, withdraw_point });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -37,7 +37,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: MINIMUM_WITHDRAW_POINT + '포인트 이하 액수를 출금할 수 없습니다.' });
         }
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 유저 정보 확인.
         if (!existUser) {
             return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
@@ -60,7 +60,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         */
         const updateUser = await User.update(
             { point: user_point - withdrawPoint },
-            { where: { user_id } }
+            { where: { user_id, email } }
         ); // 유저 포인트 수정.
         if (!updateUser) {
             return res.status(202).send({ msg: 'failure' });

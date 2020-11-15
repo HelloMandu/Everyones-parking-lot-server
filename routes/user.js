@@ -3,21 +3,24 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
-require('dotenv').config();
 
 const { User } = require('../models');
 
-const omissionChecker = require('../lib/omissionChecker');
 const verifyToken = require('./middlewares/verifyToken');
+const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const { isEmailForm, isPasswordForm, isCellPhoneForm } = require('../lib/formatChecker');
+const { fileDeleter } = require('../lib/fileDeleter');
+
+
 
 /* multer storage */
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/'); // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
+    destination: function (req, file, callback) {
+        callback(null, 'uploads/'); // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
     },
-    filename: function (req, file, cb) {
-        cb(null, new Date().valueOf() + file.originalname); // cb 콜백함수를 통해 전송된 파일 이름 설정
+    filename: function (req, file, callback) {
+        callback(null, new Date().valueOf() + file.originalname); // cb 콜백함수를 통해 전송된 파일 이름 설정
     },
 });
 const upload = multer({ storage: storage });
@@ -49,6 +52,15 @@ router.post('/', async (req, res, next) => {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
+    if (!isEmailForm(email)) {
+        return res.status(202).send({ msg: '이메일 형식에 맞지 않습니다.' });
+    }
+    if (!isPasswordForm(password)) {
+        return res.status(202).send({ msg: '패스워드 형식에 맞지 않습니다.', sub: '패스워드는 8자 이상 영문, 숫자, 특수문자 조합으로 설정하셔야 합니다.' });
+    }
+    if (!isCellPhoneForm(phone_number)) {
+        return res.status(202).send({ msg: '휴대폰 번호 형식에 맞지 않습니다.' });
+    }
     try {
         const existUser = await User.findOne({
             where: { email }
@@ -71,7 +83,17 @@ router.post('/', async (req, res, next) => {
         if (!createUser) {
             return res.status(202).send({ msg: 'failure' });
         }
-        return res.status(201).send({ msg: 'success' });
+        const token = jwt.sign(
+            {
+                user_id: createUser.dataValues.user_id,
+                email: 'temporary',
+            },
+            process.env.JWT_SECRET,
+        ); // 임시 JWT_TOKEN 생성.
+        if (!token) {
+            return res.status(202).send({ msg: 'token을 생성하지 못했습니다.' });
+        }
+        return res.status(200).send({ msg: 'success', token });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {
@@ -92,10 +114,10 @@ router.get('/', verifyToken, async (req, res, next) => {
         
         * 응답: user = 유저 정보 Object
     */
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
         const user = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 유저 정보 확인.
         if (!user) {
             return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
@@ -175,6 +197,9 @@ router.post('/find/user_id', async (req, res, next) => {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
+    if (!isCellPhoneForm(phone_number)) {
+        return res.status(202).send({ msg: '휴대폰 번호 형식에 맞지 않습니다.' });
+    }
     try {
         const existUser = await User.findOne({
             where: { name, phone_number }
@@ -189,7 +214,7 @@ router.post('/find/user_id', async (req, res, next) => {
         // DB 조회 도중 오류 발생.
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
-        } else {
+        } else { 
             return res.status(202).send({ msg: 'database error', error: e });
         }
     }
@@ -211,6 +236,9 @@ router.post('/find/user_pw', async (req, res, next) => {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
+    if (!isCellPhoneForm(phone_number)) {
+        return res.status(202).send({ msg: '휴대폰 번호 형식에 맞지 않습니다.' });
+    }
     try {
         const existUser = await User.findOne({
             where: { name, email, phone_number },
@@ -222,7 +250,7 @@ router.post('/find/user_pw', async (req, res, next) => {
         const token = jwt.sign(
             {
                 user_id: existUser.dataValues.user_id,
-                email: email,
+                email: 'temporary',
             },
             process.env.JWT_SECRET,
         ); // 임시 JWT_TOKEN 생성.
@@ -243,7 +271,7 @@ router.post('/find/user_pw', async (req, res, next) => {
 
 
 /* UPDATE */
-router.put('/profile_image', upload.single('profile_image'), verifyToken, async (req, res, next) => {
+router.put('/profile_image', verifyToken, upload.single('profile_image'), async (req, res, next) => {
     /*
         프로필 이미지 변경 요청 API(PUT): /api/user/profile_image
         { headers }: JWT_TOKEN(유저 로그인 토큰)
@@ -253,30 +281,38 @@ router.put('/profile_image', upload.single('profile_image'), verifyToken, async 
         * 응답: profile_image = 변경된 이미지 경로    
     */
     const profile_image = req.file.path;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const omissionResult = omissionChecker({ profile_image });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
+        fileDeleter(profile_image); // 실패이므로 업로드 한 파일 삭제.
         return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 프로필 이미지 변경을 할 수 없음.
+            fileDeleter(profile_image); // 실패이므로 업로드 한 파일 삭제.
             return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
         }
         const updateUser = await User.update(
             { profile_image },
-            { where: { user_id } },
+            { where: { user_id, email } },
         ); // 유저 정보 수정.
         if (!updateUser) {
+            fileDeleter(profile_image); // 실패이므로 업로드 한 파일 삭제.
             return res.status(202).send({ msg: 'failure' });
+        }
+        const prevProfileImage = existUser.dataValues.profile_image; // 이전에 저장된 프로필 확인.
+        if (prevProfileImage) {
+            fileDeleter(prevProfileImage); // 이전에 저장된 프로필 이미지가 있으면 삭제.
         }
         return res.status(201).send({ msg: 'success', profile_image });
     } catch (e) {
         // DB 수정 도중 오류 발생.
+        fileDeleter(profile_image); // 실패이므로 업로드 한 파일 삭제.
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
@@ -295,7 +331,7 @@ router.put('/name', verifyToken, async (req, res, next) => {
         * 응답: success / failure
     */
     const { name } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const omissionResult = omissionChecker({ name });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -303,7 +339,7 @@ router.put('/name', verifyToken, async (req, res, next) => {
     }
     try {
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 이름 변경을 할 수 없음.
@@ -311,7 +347,7 @@ router.put('/name', verifyToken, async (req, res, next) => {
         }
         const updateUser = await User.update(
             { name },
-            { where: { user_id } },
+            { where: { user_id, email } },
         ); // 유저 정보 수정.
         if (!updateUser) {
             return res.status(202).send({ msg: 'failure' });
@@ -330,7 +366,7 @@ router.put('/name', verifyToken, async (req, res, next) => {
 router.put('/password', verifyToken, async (req, res, next) => {
     /*
         비밀번호 재설정 API(PUT): /api/user/password
-        { headers }: JWT_TOKEN(유저 임시 토큰)
+        { headers }: JWT_TOKEN(유저 임시 토큰 or 유저 로그인 토큰)
 
         password: 새 비밀번호(String, 필수)
         
@@ -342,6 +378,9 @@ router.put('/password', verifyToken, async (req, res, next) => {
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
+    }
+    if (!isPasswordForm(password)) {
+        return res.status(202).send({ msg: '패스워드 형식에 맞지 않습니다.', sub: '패스워드는 8자 이상 영문, 숫자, 특수문자 조합으로 설정하셔야 합니다.' });
     }
     try {
         const existUser = await User.findOne({
@@ -383,15 +422,18 @@ router.put('/phone_number', verifyToken, async (req, res, next) => {
         * 응답: success / failure
     */
     const { phone_number } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const omissionResult = omissionChecker({ phone_number });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
+    if (!isCellPhoneForm(phone_number)) {
+        return res.status(202).send({ msg: '휴대폰 번호 형식에 맞지 않습니다.' });
+    }
     try {
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 휴대폰 번호 변경을 할 수 없음.
@@ -415,46 +457,54 @@ router.put('/phone_number', verifyToken, async (req, res, next) => {
     }
 });
 
-router.put('/car_info', upload.single('car_image'), async (req, res, next) => {
+router.put('/car_info', verifyToken, upload.single('car_image'), async (req, res, next) => {
     /*
         차량 정보 등록 요청 API(PUT): /api/user/car_info
+        { headers }: JWT_TOKEN(유저 임시 토큰 or 유저 로그인 토큰)
         
-        email: 유저 이메일(String, 필수)
-        car_location: 차량 등록 지역(String, 필수)
+        car_location: 차량 등록 지역(String)
         car_num: 차량 등록 번호(String, 필수)
         car_image: 차량 이미지(ImageFile, 필수)
         
         * 응답: success / failure
     */
-    const { email, car_location, car_num } = req.body;
+    const { car_location, car_num } = req.body;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const car_image = req.file.path;
     const omissionResult = omissionChecker({
-        email,
-        car_location,
         car_num,
+        car_image
     });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
+        fileDeleter(car_image); // 실패이므로 업로드 한 파일 삭제.
         return res.status(202).send({ msg: omissionResult.message });
     }
     try {
-        const existUser = User.findOne({
-            where: { email }
+        const existUser = await User.findOne({
+            where: { user_id }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 차량 등록을 할 수 없음.
+            fileDeleter(car_image); // 실패이므로 업로드 한 파일 삭제.
             return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
         }
         const updateUser = await User.update(
             { car_location, car_num, car_image },
-            { where: { email } },
+            { where: { user_id } },
         ); // 유저 정보 수정.
         if (!updateUser) {
+            fileDeleter(car_image); // 실패이므로 업로드 한 파일 삭제.
             return res.status(202).send({ msg: 'failure' });
+        }
+        const prevCarImage = existUser.dataValues.car_image; // 이전에 저장된 프로필 확인.
+        if (prevCarImage) {
+            fileDeleter(prevCarImage); // 이전에 저장된 프로필 이미지가 있으면 삭제.
         }
         return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 수정 도중 오류 발생.
+        fileDeleter(car_image); // 실패이므로 업로드 한 파일 삭제.
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
@@ -473,7 +523,7 @@ router.put('/birth', verifyToken, async (req, res, next) => {
         * 응답: success / failure
     */
     const { birth } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const omissionResult = omissionChecker({ birth });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -481,7 +531,7 @@ router.put('/birth', verifyToken, async (req, res, next) => {
     }
     try {
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 생년월일 변경을 할 수 없음.
@@ -489,7 +539,7 @@ router.put('/birth', verifyToken, async (req, res, next) => {
         }
         const updateUser = await User.update(
             { birth },
-            { where: { user_id } },
+            { where: { user_id, email } },
         ); // 유저 정보 수정.
         if (!updateUser) {
             return res.status(202).send({ msg: 'failure' });
@@ -515,7 +565,7 @@ router.put('/agree_mail', verifyToken, async (req, res, next) => {
         * 응답: success / failure
     */
     const { state } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const omissionResult = omissionChecker({ state });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -523,7 +573,7 @@ router.put('/agree_mail', verifyToken, async (req, res, next) => {
     }
     try {
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 메일 수신 동의 변경을 할 수 없음.
@@ -531,7 +581,7 @@ router.put('/agree_mail', verifyToken, async (req, res, next) => {
         }
         const updateUser = await User.update(
             { agree_mail: state },
-            { where: { user_id } },
+            { where: { user_id, email } },
         ); // 유저 정보 수정.
         if (!updateUser) {
             return res.status(202).send({ msg: 'failure', state: existUser.dataValues.agree_mail });
@@ -557,7 +607,7 @@ router.put('/agree_sms', verifyToken, async (req, res, next) => {
         * 응답: success / failure
     */
     const { state } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const omissionResult = omissionChecker({ state });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -565,7 +615,7 @@ router.put('/agree_sms', verifyToken, async (req, res, next) => {
     }
     try {
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 SMS 수신 동의 변경을 할 수 없음.
@@ -573,7 +623,7 @@ router.put('/agree_sms', verifyToken, async (req, res, next) => {
         }
         const updateUser = await User.update(
             { agree_sms: state },
-            { where: { user_id } },
+            { where: { user_id, email } },
         ); // 유저 정보 수정.
         if (!updateUser) {
             return res.status(202).send({ msg: 'failure', state: existUser.dataValues.agree_sms });
@@ -599,7 +649,7 @@ router.put('/agree_push', verifyToken, async (req, res, next) => {
         * 응답: success / failure
     */
     const { state } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const omissionResult = omissionChecker({ state });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -607,7 +657,7 @@ router.put('/agree_push', verifyToken, async (req, res, next) => {
     }
     try {
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 푸시알림 수신 동의 변경을 할 수 없음.
@@ -615,7 +665,7 @@ router.put('/agree_push', verifyToken, async (req, res, next) => {
         }
         const updateUser = await User.update(
             { agree_push: state },
-            { where: { user_id } },
+            { where: { user_id, email } },
         ); // 유저 정보 수정.
         if (!updateUser) {
             return res.status(202).send({ msg: 'failure', state: existUser.dataValues.agree_push });
@@ -641,17 +691,17 @@ router.delete('/', verifyToken, async (req, res, next) => {
 
         * 응답: success / failure
     */
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
         const existUser = await User.findOne({
-            where: { user_id }
+            where: { user_id, email }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 회원 탈퇴를 할 수 없음.
             return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
         }
         const deleteUser = await User.destroy({
-            where: { user_id }
+            where: { user_id, email }
         }); // 유저 삭제.
         if (!deleteUser) {
             return res.status(202).send({ msg: 'failure' });

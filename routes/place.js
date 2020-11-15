@@ -1,12 +1,28 @@
 const express = require('express');
 const router = express.Router();
 
+const multer = require('multer');
+
 const { Place, Review, Like, Sequelize: { Op } } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const calculateDistance = require('../lib/calculateDistance');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const { fileDeleter } = require('../lib/fileDeleter');
+
+
+
+/* multer storage */
+const storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, 'uploads/'); // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
+    },
+    filename: function (req, file, callback) {
+        callback(null, new Date().valueOf() + file.originalname); // cb 콜백함수를 통해 전송된 파일 이름 설정
+    },
+});
+const upload = multer({ storage: storage });
 
 
 

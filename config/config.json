@@ -4,39 +4,38 @@
         "password": "psch9612",
         "database": "parking",
         "host": "127.0.0.1",
-        "dialect": "mysql",
         "operatorsAliases": false,
-        "define": {
+        "dialect": "mysql",
+        "dialectOptions": {
             "charset": "utf8mb4",
-            "dialectOptions": {
-                "collate": "utf8mb4_general_ci"
-            }
-        }
+            "collate": "utf8mb4_general_ci"
+        },
+        "timezone": "+09:00"
     },
     "test": {
         "username": "root",
         "password": null,
         "database": "database_test",
         "host": "127.0.0.1",
+        "operatorsAliases": false,
         "dialect": "mysql",
-        "define": {
+        "dialectOptions": {
             "charset": "utf8mb4",
-            "dialectOptions": {
-                "collate": "utf8mb4_general_ci"
-            }
-        }
+            "collate": "utf8mb4_general_ci"
+        },
+        "timezone": "+09:00"
     },
     "production": {
         "username": "root",
         "password": null,
         "database": "database_production",
         "host": "127.0.0.1",
+        "operatorsAliases": false,
         "dialect": "mysql",
-        "define": {
+        "dialectOptions": {
             "charset": "utf8mb4",
-            "dialectOptions": {
-                "collate": "utf8mb4_general_ci"
-            }
-        }
+            "collate": "utf8mb4_general_ci"
+        },
+        "timezone": "+09:00"
     }
 }

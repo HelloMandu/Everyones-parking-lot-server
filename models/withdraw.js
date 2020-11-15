@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "출금 요청 id"
             },
             account_number: {
-                type: DataTypes.String(255),
+                type: DataTypes.STRING(255),
                 allowNull: false,
                 comment: "받을 계좌 번호"
             },

@@ -22,6 +22,7 @@ app.use(express.json()); // req.body에서 json 읽어 옴.
 app.use(express.urlencoded({ extended: false })); // req.body 인식.
 app.use(cookieParser()); // 쿠키를 파싱.
 app.use(express.static(path.join(__dirname, 'public'))); // public 폴더를 접근할 수 있게 함.
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // uploads 폴더를 접근할 수 있게 함.
 app.use(cors()); // CORS 제한을 제거함.
 
 app.use('/api', indexRouter); // api 서버 라우팅.
@@ -42,4 +43,4 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-module.exports = app; 
+module.exports = app;

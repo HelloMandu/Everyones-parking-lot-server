@@ -55,7 +55,7 @@
 -	birth: 유저 생년월일(DateString, 필수)
 -	phone_number: 유저 휴대폰 번호(String, 필수)
 
-	=> 응답: success / failure
+	=> 응답: token = 유저 임시 토큰
 ```
 
 ---------------------------------------
@@ -63,7 +63,7 @@
 
 #### 차량 정보 등록 요청 API(PUT): /api/user/car_info
 ```
--	email: 유저 이메일(String, 필수)
++	{ headers }: JWT_TOKEN(유저 임시 토큰)
 -	car_location: 차량 등록 지역(String, 필수)
 -	car_num: 차량 등록 번호(String, 필수)
 -	car_image: 차량 이미지(ImageFile, 필수)
@@ -95,7 +95,7 @@
 ```
 #### 비밀번호 재설정 API(PUT): /api/user/password
 ```
-+	{ headers }: JWT_TOKEN(임시 토큰)
++	{ headers }: JWT_TOKEN(유저 임시 토큰)
 -	password: 새 비밀번호(String, 필수)
 
 	=> 응답: success / failure

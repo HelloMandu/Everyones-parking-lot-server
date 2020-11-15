@@ -19,7 +19,7 @@ router.get('/', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
         const point_logs = await PointLog.findAll({ where: { user_id } }); // 수익금 기록 리스트 조회.
-        return res.status(200).send({ msg: 'success', point_logs: point_logs });
+        return res.status(200).send({ msg: 'success', point_logs });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {

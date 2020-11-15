@@ -5,13 +5,15 @@
 /.vscode
 /.pnp
 .pnp.js
-/routes/dbconfig.js
 
 # testing
 /coverage
 
 # production
 /build
+
+# upload
+/uploads
 
 # misc
 .DS_Store
