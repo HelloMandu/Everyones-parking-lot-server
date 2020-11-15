@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const { User, PointLog } = require('../models');
+const { PointLog } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
-const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
 
@@ -20,64 +19,13 @@ router.get('/', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
         const point_logs = await PointLog.findAll({ where: { user_id } }); // 수익금 기록 리스트 조회.
-        res.status(200).send({ msg: 'success', point_logs: point_logs });
+        return res.status(200).send({ msg: 'success', point_logs: point_logs });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(400).send({ msg: 'database error', error });
-        }
-    }
-});
-
-/*
-- 출금 신청 API(POST): /api/point_log
-{ headers }: JWT_TOKEN(유저 로그인 토큰)
-price: 출금할 액수(Integer, 필수)
-
-* 응답: point_logs = [새로운 포인트 사용 기록 Array…]
-*/
-router.post('/', verifyToken, async (req, res, next) => {
-    const { price } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
-    try {
-        const omissionResult = omissionChecker({ price });
-        if (!omissionResult.result) {
-            return res.send({ msg: omissionResult.message });
-        } else if (price === 0) {
-            return res.status(202).send({ msg: '출금가능한 금액을 입력하세요.' });
-        }
-        const existUser = await User.findOne({ user_id });
-        if (!existUser) {
-            return res.status(202).send({ msg: '가입되지 않은 이메일입니다.' });
-        }
-        const remainPoint = existUser.price - price;
-        const updateUser = await User.update(
-            { point: remainPoint },
-            { where: user_id },
-        );
-        if (!updateUser) {
-            return res.status(202).send({ msg: '출금에 실패하엿습니다' });
-        }
-        const createPointLog = await PointLog.create({
-            user_id,
-            use_point: price,
-            remain_point: remainPoint,
-        });
-        if (!createPointLog) {
-            return res.status(202).send({ msg: '출금에 실패하엿습니다' });
-        }
-        const existPointLog = await PointLog.findAll({ where: { user_id } });
-        if (!existPointLog) {
-            return res.status(202).send({ msg: 'Point 사용기록이 없습니다' });
-        }
-        res.status(201).send({ msg: 'success', pointlogs: existPointLog });
-    } catch (e) {
-        if (e.table) {
-            res.status(500).send({ msg: foreignKeyChecker(e.table) });
-        } else {
-            res.status(500).send({ msg: 'database error', error });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });

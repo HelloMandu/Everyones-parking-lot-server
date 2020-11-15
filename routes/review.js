@@ -5,6 +5,7 @@ const { Review } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
+const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
 
 
@@ -31,7 +32,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
@@ -57,9 +58,9 @@ router.post('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -83,9 +84,9 @@ router.get('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -104,15 +105,15 @@ router.get('/:review_id', async (req, res, next) => {
             where: { review_id: reviewID }
         }); // 리뷰 상세 정보 조회.
         if (!review) {
-            return res.status(404).send({ msg: '조회할 수 없는 리뷰입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
-        return res.status(200).send({ msg: 'success', review });
+        return res.status(201).send({ msg: 'success', review });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -149,7 +150,7 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
         }); // 수정할 리뷰가 존재하는지 확인.
         if (!existReview) {
             // 리뷰가 없으면 수정할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 리뷰입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
         const updateReview = await Review.update(
             { review_body, review_rating },
@@ -162,9 +163,9 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 수정 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -189,7 +190,7 @@ router.delete('/:review_id', verifyToken, async (req, res, next) => {
         }); // 삭제할 리뷰가 존재하는지 확인.
         if (!existReview) {
             // 리뷰가 없으면 삭제할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 리뷰입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
         const deleteReview = await Review.destroy({
             where: { review_id: reviewID, user_id }
@@ -201,9 +202,9 @@ router.delete('/:review_id', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삭제 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });

@@ -9,6 +9,7 @@ const { User } = require('../models');
 
 const omissionChecker = require('../lib/omissionChecker');
 const verifyToken = require('./middlewares/verifyToken');
+const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
 /* multer storage */
 const storage = multer.diskStorage({
@@ -46,7 +47,7 @@ router.post('/', async (req, res, next) => {
     });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({
@@ -74,9 +75,9 @@ router.post('/', async (req, res, next) => {
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -95,17 +96,17 @@ router.get('/', verifyToken, async (req, res, next) => {
     try {
         const user = await User.findOne({
             where: { user_id }
-        }); // 유저 정보 조회.
+        }); // 유저 정보 확인.
         if (!user) {
-            return res.status(404).send({ msg: '가입하지 않은 이메일입니다.' });
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
         }
         return res.status(200).send({ msg: 'success', user });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -123,7 +124,7 @@ router.post('/signin', async (req, res, next) => {
     const omissionResult = omissionChecker({ email, password });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({
@@ -131,7 +132,7 @@ router.post('/signin', async (req, res, next) => {
         }); // 가입한 이메일인지 확인.
         if (!existUser) {
             // 가입하지 않은 이메일로 로그인을 할 수 없음.
-            return res.status(404).send({ msg: '가입하지 않은 이메일입니다.' });
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
         }
         const result = await bcrypt.compare(password, existUser.password);
         if (!result) {
@@ -152,9 +153,9 @@ router.post('/signin', async (req, res, next) => {
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -172,7 +173,7 @@ router.post('/find/user_id', async (req, res, next) => {
     const omissionResult = omissionChecker({ name, phone_number });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({
@@ -180,16 +181,16 @@ router.post('/find/user_id', async (req, res, next) => {
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 아이디를 찾을 수 없음.
-            return res.status(404).send({ msg: '가입하지 않은 유저입니다.' });
+            return res.status(202).send({ msg: '가입하지 않은 유저입니다.' });
         }
         const { email } = existUser; // 유저의 이메일을 가져옴.
         return res.status(200).send({ msg: 'success', email });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -208,7 +209,7 @@ router.post('/find/user_pw', async (req, res, next) => {
     const omissionResult = omissionChecker({ name, phone_number });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({
@@ -216,7 +217,7 @@ router.post('/find/user_pw', async (req, res, next) => {
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 비밀번호를 찾을 수 없음.
-            return res.status(404).send({ msg: '가입하지 않은 유저입니다.' });
+            return res.status(202).send({ msg: '가입하지 않은 유저입니다.' });
         }
         const token = jwt.sign(
             {
@@ -226,15 +227,15 @@ router.post('/find/user_pw', async (req, res, next) => {
             process.env.JWT_SECRET,
         ); // 임시 JWT_TOKEN 생성.
         if (!token) {
-            return res.status(202).send({ msg: 'token을 생성하지 못했습니다' });
+            return res.status(202).send({ msg: 'token을 생성하지 못했습니다.' });
         }
         return res.status(200).send({ msg: 'success', token: token });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -242,39 +243,75 @@ router.post('/find/user_pw', async (req, res, next) => {
 
 
 /* UPDATE */
-router.put('/car_info', upload.single('car_img'), async (req, res, next) => {
+router.put('/profile_image', upload.single('profile_image'), verifyToken, async (req, res, next) => {
     /*
-        차량 정보 등록 요청 API(PUT): /api/user/car_info
-        
-        email: 유저 이메일(String, 필수)
-        car_location: 차량 등록 지역(String, 필수)
-        car_num: 차량 등록 번호(String, 필수)
-        car_img: 차량 이미지(ImageFile, 필수)
-        
-        * 응답: success / failure
+        프로필 이미지 변경 요청 API(PUT): /api/user/profile_image
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        profile_image: 변경할 프로필 이미지(ImageFile, 필수)
+
+        * 응답: profile_image = 변경된 이미지 경로    
     */
-    const { email, car_location, car_num } = req.body;
-    const car_img = req.file.path;
-    const omissionResult = omissionChecker({
-        email,
-        car_location,
-        car_num,
-    });
+    const profile_image = req.file.path;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const omissionResult = omissionChecker({ profile_image });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
-        const existUser = User.findOne({
-            where: { email }
+        const existUser = await User.findOne({
+            where: { user_id }
         }); // 가입한 유저인지 확인.
         if (!existUser) {
-            // 가입하지 않은 유저는 차량 등록을 할 수 없음.
-            return res.status(404).send({ msg: '가입하지 않은 이메일입니다' });
+            // 가입하지 않은 유저는 프로필 이미지 변경을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
         }
         const updateUser = await User.update(
-            { car_location, car_num, car_img },
-            { where: { email } },
+            { profile_image },
+            { where: { user_id } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(201).send({ msg: 'success', profile_image });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+router.put('/name', verifyToken, async (req, res, next) => {
+    /*
+        이름 변경 요청 API(PUT): /api/user/name
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        name: 변경할 이름(String, 필수)
+
+        * 응답: success / failure
+    */
+    const { name } = req.body;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const omissionResult = omissionChecker({ name });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 이름 변경을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { name },
+            { where: { user_id } },
         ); // 유저 정보 수정.
         if (!updateUser) {
             return res.status(202).send({ msg: 'failure' });
@@ -283,9 +320,9 @@ router.put('/car_info', upload.single('car_img'), async (req, res, next) => {
     } catch (e) {
         // DB 수정 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -301,12 +338,10 @@ router.put('/password', verifyToken, async (req, res, next) => {
     */
     const { password } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
-    const omissionResult = omissionChecker({
-        password,
-    });
+    const omissionResult = omissionChecker({ password });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const existUser = await User.findOne({
@@ -314,9 +349,12 @@ router.put('/password', verifyToken, async (req, res, next) => {
         }); // 가입한 유저인지 확인.
         if (!existUser) {
             // 가입하지 않은 유저는 비밀번호 변경을 할 수 없음.
-            return res.status(404).send({ msg: '가입하지 않은 이메일입니다' });
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
         }
-        const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱
+        const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱.
+        if (!hash) {
+            return res.status(202).send({ msg: '비밀번호를 설정하지 못했습니다.' });
+        }
         const updateUser = await User.update(
             { password: hash },
             { where: { user_id } },
@@ -328,9 +366,303 @@ router.put('/password', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 수정 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+router.put('/phone_number', verifyToken, async (req, res, next) => {
+    /*
+        휴대폰 번호 변경 요청 API(PUT): /api/user/phone_number
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        phone_numer: 변경할 휴대폰 번호(String, 필수)
+
+        * 응답: success / failure
+    */
+    const { phone_number } = req.body;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const omissionResult = omissionChecker({ phone_number });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 휴대폰 번호 변경을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { phone_number },
+            { where: { user_id } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(201).send({ msg: 'success' });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+router.put('/car_info', upload.single('car_image'), async (req, res, next) => {
+    /*
+        차량 정보 등록 요청 API(PUT): /api/user/car_info
+        
+        email: 유저 이메일(String, 필수)
+        car_location: 차량 등록 지역(String, 필수)
+        car_num: 차량 등록 번호(String, 필수)
+        car_image: 차량 이미지(ImageFile, 필수)
+        
+        * 응답: success / failure
+    */
+    const { email, car_location, car_num } = req.body;
+    const car_image = req.file.path;
+    const omissionResult = omissionChecker({
+        email,
+        car_location,
+        car_num,
+    });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = User.findOne({
+            where: { email }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 차량 등록을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { car_location, car_num, car_image },
+            { where: { email } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(201).send({ msg: 'success' });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+router.put('/birth', verifyToken, async (req, res, next) => {
+    /*
+        생년월일 변경 요청 API(PUT): /api/user/birth
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        birth: 변경할 생년월일(DateString, 필수)
+
+        * 응답: success / failure
+    */
+    const { birth } = req.body;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const omissionResult = omissionChecker({ birth });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 생년월일 변경을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { birth },
+            { where: { user_id } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(201).send({ msg: 'success' });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+router.put('/agree_mail', verifyToken, async (req, res, next) => {
+    /*
+        메일 수신 동의 변경 요청 API(PUT): /api/user/agree_mail
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        state: 변경할 동의 상태(Bool, 필수)
+
+        * 응답: success / failure
+    */
+    const { state } = req.body;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const omissionResult = omissionChecker({ state });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 메일 수신 동의 변경을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { agree_mail: state },
+            { where: { user_id } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure', state: existUser.dataValues.agree_mail });
+        }
+        return res.status(201).send({ msg: 'success', state });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+router.put('/agree_sms', verifyToken, async (req, res, next) => {
+    /*
+        SMS 수신 동의 변경 요청 API(PUT): /api/user/agree_sms
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        state: 변경할 동의 상태(Bool, 필수)
+
+        * 응답: success / failure
+    */
+    const { state } = req.body;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const omissionResult = omissionChecker({ state });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 SMS 수신 동의 변경을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { agree_sms: state },
+            { where: { user_id } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure', state: existUser.dataValues.agree_sms });
+        }
+        return res.status(201).send({ msg: 'success', state });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+router.put('/agree_push', verifyToken, async (req, res, next) => {
+    /*
+        푸시알림 수신 동의 변경 요청 API(PUT): /api/user/agree_push
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        state: 변경할 동의 상태(Bool, 필수)
+
+        * 응답: success / failure
+    */
+    const { state } = req.body;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const omissionResult = omissionChecker({ state });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 푸시알림 수신 동의 변경을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { agree_push: state },
+            { where: { user_id } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure', state: existUser.dataValues.agree_push });
+        }
+        return res.status(201).send({ msg: 'success', state });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+
+
+/* DELETE */
+router.delete('/', verifyToken, async (req, res, next) => {
+    /*
+        회원 탈퇴 요청 API(DELETE): /api/user
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        * 응답: success / failure
+    */
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    try {
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 회원 탈퇴를 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const deleteUser = await User.destroy({
+            where: { user_id }
+        }); // 유저 삭제.
+        if (!deleteUser) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(200).send({ msg: 'success' });
+    } catch (e) {
+        // DB 삭제 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });

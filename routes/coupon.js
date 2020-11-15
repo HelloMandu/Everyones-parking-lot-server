@@ -24,7 +24,7 @@ router.get('/', verifyToken, async (req, res, next) => {
     const omissionResult = omissionChecker({ place_id });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
@@ -35,9 +35,9 @@ router.get('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(400).send({ msg: 'database error', error });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });

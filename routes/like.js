@@ -24,7 +24,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     const omissionResult = omissionChecker({ place_id });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
@@ -46,9 +46,9 @@ router.post('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -70,7 +70,7 @@ router.delete('/', verifyToken, async (req, res, next) => {
     const omissionResult = omissionChecker({ place_id });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
@@ -79,7 +79,7 @@ router.delete('/', verifyToken, async (req, res, next) => {
         }); // 좋아요가 있는지 확인.
         if (!existLike) {
             // 좋아요가 없으면 삭제할 수 없음.
-            return res.status(404).send({ msg: '좋아요하지 않은 주차공간입니다.' });
+            return res.status(202).send({ msg: '좋아요하지 않은 주차공간입니다.' });
         } 
         const destroyLike = await Like.destroy({
             where: {
@@ -94,9 +94,9 @@ router.delete('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삭제 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });

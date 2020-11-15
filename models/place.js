@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(255),
                 comment: "주차공간 설명"
             },
-            place_img: {
+            place_images: {
                 allowNull: false,
                 type: DataTypes.JSON,
                 comment: "주차공간 이미지"

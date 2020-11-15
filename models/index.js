@@ -24,7 +24,8 @@ db.CouponZone = require('./coupon_zone')(sequelize, Sequelize); // coupon_zone t
 db.Coupon = require('./coupon')(sequelize, Sequelize); // coupons table
 db.Like = require('./like')(sequelize, Sequelize); // likes table
 db.Card = require('./card')(sequelize, Sequelize); // cards table
-db.PointLog = require('./point_log')(sequelize, Sequelize); // point-logs table
+db.PointLog = require('./point_log')(sequelize, Sequelize); // point_logs table
+db.Withdraw = require('./withdraw')(sequelize, Sequelize); // withdraws table
 db.Review = require('./review')(sequelize, Sequelize); // reviews table
 db.RentalOrder = require('./rental_order')(sequelize, Sequelize); // rental_order table
 db.ExtensionOrder = require('./extension_order')(sequelize, Sequelize); // extension_order table
@@ -83,6 +84,9 @@ db.Like.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
 db.Place.hasMany(db.Like, { foreignKey: 'place_id', sourceKey: 'place_id' });
 db.Like.belongsTo(db.Place, { foreignKey: 'place_id', targetKey: 'place_id' });
 // Place : Like = 1 : N
+db.Notification.hasMany(db.Like, { foreignKey: 'notification_id', sourceKey: 'notification_id' });
+db.Like.belongsTo(db.Notification, { foreignKey: 'notification_id', targetKey: 'notification_id' });
+// Notification : Like = 1 : N
 
 /* reviews TABLE Relation */
 db.RentalOrder.hasOne(db.Review, { foreignKey: 'rental_id', sourceKey: 'rental_id' });
@@ -122,12 +126,11 @@ db.Card.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
 db.User.hasMany(db.PointLog, { foreignKey: 'user_id', sourceKey: 'user_id' });
 db.PointLog.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
 // User : PointLog = 1 : N
-db.RentalOrder.hasOne(db.PointLog, { foreignKey: 'rental_id', sourceKey: 'rental_id' });
-db.PointLog.belongsTo(db.RentalOrder, { foreignKey: 'rental_id', targetKey: 'rental_id' });
-// RentalOrder : PointLog = 1 : 1
-db.ExtensionOrder.hasOne(db.PointLog, { foreignKey: 'extension_id', sourceKey: 'extension_id' });
-db.PointLog.belongsTo(db.ExtensionOrder, { foreignKey: 'extension_id', targetKey: 'extension_id' });
-// ExtensionOrder : PointLog = 1 : 1
+
+/* withdraws TABLE Relation */
+db.User.hasMany(db.Withdraw, { foreignKey: 'user_id', sourceKey: 'user_id' });
+db.Withdraw.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'user_id' });
+// User : Withdraw = 1 : N
 
 /*
     IF 1 : 1 관계일 경우

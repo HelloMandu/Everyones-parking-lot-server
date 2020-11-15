@@ -48,11 +48,11 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(20),
                 comment: "차량 등록 번호"
             },
-            car_img: {
+            car_image: {
                 type: DataTypes.JSON,
                 comment: "차량 이미지"
             },
-            profile_img: {
+            profile_image: {
                 type: DataTypes.JSON,
                 comment: "프로필 이미지"
             },
@@ -61,6 +61,10 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "0: 거부, 1: 동의"
             },
             agree_sms: {
+                type: DataTypes.BOOLEAN(4),
+                comment: "0: 거부, 1: 동의"
+            },
+            agree_push: {
                 type: DataTypes.BOOLEAN(4),
                 comment: "0: 거부, 1: 동의"
             },
@@ -77,10 +81,6 @@ module.exports = (sequelize, DataTypes) => {
             register_type: {
                 type: DataTypes.STRING(150),
                 comment: "NULL: 일반가입자, naver:네이버, facebook:페이스북, kakao:카카오"
-            },
-            agree_push: {
-                type: DataTypes.BOOLEAN(4),
-                comment: "0: 거부, 1: 동의"
             },
             native_token: {
                 type: DataTypes.STRING(255),

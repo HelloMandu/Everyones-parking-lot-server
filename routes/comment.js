@@ -24,7 +24,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     const omissionResult = omissionChecker({ review_id, comment_body });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const createComment = await Comment.create({
@@ -39,9 +39,9 @@ router.post('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {
-            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(400).send({ msg: 'database error', error });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -62,7 +62,7 @@ router.put('/:comment_id', verifyToken, async (req, res, next) => {
     const omissionResult = omissionChecker({ comment_body });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const commentID = parseInt(comment_id); // int 형 변환
@@ -71,7 +71,7 @@ router.put('/:comment_id', verifyToken, async (req, res, next) => {
         }); // 수정할 댓글이 존재하는지 확인.
         if (!existComment) {
             // 댓글이 없으면 수정할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 리뷰입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
         const updateComment = await Comment.update(
             { comment_body },
@@ -84,9 +84,9 @@ router.put('/:comment_id', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 수정 도중 오류 발생.
         if (e.table) {
-            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(400).send({ msg: 'database error', error });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -108,7 +108,7 @@ router.delete('/:comment_id', verifyToken, async (req, res, next) => {
         }); // 삭제할 댓글이 존재하는지 확인.
         if (!existComment) {
             // 댓글이 없으면 삭제할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 댓글입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 댓글입니다.' });
         }
         const deleteComment = await Comment.destroy({
             where: { commentID, user_id }
@@ -120,9 +120,9 @@ router.delete('/:comment_id', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삭제 도중 오류 발생.
         if (e.table) {
-            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(400).send({ msg: 'database error', error });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
