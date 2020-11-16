@@ -154,7 +154,7 @@
 ---------------------------------------
 ### 결제 정보 확인 페이지
 
-##### 결제 정보 요청 API(GET): /api/order(incomplete)
+#### 결제 정보 요청 API(GET): /api/order(incomplete)
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Integer, 필수)
