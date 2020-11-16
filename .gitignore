@@ -16,7 +16,7 @@
 /uploads
 
 # config
-config.json
+# config.json
 
 # misc
 .DS_Store
