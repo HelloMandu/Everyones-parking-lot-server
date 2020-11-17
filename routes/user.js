@@ -707,6 +707,10 @@ router.delete('/', verifyToken, async (req, res, next) => {
         if (!deleteUser) {
             return res.status(202).send({ msg: 'failure' });
         }
+
+        const { profile_image, car_image } = existUser.dataValues;
+        fileDeleter(profile_image); // 프로필 이미지 파일 제거
+        fileDeleter(car_image); // 자동차 이미지 파일 제거
         return res.status(200).send({ msg: 'success' });
     } catch (e) {
         // DB 삭제 도중 오류 발생.

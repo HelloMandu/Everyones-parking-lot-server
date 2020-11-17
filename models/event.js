@@ -9,11 +9,11 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "이벤트 id"
             },
-            event_banner_img: {
+            event_banner_image: {
                 type: DataTypes.JSON,
                 comment: "이미지 배너 이미지"
             },
-            event_detail_img: {
+            event_detail_images: {
                 type: DataTypes.JSON,
                 comment: "이벤트 상세 이미지"
             },

@@ -9,6 +9,10 @@ const review = require('./review');
 const comment = require('./comment');
 const coupon = require('./coupon');
 const card = require('./card');
+const event = require('./event');
+const notice = require('./notice');
+const faq = require('./faq');
+const qna = require('./qna');
 
 router.use('/user', user);
 router.use('/mobile', mobile);
@@ -18,6 +22,10 @@ router.use('/review', review);
 router.use('/comment', comment);
 router.use('/coupon', coupon);
 router.use('/card', card);
+router.use('/event', event);
+router.use('/notice', notice);
+router.use('/faq', faq);
+router.use('/qna', qna);
 
 
 

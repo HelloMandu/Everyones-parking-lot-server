@@ -562,11 +562,11 @@
 ---------------------------------------
 ### 이벤트 페이지
 
-#### 이벤트 리스트 요청 API(GET): /api/event(incomplete)
+#### 이벤트 리스트 요청 API(GET): /api/event
 ```
 	=> 응답: events = [이벤트 Array…]
 ```
-#### 이벤트 상세 정보 요청 API(GET): /api/event/:event_id(incomplete)
+#### 이벤트 상세 정보 요청 API(GET): /api/event/:event_id
 ```
 +	{ params: event_id }: 상세 보기할 이벤트 id(Integer, 필수)
 
@@ -613,7 +613,7 @@
 ---------------------------------------
 ### 자주 묻는 질문 페이지
 
-#### 자주 묻는 질문 리스트 요청 API(GET): /api/faq(incomplete)
+#### 자주 묻는 질문 리스트 요청 API(GET): /api/faq
 ```
 -	faq_type: 가져올 자주 묻는 질문 타입(Integer, 필수)
 
@@ -623,30 +623,30 @@
 ---------------------------------------
 ### 1:1 문의 페이지
 
-#### 1:1 문의 리스트 요청 API(GET): /api/qna(incomplete)
+#### 1:1 문의 리스트 요청 API(GET): /api/qna
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
 	=> 응답: qnas = [1:1 문의 Array…]
 ```
-#### 1:1 문의 상세 정보 요청 API(GET): /api/qna/:qna_id(incomplete)
+#### 1:1 문의 상세 정보 요청 API(GET): /api/qna/:qna_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: qna_id }: 상세 보기할 1:1 문의 id(Integer, 필수)
 
 	=> 응답: qna = { 1:1 문의 상세 정보 Object }
 ```
-#### 1:1 문의 작성 요청 API(POST): /api/qna(incomplete)
+#### 1:1 문의 작성 요청 API(POST): /api/qna
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
--	email: 답변 받을 이메일(String)
+-	email: 답변 받을 이메일(String, 필수)
 -	subject: 1:1 문의 제목(String, 필수)
 -	question: 1:1 문의 내용(String, 필수)
 -	q_files: 1:1 문의 첨부 파일([FileList])
 
 	=> 응답: success / failure
 ```
-#### 1:1 문의 수정 요청 API(PUT): /api/qna/:qna_id(incomplete)
+#### 1:1 문의 수정 요청 API(PUT): /api/qna/:qna_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: qna_id }: 수정할 1:1 문의 id(Integer, 필수)
@@ -657,7 +657,7 @@
 
 	=> 응답: success / failure
 ```
-#### 1:1 문의 삭제 요청 API(DELETE): /api/qna/:qna_id(incomplete)
+#### 1:1 문의 삭제 요청 API(DELETE): /api/qna/:qna_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: qna_id }: 삭제할 1:1 문의 id(Integer, 필수)

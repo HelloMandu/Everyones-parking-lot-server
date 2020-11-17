@@ -65,8 +65,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:notice_id', async (req, res, next) => {
     /*
         공지사항 상세 정보 요청 API(GET): /api/notice/:notice_id
-        
-        notice_id: 상세 정보를 가져올 공지사항 id
+        { params: notice_id }: 상세 정보를 가져올 공지사항 id
 
         * 응답: notice = { 공지사항 상세 정보 Object }
     */
@@ -104,9 +103,7 @@ router.put('/:notice_id', async (req, res, next) => {
         * 응답: success / failure
     */
     const { notice_id } = req.params;
-    const {
-        notice_title, notice_body, notice_images
-    } = req.body;
+    const { notice_title, notice_body, notice_images } = req.body;
     try {
         const noticeID = parseInt(notice_id); // int 형 변환
         const existNotice = await Notice.findOne({ where: {
@@ -160,7 +157,7 @@ router.delete('/:notice_id', async (req, res, next) => {
         const deleteNotice = await Notice.destroy({
             where: { notice_id: noticeID }
         }); // 공지사항 삭제.
-        if (deleteNotice) {
+        if (!deleteNotice) {
             return res.status(202).send({ msg: 'failure' });
         }
         return res.status(200).send({ msg: 'success' });
@@ -174,4 +171,4 @@ router.delete('/:notice_id', async (req, res, next) => {
     }
 });
 
-export default router;
+module.exports = router;
