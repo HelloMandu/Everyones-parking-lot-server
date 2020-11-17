@@ -134,7 +134,10 @@
 ```
 +	{ params: place_id }: 상세 보기할 주차공간 id(Integer, 필수)
 	
-	=> 응답: place = { 주차공간 데이터 Object(리뷰 리스트 데이터, 좋아요 수 포함) }
+	=> 응답:
+		place = { 주차공간 데이터 Object }
+		reviews = [주차공간의 리뷰 Array...]
+		likes = 주차공간 좋아요 수
 ```
 #### 주차공간 좋아요 추가 요청 API(POST): /api/like
 ```
@@ -183,13 +186,13 @@
 ---------------------------------------
 ### 결제 수단 선택 모달
 
-#### 등록된 카드 리스트 요청 API(GET): /api/card(incomplete)
+#### 등록된 카드 리스트 요청 API(GET): /api/card
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
-	=> 응답: cards = [사용가능한 카드 Array…]
+	=> 응답: cards = [사용가능한 카드 Array...]
 ```
-#### 카드 등록 요청 API(POST): /api/card(incomplete)
+#### 카드 등록 요청 API(POST): /api/card
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	bank_num: 은행 번호(Integer, 필수)
@@ -199,7 +202,7 @@
 
 	=> 응답: success / failure
 ```
-#### 카드 제거 요청 API(DELETE): /api/card/:card_id(incomlpete)
+#### 카드 삭제 요청 API(DELETE): /api/card/:card_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: card_id }: 삭제할 카드 id(Integer, 필수)
@@ -210,45 +213,45 @@
 ---------------------------------------
 ### 적용 쿠폰 선택 모달
 
-#### 사용 가능한 쿠폰 리스트 요청 API(GET): /api/coupon(incomplete)
+#### 사용 가능한 쿠폰 리스트 요청 API(GET): /api/coupon
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Integer, 필수)
 
-	=> 응답: coupons = [사용가능한 쿠폰 Array…]
+	=> 응답: coupons = [사용가능한 쿠폰 Array...]
 ```
 
 ---------------------------------------
 ### 대여/결제 완료 페이지
 
-#### 결제 및 대여 확인 요청 API(GET): /api/rental/:rental_id(incomplete)
+#### 결제 및 대여 확인 요청 API(GET): /api/rental/:rental_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	{ params: rental_id }: 대여 주문 번호(String, 필수)
 	
-	=> 응답: order = { 주문 정보 Object }
+	=> 응답: order = { 대여 주문 정보 Object }
 ```
 
 ---------------------------------------
 ### 이용 내역 페이지
 
-#### 이용 내역 요청 API(GET): /api/rental(incomplete)
+#### 이용 내역 리스트 요청 API(GET): /api/rental
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	filter: 필터링 항목(아마도 날짜?)
 
-	=> orders: = [주문 정보 Array…]
+	=> orders: = [대여 주문 정보 Array...]
 ```
 
 ---------------------------------------
 ### 이용 내역 상세 보기 페이지
 
-#### 이용 내역 상세 정보 요청 API(GET): /api/rental/:rental_id(incomplete)
+#### 이용 내역 상세 정보 요청 API(GET): /api/rental/:rental_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: rental_id }: 대여 주문 번호(String, 필수)
 	
-	=> 응답: order = { 주문 정보 Object }
+	=> 응답: order = { 대여 주문 정보 Object }
 ```
 
 ---------------------------------------
@@ -316,7 +319,10 @@
 ```
 +	{ params: review_id }: 상세 보기할 리뷰 id
 
-	=> 응답: review = { 리뷰 상세 정보 Object }
+	=> 응답:
+		review = { 리뷰 상세 정보 Object }
+		comments = [리뷰에 속한 댓글 Array...]
+	
 ```
 #### 댓글 작성 요청 API(POST): /api/comment
 ```
@@ -475,13 +481,13 @@
 ---------------------------------------
 ### 알림함 페이지
 
-#### 알림 리스트 요청 API(GET): /api/notification
+#### 알림 리스트 요청 API(GET): /api/notification(incomplete)
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 		
 	=> 응답: notifications = [알림 Array…]
 ```
-#### 알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id
+#### 알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id(incomplete)
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: notification_id }: 읽음 처리할 알림 id(Integer, 필수)
@@ -489,7 +495,7 @@
 	=> 응답: success / failure
 ```
 
-#### 알림 삭제 요청 API(DELETE): /api/notification/:notification_id
+#### 알림 삭제 요청 API(DELETE): /api/notification/:notification_id(incomplete)
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: notification_id }: 삭제 처리할 알림 id(Integer, 필수)
@@ -525,28 +531,28 @@
 ---------------------------------------
 ## 쿠폰 페이지
 
-#### 내 쿠폰 리스트 요청 API(GET): /api/coupon/my(incomplete)
+#### 내 쿠폰 리스트 요청 API(GET): /api/coupon/my
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	order_type: 정렬 방식
 	
 	=> 응답: coupons = [쿠폰 Array…]
 ```
-#### 쿠폰 코드 입력 요청 API(POST): /api/coupon(incomplete)
+#### 쿠폰 코드 입력 요청 API(POST): /api/coupon
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	cp_code: 쿠폰 코드(String, 필수)
 
 	=> 응답: success / failure
 ```
-#### 쿠폰북 리스트 요청 API(GET): /api/coupon/book(incomplete)
+#### 쿠폰북 리스트 요청 API(GET): /api/coupon/book
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	order_type: 정렬 방식
 
 	=> 응답: coupons = [쿠폰북 Array…]
 ```
-#### 쿠폰 사용 내역 리스트 요청 API(GET): /api/coupon/use(incomplete)
+#### 쿠폰 사용 내역 리스트 요청 API(GET): /api/coupon/use
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 

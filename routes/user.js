@@ -79,6 +79,7 @@ router.post('/', async (req, res, next) => {
             password: hash,
             phone_number,
             birth: new Date(birth),
+            email_verified_at: new Date()
         }); // 유저 생성.
         if (!createUser) {
             return res.status(202).send({ msg: 'failure' });

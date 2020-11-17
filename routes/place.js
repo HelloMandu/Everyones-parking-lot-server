@@ -160,7 +160,10 @@ router.get('/:place_id', async (req, res, next) => {
         주차공간 상세 정보 요청 API(GET): /api/place/:place_id
         { params: place_id }: 상세 보기할 주차공간 id
         
-        * 응답: place = { 주차공간 상세 정보 Object }
+        * 응답:
+            place = { 주차공간 상세 정보 Object }
+            reviews = [주차공간의 리뷰 Array...]
+		    likes = 주차공간 좋아요 수
     */
     const { place_id } = req.params;
     try {

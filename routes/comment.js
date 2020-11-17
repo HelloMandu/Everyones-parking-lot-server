@@ -48,7 +48,7 @@ router.post('/', verifyToken, async (req, res, next) => {
 
 router.put('/:comment_id', verifyToken, async (req, res, next) => {
     /*
-        댓글 수장 요청 API(DELETE): /api/comment
+        댓글 수정 요청 API(DELETE): /api/comment/:comment_id
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         { params: comment_id }: 수정할 댓글 id
 
@@ -93,7 +93,7 @@ router.put('/:comment_id', verifyToken, async (req, res, next) => {
 
 router.delete('/:comment_id', verifyToken, async (req, res, next) => {
     /*
-        댓글 삭제 요청 API(DELETE): /api/comment
+        댓글 삭제 요청 API(DELETE): /api/comment/:comment_id
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         { params: comment_id }: 삭제할 댓글 id
 
@@ -111,7 +111,7 @@ router.delete('/:comment_id', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 댓글입니다.' });
         }
         const deleteComment = await Comment.destroy({
-            where: { commentID, user_id }
+            where: { comment_id: commentID, user_id }
         }); // 댓글 삭제.
         if (!deleteComment) {
             return res.status(202).send({ msg: 'failure' });

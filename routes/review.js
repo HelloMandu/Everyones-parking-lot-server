@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { Review } = require('../models');
+const { Review, Comment } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -96,7 +96,9 @@ router.get('/:review_id', async (req, res, next) => {
         리뷰 상세 정보 요청 API(GET): /api/review/:review_id
         { params: review_id }: 상세 보기할 리뷰 id
 
-        * 응답: review = { 리뷰 상세 정보 Object }
+        * 응답:
+            review = { 리뷰 상세 정보 Object }
+            comments = [리뷰에 속한 댓글 Array...]
     */
     const { review_id } = req.params;
     try {
@@ -107,7 +109,10 @@ router.get('/:review_id', async (req, res, next) => {
         if (!review) {
             return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
-        return res.status(201).send({ msg: 'success', review });
+        const comments = await Comment.findAll({
+            where: { review_id: reviewID }
+        }); // 리뷰에 속한 댓글 리스트 조회.
+        return res.status(201).send({ msg: 'success', review, comments });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {

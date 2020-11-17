@@ -45,6 +45,14 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(255),
                 comment: "입금자 명"
             },
+            card_num: {
+                type: DataTypes.STRING(255),
+                comment: "카드 번호"
+            },
+            card_type: {
+                type: DataTypes.STRING(255),
+                comment: "카드 타입"
+            },
             receipt_time: {
                 type: DataTypes.DATE,
                 comment: "결제 시간"

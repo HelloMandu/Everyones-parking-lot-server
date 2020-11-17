@@ -8,6 +8,7 @@ const like = require('./like');
 const review = require('./review');
 const comment = require('./comment');
 const coupon = require('./coupon');
+const card = require('./card');
 
 router.use('/user', user);
 router.use('/mobile', mobile);
@@ -16,6 +17,7 @@ router.use('/like', like);
 router.use('/review', review);
 router.use('/comment', comment);
 router.use('/coupon', coupon);
+router.use('/card', card);
 
 
 

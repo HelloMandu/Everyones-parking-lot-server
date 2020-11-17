@@ -31,9 +31,9 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "패스워드"
             },
             phone_number: {
-                type: DataTypes.STRING(12),
+                type: DataTypes.STRING(15),
                 allowNull: false,
-                comment: "전화번호"
+                comment: "휴대폰번호"
             },
             birth: {
                 type: DataTypes.DATE,
@@ -58,14 +58,17 @@ module.exports = (sequelize, DataTypes) => {
             },
             agree_mail: {
                 type: DataTypes.BOOLEAN(4),
+                defaultValue: 0,
                 comment: "0: 거부, 1: 동의"
             },
             agree_sms: {
                 type: DataTypes.BOOLEAN(4),
+                defaultValue: 0,
                 comment: "0: 거부, 1: 동의"
             },
             agree_push: {
                 type: DataTypes.BOOLEAN(4),
+                defaultValue: 0,
                 comment: "0: 거부, 1: 동의"
             },
             point: {
