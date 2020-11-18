@@ -114,6 +114,11 @@ router.get('/:qna_id', verifyToken, async (req, res, next) => {
             // 해당 1:1 문의 id가 DB에 없음.
             return res.status(202).send({ msg: '조회할 수 없는 1:1 문의입니다.' });
         }
+        const UpdateQnaHit = await Qna.update({
+            hit: qna.dataValues.hit + 1
+        }, {
+            where: { user_id, qna_id: qnaID }
+        }); // 1:1 문의 조회 수 증가.
         return res.status(200).send({ msg: 'success', qna });
     } catch (e) {
         // DB 조회 도중 오류 발생.

@@ -112,6 +112,12 @@ router.get('/:review_id', async (req, res, next) => {
         const comments = await Comment.findAll({
             where: { review_id: reviewID }
         }); // 리뷰에 속한 댓글 리스트 조회.
+
+        const UpdateReviewHit = await Review.update({
+            hit: review.dataValues.hit + 1
+        }, {
+            where: { review_id: reviewID }
+        }); // 리뷰 조회 수 증가.
         return res.status(201).send({ msg: 'success', review, comments });
     } catch (e) {
         // DB 조회 도중 오류 발생.

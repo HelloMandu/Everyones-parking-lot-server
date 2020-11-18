@@ -6,7 +6,7 @@ const { Coupon, CouponZone } = require('../models');
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
-const calculateDate = require('../lib/calculateDate');
+const { calculateDate } = require('../lib/calculateDate');
 
 
 /* CREATE */
