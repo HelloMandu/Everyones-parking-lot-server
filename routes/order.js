@@ -17,14 +17,14 @@ router.get('/', verifyToken, async (req, res, next) => {
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
         place_id: 결제할 주차공간 id(Integer, 필수)
-        start_time: 대여 시작 시간(DateTimeString, 필수)
-        end_time: 대여 종료 시간(DateTimeString, 필수)
+        rental_start_time: 대여 시작 시간(DateTimeString, 필수)
+        rental_end_time: 대여 종료 시간(DateTimeString, 필수)
 
         * 응답: place = { 주차공간 정보 Object, 요금, 보증금 }
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
-    const { place_id, start_time, end_time } = req.query;
-    const omissionResult = omissionChecker({ place_id, start_time, end_time });
+    const { place_id, rental_start_time, rental_end_time } = req.query;
+    const omissionResult = omissionChecker({ place_id, rental_start_time, rental_end_time });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
@@ -39,8 +39,8 @@ router.get('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
         const { place_fee } = orderPlace.dataValues;
-        const startTime = new Date(start_time);
-        const endTime = new Date(end_time);
+        const startTime = new Date(rental_start_time);
+        const endTime = new Date(rental_end_time);
         // 전체 요금을 계산하기 위해 두 Date 객체 생성.
         const diffTime = endTime.getTime() - startTime.getTime(); // 두 시간의 차이를 구함.
 

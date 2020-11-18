@@ -9,7 +9,7 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const calculateDistance = require('../lib/calculateDistance');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
-const { fileDeleter } = require('../lib/fileDeleter');
+const { filesDeleter } = require('../lib/fileDeleter');
 
 
 
@@ -27,7 +27,7 @@ const upload = multer({ storage: storage });
 
 
 /* CREATE */
-router.post('/', verifyToken, async (req, res, next) => {
+router.post('/', verifyToken, upload.array('place_images'), async (req, res, next) => {
     /*
         주차공간 등록 요청 API(POST): /api/place
         { headers }: JWT_TOKEN(유저 로그인 토큰)
@@ -50,10 +50,12 @@ router.post('/', verifyToken, async (req, res, next) => {
     const {
         addr, addr_detail, addr_extra, post_num,
         lat, lng,
-        place_name, place_comment, place_images, place_fee,
+        place_name, place_comment, place_fee,
         oper_start_time, oper_end_time
     } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { place_images } = req.files;
+    const placeImages = place_images ? place_images.map(imageObject => imageObject.path) : [];
     const omissionResult = omissionChecker({
         addr, lat, lng,
         place_name, place_comment, place_images, place_fee,
@@ -61,6 +63,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
+        filesDeleter(placeImages);
         return res.status(202).send({ msg: omissionResult.message });
     }
     try {
@@ -75,11 +78,13 @@ router.post('/', verifyToken, async (req, res, next) => {
             oper_start_time, oper_end_time
         }); // 주차공간 생성.
         if (!createPlace) {
+            filesDeleter(placeImages);
             return res.status(202).send({ msg: 'failure' });
         }
         return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
+        filesDeleter(placeImages);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
@@ -262,7 +267,7 @@ router.get('/my', verifyToken, async (req, res, next) => {
 
 
 /* UPDATE */
-router.put('/:place_id', verifyToken, async (req, res, next) => {
+router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, res, next) => {
     /*
         주차공간 수정 요청 API(PUT): /api/place/:place_id
         { headers }: JWT_TOKEN(유저 로그인 토큰)
@@ -286,9 +291,11 @@ router.put('/:place_id', verifyToken, async (req, res, next) => {
     const {
         addr, addr_detail, addr_extra, post_num,
         lat, lng,
-        place_name, place_comment, place_images, place_fee,
+        place_name, place_comment, place_fee,
         oper_start_time, oper_end_time
     } = req.body;
+    const { place_images } = req.files;
+    const placeImages = place_images ? place_images.map(imageObject => imageObject.path) : [];
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
         const placeID = parseInt(place_id); // int 형 변환
@@ -297,6 +304,7 @@ router.put('/:place_id', verifyToken, async (req, res, next) => {
         }); // 수정할 주차공간이 존재하는지 조회.
         if (!existPlace) {
             // 주차공간이 없으면 수정할 수 없음.
+            filesDeleter(placeImages);
             return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
         const preValue = existPlace.dataValues;
@@ -320,11 +328,13 @@ router.put('/:place_id', verifyToken, async (req, res, next) => {
             where: { user_id, place_id: placeID }
         }); // 주차공간 수정.
         if (!updatePlace) {
+            filesDeleter(placeImages);
             return res.status(202).send({ msg: 'failure' });
         }
         return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 수정 도중 오류 발생.
+        filesDeleter(placeImages);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {

@@ -161,8 +161,8 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Integer, 필수)
--	start_time: 대여 시작 시간(DateTimeString, 필수)
--	end_time: 대여 종료 시간(DateTimeString, 필수)
+-	rental_start_time: 대여 시작 시간(DateTimeString, 필수)
+-	rental_end_time: 대여 종료 시간(DateTimeString, 필수)
 
 	=> 응답: place = { 주차공간 정보 Object(요금, 보증금) }
 ```
@@ -171,13 +171,12 @@
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Interger, 필수)
 -	coupon_id: 사용할 쿠폰 id(String)
--	start_time: 대여 시작 시간(DateTimeString, 필수)
--	end_time: 대여 종료 시간(DateTimeString, 필수)
+-	rental_start_time: 대여 시작 시간(DateTimeString, 필수)
+-	rental_end_time: 대여 종료 시간(DateTimeString, 필수)
 -	payment_type: 결제 수단(Integer, 필수)
 -	rental_price: 대여비(UNSIGNED Integer, 필수)
 -	deposit: 보증금(UNSIGNED Integer, 필수)
 -	point_price: 사용할 포인트 할인액(UNSIGNED Integer)
--	coupon_price: 사용할 쿠폰 할인액(UNSIGNED Integer)
 -	phone_number: 대여자 연락처(String, 필수)
 
 	=> 응답: rental_id = 대여 주문 번호
