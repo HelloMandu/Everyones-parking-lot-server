@@ -108,13 +108,9 @@
 
 #### 주차공간 리스트 요청 API(GET): /api/place
 ```
--	lat: 요청할 주차공간의 기준 위도(Float, 필수) 	=> 세로
--	lng: 요청할 주차공간의 기준 경도(Float, 필수) 	=> 가로
+-	lat: 요청할 주차공간의 기준 위도(Float, 필수)
+-	lng: 요청할 주차공간의 기준 경도(Float, 필수)
 -	range: 요청할 주차공간의 거리 범위(Float, km 단위, default 값은 1000km)
--	min_price: 최소 가격(UNSIGNED Integer)
--	max_price: 최대 가격(UNSIGNED Integer)
--	start_date: 입차시각(DateTimeString)
--	end_date: 출차시각(DateTimeString)
 -	filter: 필터링 항목([type…])
 
 	=> 응답: places = [주차공간 Array…]
@@ -170,13 +166,17 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Interger, 필수)
--	coupon_id: 사용할 쿠폰 id(String)
+-	coupon_id: 사용할 쿠폰 id(Integer)
 -	rental_start_time: 대여 시작 시간(DateTimeString, 필수)
 -	rental_end_time: 대여 종료 시간(DateTimeString, 필수)
--	payment_type: 결제 수단(Integer, 필수)
 -	rental_price: 대여비(UNSIGNED Integer, 필수)
+-	point_price: 사용할 포인트 할인 금액(UNSIGNED Integer)
 -	deposit: 보증금(UNSIGNED Integer, 필수)
--	point_price: 사용할 포인트 할인액(UNSIGNED Integer)
+-	payment_type: 결제 수단(Integer, 0: 카드 | 1: 카카오페이 | 2: 네이버페이 | 3: 페이코, 필수)
+-	bank_name: 은행 이름(String, payment_type이 0이면 필수)
+-	bank_account: 계좌번호(String, payment_type이 0이면 필수)
+-	card_num: 카드번호(String, payment_type이 0이면 필수)
+-	card_type: 카드 타입(String, payment_type이 0이면 필수)
 -	phone_number: 대여자 연락처(String, 필수)
 
 	=> 응답: rental_id = 대여 주문 번호
@@ -194,7 +194,6 @@
 #### 카드 등록 요청 API(POST): /api/card
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
--	bank_num: 은행 번호(Integer, 필수)
 -	bank_name: 은행 이름(String, 필수)
 -	card_num: 카드 번호(String, 필수)
 -	card_type: 카드 타입(String, 필수)
@@ -259,7 +258,7 @@
 #### 리뷰 작성 요청 API(POST): /api/review
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
--	rental_id: 대여 주문 번호(String, 필수)
+-	rental_id: 대여 주문 번호(Integer, 필수)
 -	place_id: 대여한 주차공간 id(Integer, 필수)
 -	review_body: 리뷰 내용(String, 필수)
 -	review_rating: 리뷰 평점(Float, 필수)
@@ -270,8 +269,8 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: review_id }: 수정할 리뷰 id(Integer, 필수)
--	review_body: 수정할 리뷰 내용(String, 필수)
--	review_rating: 수정할 리뷰 평점(Float, 필수)
+-	review_body: 수정할 리뷰 내용(String)
+-	review_rating: 수정할 리뷰 평점(Float)
 
 	=> 응답: success / failure
 ```
@@ -294,8 +293,8 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	rental_id: 대여 주문 번호(Integer, 필수)
--	end_time: 연장 종료 시간(DateTImeString, 필수)
--	payment_type: 결제 수단(Integer, 필수)
+-	extension_end_time: 연장 종료 시간(DateTImeString, 필수)
+-	payment_type: 결제 수단(Integer, 0: 카드 | 1: 카카오페이 | 2: 네이버페이 | 3: 페이코, 필수)
 -	extension_price: 연장 추가비(UNSIGNED Integer, 필수)
 
 	=> 응답: success / failure
@@ -445,15 +444,15 @@
 -	place_comment: 주차공간 설명(String, 필수)
 -	place_images: 주차공간 이미지([ImageFileList], 필수)
 -	place_fee: 주차공간 요금 / 30분 기준(UNSIGNED Integer, 필수)
--	oper_start_time: 운영 시작 시간(DateTimeString, 필수)
--	oper_end_time: 운영 종료 시간(DateTimeString, 필수)
+-	oper_start_time: 운영 시작 시간(TimeString, 필수)
+-	oper_end_time: 운영 종료 시간(TimeString, 필수)
 
 	=> 응답: success / failure
 ```
 #### 주차공간 수정 요청 API(PUT): /api/place/:place_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: place_id }: 수정할 주차공간 id(Integer, 필수)
++	{ params: place_id }: 수정할 주차공간 id
 -	addr: 주차공간 주소(String)
 -	addr_detail: 주차공간 상세주소(String)
 -	addr_extra: 주차공간 여분주소(String)
@@ -464,15 +463,15 @@
 -	place_comment: 주차공간 설명(String)
 -	place_images: 주차공간 이미지([ImageFileList])
 -	place_fee: 주차공간 요금 / 30분 기준(UNSIGNED Integer)
--	oper_start_time: 운영 시작 시간(DateTimeString)
--	oper_end_time: 운영 종료 시간(DateTimeString)
+-	oper_start_time: 운영 시작 시간(TimeString)
+-	oper_end_time: 운영 종료 시간(TimeString)
 	
 	=> 응답: success / failure
 ```
 #### 주차공간 삭제 요청 API(DELETE): /api/place/:place_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: place_id }: 삭제할 주차공간 id(Integer, 필수)
++	{ params: place_id }: 삭제할 주차공간 id
 	
 	=> 응답: success / failure
 ```
@@ -489,7 +488,7 @@
 #### 알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id(incomplete)
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: notification_id }: 읽음 처리할 알림 id(Integer, 필수)
++	{ params: notification_id }: 읽음 처리할 알림 id
 
 	=> 응답: success / failure
 ```
@@ -497,7 +496,7 @@
 #### 알림 삭제 요청 API(DELETE): /api/notification/:notification_id(incomplete)
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: notification_id }: 삭제 처리할 알림 id(Integer, 필수)
++	{ params: notification_id }: 삭제 처리할 알림 id
 
 	=> 응답: success / failure
 ```

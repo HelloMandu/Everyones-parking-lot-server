@@ -17,6 +17,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         * 응답: point_logs = [포인트 사용 기록 Array…]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const point_logs = await PointLog.findAll({ where: { user_id } }); // 수익금 기록 리스트 조회.
         return res.status(200).send({ msg: 'success', point_logs });

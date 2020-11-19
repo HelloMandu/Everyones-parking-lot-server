@@ -21,6 +21,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     */
     const { place_id } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ place_id });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -67,6 +68,7 @@ router.delete('/', verifyToken, async (req, res, next) => {
     */
     const { place_id } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ place_id });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.

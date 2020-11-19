@@ -21,14 +21,16 @@ router.post('/', verifyToken, async (req, res, next) => {
     */
     const { review_id, comment_body } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ review_id, comment_body });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
     try {
+        const reviewID = parseInt(review_id); // int 형 변환
         const createComment = await Comment.create({
-            review_id,
+            review_id: reviewID,
             user_id,
             comment_body,
         }); // 댓글 작성.
@@ -59,6 +61,7 @@ router.put('/:comment_id', verifyToken, async (req, res, next) => {
     const { comment_id } = req.params;
     const { comment_body } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ comment_body });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -101,6 +104,7 @@ router.delete('/:comment_id', verifyToken, async (req, res, next) => {
     */
     const { comment_id } = req.params;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const commentID = parseInt(comment_id); // int 형 변환
         const existComment = await Comment.findOne({

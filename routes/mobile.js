@@ -22,6 +22,7 @@ router.post('/auth', async (req, res, next) => {
         * 응답: success / failure
     */
     const { phone_number } = req.body;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ phone_number });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -74,6 +75,7 @@ router.post('/confirm', async (req, res, next) => {
         * 응답: success / failure
     */
     const { phone_number, auth_number } = req.body;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ phone_number, auth_number });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.

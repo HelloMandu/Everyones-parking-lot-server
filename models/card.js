@@ -9,11 +9,6 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "1:1문의 id"
             },
-            bank_num: {
-                allowNull: false,
-                type: DataTypes.INTEGER,
-                comment: "은행 번호"
-            },
             bank_name: {
                 allowNull: false,
                 type: DataTypes.STRING(255),

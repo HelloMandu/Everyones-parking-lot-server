@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "결제 정보 id"
             },
             method: {
-                type: DataTypes.STRING(255),
+                type: DataTypes.STRING(15),
                 comment: "pay, cancel"
             },
             trade_no: {
@@ -23,15 +23,12 @@ module.exports = (sequelize, DataTypes) => {
             },
             receipt_price: {
                 type: DataTypes.INTEGER,
+                defaultValue: 0,
                 comment: "미수금액"
             },
-            settle_case: {
+            payment_type: {
                 type: DataTypes.STRING(255),
                 comment: "결제 방식"
-            },
-            bank_num: {
-                type: DataTypes.INTEGER,
-                comment: "은행 번호"
             },
             bank_name: {
                 type: DataTypes.STRING(255),
@@ -53,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(255),
                 comment: "카드 타입"
             },
-            receipt_time: {
+            payment_time: {
                 type: DataTypes.DATE,
                 comment: "결제 시간"
             },

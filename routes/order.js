@@ -6,7 +6,12 @@ const { Place } = require('../models');
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
-const { MINUTE } = require('../lib/calculateDate');
+const { isValidDataType } = require('../lib/formatChecker');
+
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
+const HOUR = 60 * MINUTE;
+const DATE = 24 * HOUR;
 
 const DEPOSIT = 10000; // 보증금
 
@@ -22,8 +27,9 @@ router.get('/', verifyToken, async (req, res, next) => {
 
         * 응답: place = { 주차공간 정보 Object, 요금, 보증금 }
     */
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+   
     const { place_id, rental_start_time, rental_end_time } = req.query;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ place_id, rental_start_time, rental_end_time });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -31,6 +37,17 @@ router.get('/', verifyToken, async (req, res, next) => {
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
+        const rentalStartTime = new Date(rental_start_time); // Date 형 변환
+        const rentalEndTime = new Date(rental_end_time); // Date 형 변환
+        const validDataType = isValidDataType({
+            rental_start_time: rentalStartTime,
+            rental_end_time: rentalEndTime
+        }); // 데이터 형식 검사.
+        if (!validDataType.result) {
+            // 데이터의 형식이 올바르지 않음.
+            return res.status(202).send({ msg: validDataType.message });
+        }
+
         const orderPlace = Place.findOne({
             where: { place_id: placeID }
         }); // 결제할 주차공간이 존재하는지 확인.
@@ -39,13 +56,17 @@ router.get('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
         const { place_fee } = orderPlace.dataValues;
-        const startTime = new Date(rental_start_time);
-        const endTime = new Date(rental_end_time);
         // 전체 요금을 계산하기 위해 두 Date 객체 생성.
-        const diffTime = endTime.getTime() - startTime.getTime(); // 두 시간의 차이를 구함.
-
+        const diffTime = rentalEndTime.getTime() - rentalStartTime.getTime(); // 두 시간의 차이를 구함.
+        if (diffTime < 0) {
+            // 대여 종료 시간이 대여 시작 시간보다 앞이면 오류.
+            return res.status(202).send({ msg: '잘못 설정된 대여 시간입니다.' });
+        }
         const feeTime = Math.round(diffTime / (30 * MINUTE)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
-
+        if (feeTime < 1) {
+            // 대여 시간이 30분 이하일 경우
+            return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
+        }
         return res.status(200).send({ msg: 'success', place: orderPlace, total_price: place_fee * feeTime, deposit: DEPOSIT });
         // 보증금, 전체 요금, 주차공간 정보를 모두 반환.
     } catch (e) {

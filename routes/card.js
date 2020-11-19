@@ -14,16 +14,16 @@ router.post('/', verifyToken, async (req, res, next) => {
         카드 등록 요청 API(POST): /api/card
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         
-        bank_num: 은행 번호(Integer, 필수)
         bank_name: 은행 이름(String, 필수)
         card_num: 카드 번호(String, 필수)
         card_type: 카드 타입(String, 필수)
 
         * 응답: success / failure
     */
-    const { bank_num, bank_name, card_num, card_type } = req.body;
+    const { bank_name, card_num, card_type } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
-    const omissionResult = omissionChecker({ bank_num, bank_name, card_num, card_type });
+    /* request 데이터 읽어 옴. */
+    const omissionResult = omissionChecker({ bank_name, card_num, card_type });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
@@ -31,7 +31,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     try {
         const createCard = await Card.create({
             user_id,
-            bank_num, bank_name, card_num, card_type
+            bank_name, card_num, card_type
         }); // 카드 등록.
         if (!createCard) {
             return res.status(202).send({ msg: 'failure' });
@@ -58,6 +58,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         * 응답: cards = [사용가능한 카드 Array...]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const cards = await Card.findAll({
             where: { user_id },
@@ -86,6 +87,7 @@ router.delete('/:card_id', verifyToken, async (req, res, next) => {
     */
     const { card_id } = req.params;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const cardID = parseInt(card_id); // int 형 변환
         const existCard = await Card.findOne({

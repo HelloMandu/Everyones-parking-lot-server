@@ -1,4 +1,5 @@
 const express = require('express');
+const moment = require('moment');
 const router = express.Router();
 
 const { Coupon, CouponZone } = require('../models');
@@ -6,7 +7,6 @@ const { Coupon, CouponZone } = require('../models');
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
-const { calculateDate } = require('../lib/calculateDate');
 
 
 /* CREATE */
@@ -21,6 +21,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     */
     const { cp_code } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ cp_code });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -42,7 +43,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             cp_price: cz_price,
             cp_minimun: cz_minimum,
             cp_start_date: new Date(),
-            cp_end_date: calculateDate(new Date(), cz_preiod, 'DATE')
+            cp_end_date: moment().add(cz_preiod, 'days')
         }); // 유저 쿠폰 생성.
         if (!createCoupon) {
             return res.status(202).send({ msg: 'failure' });
@@ -75,6 +76,7 @@ router.get('/', verifyToken, async (req, res, next) => {
     */
     const { place_id } = req.query;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ place_id });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -106,6 +108,7 @@ router.get('/my', verifyToken, async (req, res, next) => {
         * 응답: coupons = [쿠폰 Array...]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const coupons = await Coupon.findAll({
             where: { user_id, use_state: 0 }
@@ -151,6 +154,7 @@ router.get('/use', verifyToken, async (req, res, next) => {
         * 응답: coupons = [쿠폰 Array...]
     */
    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+   /* request 데이터 읽어 옴. */
    try {
        const coupons = await Coupon.findAll({
            where: { user_id, use_state: 1 }

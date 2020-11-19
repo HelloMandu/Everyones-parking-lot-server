@@ -8,6 +8,7 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { filesDeleter } = require('../lib/fileDeleter');
+const updateObjectChecker = require('../lib/updateObjectChecker');
 
 
 
@@ -40,7 +41,8 @@ router.post('/', verifyToken, upload.array('q_files'), async (req, res, next) =>
     const { email, subject, question } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const { q_files } = req.files;
-    const qFiles = q_files ? q_files.map(file => file.path) : [];
+    /* request 데이터 읽어 옴. */
+    const qFiles = q_files ? q_files.map(file => file.path) : null;
     const omissionResult = omissionChecker({ email, subject, question });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -81,6 +83,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         * 응답: qnas = [1:1 문의 Array...]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const qnas = await Qna.findAll({
             where: { user_id }
@@ -105,6 +108,7 @@ router.get('/:qna_id', verifyToken, async (req, res, next) => {
     */
     const { qna_id } = req.params;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const qnaID = parseInt(qna_id) // int 형 변환
         const qna = await Qna.findOne({
@@ -148,6 +152,7 @@ router.put('/:qna_id', verifyToken, upload.array('q_files'), async (req, res, ne
     const { email, subject, question } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const { q_files } = req.files;
+    /* request 데이터 읽어 옴. */
     const qFiles = q_files ? q_files.map(file => file.path) : [];
 
     try {
@@ -164,12 +169,9 @@ router.put('/:qna_id', verifyToken, upload.array('q_files'), async (req, res, ne
         } 
         const preValue = existQna.dataValues;
         // 기존 값으로 업데이트하기 위한 객체.
-        const updateQna = Qna.update({
-            email: email ? email : preValue.email,
-            subject: subject ? subject : preValue.subject,
-            question: question ? question : preValue.question,
-            q_files: q_files ? qFiles : preValue.q_files
-        }, {
+        const updateQna = Qna.update(updateObjectChecker({
+            email, subject, question, q_files: qFiles
+        }), {
             where: { user_id, qna_id: qnaID }
         }); // 1:1 문의 수정.
         if (!updateQna) {

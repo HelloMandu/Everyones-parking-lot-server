@@ -5,6 +5,7 @@ const { Faq } = require('../models');
 
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const { isValidDataType } = require('../lib/formatChecker');
 
 
 
@@ -24,14 +25,24 @@ router.post('/', async (req, res, next) => {
         * 응답: success / failure
     */
     const { question, answer, faq_type } = req.body;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ question, answer, faq_type });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
     try {
+        const faqType = parseInt(faq_type); // int 형 변환
+        const validDataType = isValidDataType({
+            faq_type: faqType
+        }); // 데이터 형식 검사.
+        if (!validDataType.result) {
+            // 데이터의 형식이 올바르지 않음.
+            return res.status(202).send({ msg: validDataType.message });
+        }
+
         const createFaq = await Faq.create({
-            question, answer, faq_type
+            question, answer, faq_type: faqType
         }); // 자주 묻는 질문 생성.
         if (!createFaq) {
             return res.status(202).send({ msg: 'failure' });
@@ -58,9 +69,24 @@ router.get('/', async (req, res, next) => {
 
         * 응답: faqs = [자주 묻는 질문 Array...]
     */
+    const { faq_type } = req.query;
+    /* request 데이터 읽어 옴. */
+    const omissionResult = omissionChecker({ faq_type });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
     try {
+        const faqType = parseInt(faq_type); // int 형 변환
+        const validDataType = isValidDataType({
+            faq_type: faqType
+        }); // 데이터 형식 검사.
+        if (!validDataType.result) {
+            // 데이터의 형식이 올바르지 않음.
+            return res.status(202).send({ msg: validDataType.message });
+        }
         const faqs = await Faq.findAll({
-            where: { faq_type }
+            where: { faq_type: faqType }
         }); // 자주 묻는 질문 리스트 조회.
         res.status(200).send({ msg: 'success', notices: faqs });
     } catch (e) {
@@ -84,6 +110,7 @@ router.delete('/:faq_id', async (req, res, next) => {
         * 응답: success / failure
     */
     const { faq_id } = req.params;
+    /* request 데이터 읽어 옴. */
     try {
         const faqID = parseInt(faq_id); // int 형 변환
         const existFaq = await Faq.findOne({ where: {

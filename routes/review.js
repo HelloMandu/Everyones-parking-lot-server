@@ -6,6 +6,7 @@ const { Review, Comment } = require('../models');
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const updateObjectChecker = require('../lib/updateObjectChecker');
 
 
 
@@ -36,9 +37,10 @@ router.post('/', verifyToken, async (req, res, next) => {
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
-        
+        const rentalID = parseInt(rental_id); // int 형 변환
+        const reviewRating = parseFloat(review_rating); // float 형 변환
         const existReview = await Review.findOne({
-            where: { user_id, rental_id, place_id: placeID }
+            where: { user_id, rental_id: rentalID, place_id: placeID }
         }); // 기존에 작성한 리뷰가 있는지 확인.
         if (existReview) {
             // 리뷰가 있으면 작성할 수 없음.
@@ -46,10 +48,10 @@ router.post('/', verifyToken, async (req, res, next) => {
         }
         const createReview = await Review.create({
             user_id,
-            rental_id,
+            rental_id: rentalID,
             place_id: placeID,
             review_body,
-            review_rating: parseFloat(review_rating),
+            review_rating: reviewRating,
         }); // 리뷰 작성.
         if (!createReview) {
             return res.status(202).send({ msg: 'failure' });
@@ -138,8 +140,8 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         { params: review_id }: 수정할 리뷰 id
         
-        review_body: 수정할 리뷰 내용(String, 필수)
-        review_rating: 수정할 리뷰 평점(String, 필수)
+        review_body: 수정할 리뷰 내용(String)
+        review_rating: 수정할 리뷰 평점(Float)
 
         * 응답: success / failure
     */
@@ -156,6 +158,7 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
     }
     try {
         const reviewID = parseInt(review_id); // int 형 변환
+        const reviewRating = parseFloat(review_rating); // float 형 변환
         const existReview = await Review.findOne({
             where: { review_id: reviewID, user_id }
         }); // 수정할 리뷰가 존재하는지 확인.
@@ -164,7 +167,7 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
         const updateReview = await Review.update(
-            { review_body, review_rating },
+            updateObjectChecker({ review_body, review_rating: reviewRating }),
             { where: { review_id: reviewID, user_id } },
         ); // 리뷰 수정.
         if (!updateReview) {

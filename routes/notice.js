@@ -5,6 +5,7 @@ const { Notice } = require('../models');
 
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const updateObjectChecker = require('../lib/updateObjectChecker');
 
 
 
@@ -120,11 +121,11 @@ router.put('/:notice_id', async (req, res, next) => {
         } 
         const preValue = existNotice.dataValues;
         // 기존 값으로 업데이트하기 위한 객체.
-        const updateNotice = Notice.update({
-            notice_title: notice_title ? notice_title : preValue.notice_title,
-            notice_body: notice_body ? notice_body : preValue.notice_body,
-            notice_images: notice_images ? notice_images : preValue.notice_images,
-        }, {
+        const updateNotice = Notice.update(updateObjectChecker({
+            notice_title,
+            notice_body,
+            notice_images,
+        }), {
             where: { notice_id: noticeID }
         }); // 공지사항 수정.
         if (!updateNotice) {

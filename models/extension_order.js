@@ -3,9 +3,10 @@ module.exports = (sequelize, DataTypes) => {
         'extension_order',
         {
             extension_id: {
-                type: DataTypes.STRING(45),
+                type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
+                autoIncrement: true,
                 comment: "연장 주문 번호"
             },
             total_price: {
@@ -34,14 +35,13 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "취소금액"
             },
             calculated_price: {
-                type: DataTypes.DOUBLE,
+                type: DataTypes.DOUBLE.UNSIGNED,
                 defaultValue: 0.00,
                 comment: "정산 금액"
             },
             payment_type: {
-                type: DataTypes.STRING(255),
-                defaultValue: 0,
-                comment: "결제방식"
+                type: DataTypes.INTEGER,
+                comment: "결제 수단"
             },
             extension_start_time: {
                 type: DataTypes.DATE,
@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "연장 종료 시간"
             },
             cancel_reason: {
-                type: DataTypes.DATE,
+                type: DataTypes.STRING(255),
                 comment: "취소 사유"
             },
             cancel_time: {
@@ -63,12 +63,8 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.DATE,
                 comment: "정산시간"
             },
-            payment_time: {
-                type: DataTypes.DATE,
-                comment: "결제시간"
-            },
             deleted: {
-                type: DataTypes.DATE,
+                type: DataTypes.BOOLEAN,
                 comment: "0: 정상, 1: 삭제됨"
             },
         },

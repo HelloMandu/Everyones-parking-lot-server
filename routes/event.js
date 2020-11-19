@@ -7,6 +7,8 @@ const { Event } = require('../models');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { fileDeleter, filesDeleter } = require('../lib/fileDeleter');
+const updateObjectChecker = require('../lib/updateObjectChecker');
+const { min } = require('moment');
 
 
 
@@ -41,10 +43,10 @@ router.post('/', upload.fields([{ name: 'event_banner_image', maxCount: 1 }, { n
     */
     const { event_title, event_body, warm, start_date, end_date } = req.body;
     const { event_banner_image, event_detail_images } = req.files;
+    /* request 데이터 읽어 옴. */
     const eventBannerImage = event_banner_image ? event_banner_image.map(imageObject => imageObject.path)[0] : null;
-    const eventDetailImages = event_detail_images ? event_detail_images.map(imageObject => imageObject.path) : [];
+    const eventDetailImages = event_detail_images ? event_detail_images.map(imageObject => imageObject.path) : null;
     const omissionResult = omissionChecker({ event_banner_image, event_title, start_date, end_date });
-    
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         fileDeleter(eventBannerImage);
@@ -106,6 +108,7 @@ router.get('/:event_id', async (req, res, next) => {
         * 응답: event = { 이벤트 상세 정보 Object }
     */
     const { event_id } = req.params;
+    /* request 데이터 읽어 옴. */
     try {
         const eventID = parseInt(event_id) // int 형 변환
         const event = await Event.findOne({
@@ -150,9 +153,9 @@ router.put('/:event_id', upload.fields([{ name: 'event_banner_image', maxCount: 
     const { event_id } = req.params;
     const { event_title, event_body, warm, start_date, end_date } = req.body;
     const { event_banner_image, event_detail_images } = req.files;
+    /* request 데이터 읽어 옴. */
     const eventBannerImage = event_banner_image ? event_banner_image.map(imageObject => imageObject.path)[0] : null;
-    const eventDetailImages = event_detail_images ? event_detail_images.map(imageObject => imageObject.path) : [];
-    
+    const eventDetailImages = event_detail_images ? event_detail_images.map(imageObject => imageObject.path) : null;
     try {
         const eventID = parseInt(event_id); // int 형 변환
         const existEvent = await Event.findOne({ where: {
@@ -167,15 +170,12 @@ router.put('/:event_id', upload.fields([{ name: 'event_banner_image', maxCount: 
         } 
         const preValue = existEvent.dataValues;
         // 기존 값으로 업데이트하기 위한 객체.
-        const updateEvent = Event.update({
-            event_banner_image: event_banner_image ? eventBannerImage : preValue.event_banner_image,
-            event_detail_images: event_detail_images ? eventDetailImages : preValue.event_detail_images,
-            event_title: event_title ? event_title : preValue.event_title,
-            event_body: event_body ? event_body : preValue.event_body,
-            warm: warm ? warm : preValue.warm,
-            start_date: start_date ? start_date : preValue.start_date,
-            end_date: end_date ? end_date : preValue.end_date
-        }, {
+        const updateEvent = Event.update(updateObjectChecker({
+            event_banner_image: eventBannerImage,
+            event_detail_images: eventDetailImages,
+            event_title, event_body, warm,
+            start_date, end_date
+        }), {
             where: { event_id: eventID }
         }); // 이벤트 수정.
         if (!updateEvent) {
@@ -209,6 +209,7 @@ router.delete('/:event_id', async (req, res, next) => {
         * 응답: success / failure
     */
     const { event_id } = req.params;
+    /* request 데이터 읽어 옴. */
     try {
         const eventID = parseInt(event_id); // int 형 변환
         const existEvent = await Event.findOne({ where: {

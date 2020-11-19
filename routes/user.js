@@ -9,7 +9,7 @@ const { User } = require('../models');
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
-const { isEmailForm, isPasswordForm, isCellPhoneForm } = require('../lib/formatChecker');
+const { isEmailForm, isPasswordForm, isCellPhoneForm, isValidDataType } = require('../lib/formatChecker');
 const { fileDeleter } = require('../lib/fileDeleter');
 
 
@@ -41,6 +41,7 @@ router.post('/', async (req, res, next) => {
         * 응답: success / failure
     */
     const { email, name, birth, phone_number, password } = req.body;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({
         email,
         name,
@@ -62,6 +63,14 @@ router.post('/', async (req, res, next) => {
         return res.status(202).send({ msg: '휴대폰 번호 형식에 맞지 않습니다.' });
     }
     try {
+        const insertBirth = new Date(birth); // Date 형 변환
+        const validDataType = isValidDataType({
+            birth: insertBirth
+        }); // 데이터 형식 검사.
+        if (!validDataType.result) {
+            // 데이터의 형식이 올바르지 않음.
+            return res.status(202).send({ msg: validDataType.message });
+        }
         const existUser = await User.findOne({
             where: { email }
         }); // 가입한 이메일이 있는지 확인.
@@ -78,7 +87,7 @@ router.post('/', async (req, res, next) => {
             name,
             password: hash,
             phone_number,
-            birth: new Date(birth),
+            birth: insertBirth,
             email_verified_at: new Date()
         }); // 유저 생성.
         if (!createUser) {
@@ -116,6 +125,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         * 응답: user = 유저 정보 Object
     */
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const user = await User.findOne({
             where: { user_id, email }
@@ -144,6 +154,7 @@ router.post('/signin', async (req, res, next) => {
         * 응답: token = 유저 로그인 토큰
     */
     const { email, password } = req.body;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ email, password });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -193,6 +204,7 @@ router.post('/find/user_id', async (req, res, next) => {
         * 응답: email = 찾은 email
     */
     const { name, phone_number } = req.body;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ name, phone_number });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -232,6 +244,7 @@ router.post('/find/user_pw', async (req, res, next) => {
         * 응답: token = 유저 임시 토큰
     */
     const { name, email, phone_number } = req.body;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ name, phone_number });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -283,6 +296,7 @@ router.put('/profile_image', verifyToken, upload.single('profile_image'), async 
     */
     const profile_image = req.file.path;
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ profile_image });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -333,6 +347,7 @@ router.put('/name', verifyToken, async (req, res, next) => {
     */
     const { name } = req.body;
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ name });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -424,6 +439,7 @@ router.put('/phone_number', verifyToken, async (req, res, next) => {
     */
     const { phone_number } = req.body;
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ phone_number });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -472,6 +488,7 @@ router.put('/car_info', verifyToken, upload.single('car_image'), async (req, res
     const { car_location, car_num } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const car_image = req.file.path;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({
         car_num,
         car_image
@@ -525,12 +542,21 @@ router.put('/birth', verifyToken, async (req, res, next) => {
     */
     const { birth } = req.body;
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ birth });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
     try {
+        const updateBirth = new Date(birth); // Date 형 변환
+        const validDataType = isValidDataType({
+            birth: updateBirth
+        }); // 데이터 형식 검사.
+        if (!validDataType.result) {
+            // 데이터의 형식이 올바르지 않음.
+            return res.status(202).send({ msg: validDataType.message });
+        }
         const existUser = await User.findOne({
             where: { user_id, email }
         }); // 가입한 유저인지 확인.
@@ -567,6 +593,7 @@ router.put('/agree_mail', verifyToken, async (req, res, next) => {
     */
     const { state } = req.body;
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ state });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -609,6 +636,7 @@ router.put('/agree_sms', verifyToken, async (req, res, next) => {
     */
     const { state } = req.body;
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ state });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -651,6 +679,7 @@ router.put('/agree_push', verifyToken, async (req, res, next) => {
     */
     const { state } = req.body;
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ state });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
@@ -693,6 +722,7 @@ router.delete('/', verifyToken, async (req, res, next) => {
         * 응답: success / failure
     */
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const existUser = await User.findOne({
             where: { user_id, email }
