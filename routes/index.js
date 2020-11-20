@@ -6,6 +6,8 @@ const mobile = require('./mobile');
 const place = require('./place');
 
 const order = require('./order');
+const rental = require('./rental');
+const extension = require('./extension');
 
 const like = require('./like');
 const review = require('./review');
@@ -22,6 +24,8 @@ router.use('/mobile', mobile);
 router.use('/place', place);
 
 router.use('/order', order);
+router.use('/rental', rental);
+router.use('/extension', extension);
 
 router.use('/like', like);
 router.use('/review', review);

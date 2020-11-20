@@ -9,30 +9,10 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 comment: "연장 주문 번호"
             },
-            total_price: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                defaultValue: 0,
-                comment: "전체금액"
-            },
-            term_price: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                defaultValue: 0,
-                comment: "기간금액"
-            },
-            point_price: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                defaultValue: 0,
-                comment: "포인트 할인금액"
-            },
-            payment_price: {
+            extension_price: {
                 type: DataTypes.INTEGER.UNSIGNED,
                 defaultValue: 0,
                 comment: "결제금액"
-            },
-            cancel_price: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                defaultValue: 0,
-                comment: "취소금액"
             },
             calculated_price: {
                 type: DataTypes.DOUBLE.UNSIGNED,
@@ -50,14 +30,6 @@ module.exports = (sequelize, DataTypes) => {
             extension_end_time: {
                 type: DataTypes.DATE,
                 comment: "연장 종료 시간"
-            },
-            cancel_reason: {
-                type: DataTypes.STRING(255),
-                comment: "취소 사유"
-            },
-            cancel_time: {
-                type: DataTypes.DATE,
-                comment: "취소시간"
             },
             calculated_time: {
                 type: DataTypes.DATE,

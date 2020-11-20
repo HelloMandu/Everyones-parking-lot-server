@@ -10,12 +10,12 @@ const { isValidDataType } = require('../lib/formatChecker');
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
-const DATE = 24 * HOUR;
 
 const DEPOSIT = 10000; // 보증금
 
 
+
+/* READ */
 router.get('/', verifyToken, async (req, res, next) => {
     /*
         결제 정보 요청 API(GET): /api/order
@@ -55,6 +55,8 @@ router.get('/', verifyToken, async (req, res, next) => {
             // 주차공간이 없으면 결제 정보를 응답할 수 없음.
             return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
+
+        /* 요금 계산 */
         const { place_fee } = orderPlace.dataValues;
         // 전체 요금을 계산하기 위해 두 Date 객체 생성.
         const diffTime = rentalEndTime.getTime() - rentalStartTime.getTime(); // 두 시간의 차이를 구함.
@@ -67,6 +69,8 @@ router.get('/', verifyToken, async (req, res, next) => {
             // 대여 시간이 30분 이하일 경우
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
         }
+        /* 요금 계산 완료 */
+
         return res.status(200).send({ msg: 'success', place: orderPlace, total_price: place_fee * feeTime, deposit: DEPOSIT });
         // 보증금, 전체 요금, 주차공간 정보를 모두 반환.
     } catch (e) {

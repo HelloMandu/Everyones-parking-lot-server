@@ -128,7 +128,7 @@
 
 #### 주차공간 상세 정보 요청 API(GET): /api/place/:place_id
 ```
-+	{ params: place_id }: 상세 보기할 주차공간 id(Integer, 필수)
++	{ params: place_id }: 상세 보기할 주차공간 id
 	
 	=> 응답:
 		place = { 주차공간 데이터 Object }
@@ -162,7 +162,7 @@
 
 	=> 응답: place = { 주차공간 정보 Object(요금, 보증금) }
 ```
-#### 결제 및 대여 등록 요청 API(POST): /api/rental(incomplete)
+#### 결제 및 대여 등록 요청 API(POST): /api/rental
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Interger, 필수)
@@ -173,10 +173,7 @@
 -	point_price: 사용할 포인트 할인 금액(UNSIGNED Integer)
 -	deposit: 보증금(UNSIGNED Integer, 필수)
 -	payment_type: 결제 수단(Integer, 0: 카드 | 1: 카카오페이 | 2: 네이버페이 | 3: 페이코, 필수)
--	bank_name: 은행 이름(String, payment_type이 0이면 필수)
--	bank_account: 계좌번호(String, payment_type이 0이면 필수)
--	card_num: 카드번호(String, payment_type이 0이면 필수)
--	card_type: 카드 타입(String, payment_type이 0이면 필수)
+-	card_id: 결제 카드 id(Integer, payment_type이 0이면 필수)
 -	phone_number: 대여자 연락처(String, 필수)
 
 	=> 응답: rental_id = 대여 주문 번호
@@ -189,7 +186,7 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
-	=> 응답: cards = [사용가능한 카드 Array...]
+	=> 응답: cards = [사용 가능한 카드 Array...]
 ```
 #### 카드 등록 요청 API(POST): /api/card
 ```
@@ -198,12 +195,12 @@
 -	card_num: 카드 번호(String, 필수)
 -	card_type: 카드 타입(String, 필수)
 
-	=> 응답: success / failure
+	=> 응답: card = { 카드 정보 Object }
 ```
 #### 카드 삭제 요청 API(DELETE): /api/card/:card_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: card_id }: 삭제할 카드 id(Integer, 필수)
++	{ params: card_id }: 삭제할 카드 id
 
 	=> 응답: success / failure
 ```
@@ -225,7 +222,7 @@
 #### 결제 및 대여 확인 요청 API(GET): /api/rental/:rental_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
--	{ params: rental_id }: 대여 주문 번호(String, 필수)
+-	{ params: rental_id }: 대여 주문 번호
 	
 	=> 응답: order = { 대여 주문 정보 Object }
 ```
@@ -247,7 +244,7 @@
 #### 이용 내역 상세 정보 요청 API(GET): /api/rental/:rental_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: rental_id }: 대여 주문 번호(String, 필수)
++	{ params: rental_id }: 대여 주문 번호
 	
 	=> 응답: order = { 대여 주문 정보 Object }
 ```
@@ -268,7 +265,7 @@
 #### 리뷰 수정 요청 API(PUT): /api/review/:review_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: review_id }: 수정할 리뷰 id(Integer, 필수)
++	{ params: review_id }: 수정할 리뷰 id
 -	review_body: 수정할 리뷰 내용(String)
 -	review_rating: 수정할 리뷰 평점(Float)
 
@@ -278,10 +275,10 @@
 ---------------------------------------
 ### 대여 취소 신청 모달
 
-#### 대여 취소 신청 API(PUT): /api/rental/:rental_id(incomplete)
+#### 대여 취소 신청 API(PUT): /api/rental/:rental_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: rental_id }: 대여 주문 번호(Integer, 필수)
++	{ params: rental_id }: 삭제할 대여 주문 번호
 	
 	=> 응답: success / failure
 ```
@@ -289,7 +286,7 @@
 ---------------------------------------
 ### 연장 신청 모달
 
-#### 연장 신청 API(POST): /api/extension(incomplete)
+#### 연장 신청 API(POST): /api/extension
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	rental_id: 대여 주문 번호(Integer, 필수)
@@ -444,8 +441,8 @@
 -	place_comment: 주차공간 설명(String, 필수)
 -	place_images: 주차공간 이미지([ImageFileList], 필수)
 -	place_fee: 주차공간 요금 / 30분 기준(UNSIGNED Integer, 필수)
--	oper_start_time: 운영 시작 시간(TimeString, 필수)
--	oper_end_time: 운영 종료 시간(TimeString, 필수)
+-	oper_start_time: 운영 시작 시간(DateTimeString, 필수)
+-	oper_end_time: 운영 종료 시간(DateTimeString, 필수)
 
 	=> 응답: success / failure
 ```
@@ -463,8 +460,8 @@
 -	place_comment: 주차공간 설명(String)
 -	place_images: 주차공간 이미지([ImageFileList])
 -	place_fee: 주차공간 요금 / 30분 기준(UNSIGNED Integer)
--	oper_start_time: 운영 시작 시간(TimeString)
--	oper_end_time: 운영 종료 시간(TimeString)
+-	oper_start_time: 운영 시작 시간(DateTimeString)
+-	oper_end_time: 운영 종료 시간(DateTimeString)
 	
 	=> 응답: success / failure
 ```

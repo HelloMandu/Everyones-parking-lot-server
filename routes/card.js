@@ -18,7 +18,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         card_num: 카드 번호(String, 필수)
         card_type: 카드 타입(String, 필수)
 
-        * 응답: success / failure
+        * 응답: card = { 카드 정보 Object }
     */
     const { bank_name, card_num, card_type } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
@@ -36,7 +36,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         if (!createCard) {
             return res.status(202).send({ msg: 'failure' });
         }
-        return res.status(201).send({ msg: 'success' });
+        return res.status(201).send({ msg: 'success', card: createCard });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {
@@ -55,7 +55,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         등록된 카드 리스트 요청 API(POST): /api/card
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
-        * 응답: cards = [사용가능한 카드 Array...]
+        * 응답: cards = [사용 가능한 카드 Array...]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
