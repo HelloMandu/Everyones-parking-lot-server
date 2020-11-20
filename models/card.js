@@ -1,13 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
     return sequelize.define(
-        'qna',
+        'card',
         {
             card_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
                 autoIncrement: true,
-                comment: "1:1문의 id"
+                comment: "카드 id"
             },
             bank_name: {
                 allowNull: false,
