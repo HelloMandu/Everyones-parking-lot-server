@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const user = require('./user');
+const Oauth = require('./Oauth');
 const mobile = require('./mobile');
 const place = require('./place');
 
@@ -20,6 +21,7 @@ const faq = require('./faq');
 const qna = require('./qna');
 
 router.use('/user', user);
+router.use('/Oauth', Oauth);
 router.use('/mobile', mobile);
 router.use('/place', place);
 
