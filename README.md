@@ -40,9 +40,9 @@
 	=> 응답: token = 유저 로그인 토큰
 ```
 
-#### 카카오 로그인 요청 API(GET): /api/Oauth/kakao(incomplete)
-#### 네이버 로그인 요청 API(GET): /api/Oauth/naver(incomplete)
-#### 페이스북 로그인 요청 API(GET): /api/Oauth/facebook(incomplete)
+#### 카카오 로그인 요청 API(GET): /api/Oauth/kakao (저 링크로 리다이렉트 하면 됨)
+#### 네이버 로그인 요청 API(GET): /api/Oauth/naver (저 링크로 리다이렉트 하면 됨)
+#### 페이스북 로그인 요청 API(GET): /api/Oauth/facebook(저 링크로 리다이렉트 하면 됨)
 
 ---------------------------------------
 ### 회원가입 페이지
