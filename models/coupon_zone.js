@@ -3,9 +3,8 @@ module.exports = (sequelize, DataTypes) => {
         'coupon_zone',
         {
             cz_id: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.STRING(255),
                 allowNull: false,
-                autoIncrement: true,
                 primaryKey: true,
                 comment: "쿠폰 존 id"
             },

@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             use_type: {
                 type: DataTypes.BOOLEAN,
-                comment: "포인트 사용 타입"
+                comment: "포인트 사용 타입(0: 입금, 1: 출금)"
             },
         }, 
         {

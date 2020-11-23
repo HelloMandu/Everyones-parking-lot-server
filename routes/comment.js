@@ -21,14 +21,16 @@ router.post('/', verifyToken, async (req, res, next) => {
     */
     const { review_id, comment_body } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ review_id, comment_body });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
+        const reviewID = parseInt(review_id); // int 형 변환
         const createComment = await Comment.create({
-            review_id,
+            review_id: reviewID,
             user_id,
             comment_body,
         }); // 댓글 작성.
@@ -39,16 +41,16 @@ router.post('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {
-            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(400).send({ msg: 'database error', error });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
 
 router.put('/:comment_id', verifyToken, async (req, res, next) => {
     /*
-        댓글 수장 요청 API(DELETE): /api/comment
+        댓글 수정 요청 API(DELETE): /api/comment/:comment_id
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         { params: comment_id }: 수정할 댓글 id
 
@@ -59,10 +61,11 @@ router.put('/:comment_id', verifyToken, async (req, res, next) => {
     const { comment_id } = req.params;
     const { comment_body } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ comment_body });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const commentID = parseInt(comment_id); // int 형 변환
@@ -71,7 +74,7 @@ router.put('/:comment_id', verifyToken, async (req, res, next) => {
         }); // 수정할 댓글이 존재하는지 확인.
         if (!existComment) {
             // 댓글이 없으면 수정할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 리뷰입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
         const updateComment = await Comment.update(
             { comment_body },
@@ -84,16 +87,16 @@ router.put('/:comment_id', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 수정 도중 오류 발생.
         if (e.table) {
-            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(400).send({ msg: 'database error', error });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
 
 router.delete('/:comment_id', verifyToken, async (req, res, next) => {
     /*
-        댓글 삭제 요청 API(DELETE): /api/comment
+        댓글 삭제 요청 API(DELETE): /api/comment/:comment_id
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         { params: comment_id }: 삭제할 댓글 id
 
@@ -101,6 +104,7 @@ router.delete('/:comment_id', verifyToken, async (req, res, next) => {
     */
     const { comment_id } = req.params;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const commentID = parseInt(comment_id); // int 형 변환
         const existComment = await Comment.findOne({
@@ -108,10 +112,10 @@ router.delete('/:comment_id', verifyToken, async (req, res, next) => {
         }); // 삭제할 댓글이 존재하는지 확인.
         if (!existComment) {
             // 댓글이 없으면 삭제할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 댓글입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 댓글입니다.' });
         }
         const deleteComment = await Comment.destroy({
-            where: { commentID, user_id }
+            where: { comment_id: commentID, user_id }
         }); // 댓글 삭제.
         if (!deleteComment) {
             return res.status(202).send({ msg: 'failure' });
@@ -120,9 +124,9 @@ router.delete('/:comment_id', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삭제 도중 오류 발생.
         if (e.table) {
-            res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            res.status(400).send({ msg: 'database error', error });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });

@@ -1,17 +1,35 @@
 const express = require('express');
 const router = express.Router();
 
+const multer = require('multer');
+
 const { Place, Review, Like, Sequelize: { Op } } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const calculateDistance = require('../lib/calculateDistance');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const updateObjectChecker = require('../lib/updateObjectChecker');
+const { isValidDataType } = require('../lib/formatChecker');
+const { filesDeleter } = require('../lib/fileDeleter');
+
+
+
+/* multer storage */
+const storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, 'uploads/'); // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
+    },
+    filename: function (req, file, callback) {
+        callback(null, new Date().valueOf() + file.originalname); // cb 콜백함수를 통해 전송된 파일 이름 설정
+    },
+});
+const upload = multer({ storage: storage });
 
 
 
 /* CREATE */
-router.post('/', verifyToken, async (req, res, next) => {
+router.post('/', verifyToken, upload.array('place_images'), async (req, res, next) => {
     /*
         주차공간 등록 요청 API(POST): /api/place
         { headers }: JWT_TOKEN(유저 로그인 토큰)
@@ -24,7 +42,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         lng: 주차공간의 경도(Float, 필수) => 가로
         place_name: 주차공간 이름(String, 필수)
         place_comment: 주차공간 설명(String, 필수)
-        place_img: 주차공간 이미지([FileList], 필수)
+        place_images: 주차공간 이미지([ImageFileList], 필수)
         place_fee: 주차공간 요금 / 30분 기준(Intager, 필수)
         oper_start_time: 운영 시작 시간(DateTimeString, 필수)
         oper_end_time: 운영 종료 시간(DateTimeString, 필수)
@@ -34,40 +52,63 @@ router.post('/', verifyToken, async (req, res, next) => {
     const {
         addr, addr_detail, addr_extra, post_num,
         lat, lng,
-        place_name, place_comment, place_img, place_fee,
+        place_name, place_comment, place_fee,
         oper_start_time, oper_end_time
     } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { place_images } = req.files;
+    /* request 데이터 읽어 옴. */
+    const placeImages = place_images ? place_images.map(imageObject => imageObject.path) : [];
     const omissionResult = omissionChecker({
         addr, lat, lng,
-        place_name, place_comment, place_img, place_fee,
+        place_name, place_comment, place_images, place_fee,
         oper_start_time, oper_end_time
     });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        filesDeleter(placeImages);
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
-        const updateLat = parseFloat(lat); // float 형 변환
-        const updateLng = parseFloat(lng); // float 형 변환
+        const insertLat = parseFloat(lat); // float 형 변환
+        const insertLng = parseFloat(lng); // float 형 변환
+        const placeFee = parseInt(place_fee); // int 형 변환
+        const operStartTime = new Date(oper_start_time); // Date 형 변환
+        const operEndTime = new Date(oper_end_time); // Date 형 변환
+        const validDataType = isValidDataType({
+            lat: insertLat, lng: insertLng,
+            place_fee: placeFee,
+            oper_start_time: operStartTime, oper_end_time: operEndTime
+        }); // 데이터 형식 검사.
+        if (!validDataType.result) {
+            // 데이터의 형식이 올바르지 않음.
+            return res.status(202).send({ msg: validDataType.message });
+        }
+        const diffTime = operEndTime.getTime() - operStartTime.getTime(); // 두 시간의 차이를 구함.
+        if (diffTime < 0) {
+            // 운영 종료 시간이 운영 시작 시간보다 앞이면 오류.
+            return res.status(202).send({ msg: '잘못 설정된 운영 시간입니다.' });
+        }
 
         const createPlace = await Place.create({
             user_id,
             addr, addr_detail, addr_extra, post_num,
-            lat: updateLat, lng: updateLng,
-            place_name, place_comment, place_img, place_fee,
-            oper_start_time, oper_end_time
+            lat: insertLat, lng: insertLng,
+            place_name, place_comment, place_images, place_fee: placeFee,
+            oper_start_time: operStartTime, oper_end_time: operEndTime
         }); // 주차공간 생성.
         if (!createPlace) {
+            filesDeleter(placeImages);
             return res.status(202).send({ msg: 'failure' });
         }
         return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
+        filesDeleter(placeImages);
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -79,30 +120,44 @@ router.get('/', async (req, res, next) => {
     /*
         주차공간 리스트 요청 API(GET): /api/place
 
-        lat: 요청할 주차공간의 기준 위도(Float, 필수) => 세로
-        lng: 요청할 주차공간의 기준 경도(Float, 필수) => 가로
-        range: 요청할 주차공간의 거리 범위(Float, km 단위, default 값은 1000km)
-        min_price: 최소 가격(Intager)
-        max_price: 최대 가격(Intager)
-        start_date: 입차 시각(DateTimeString)
-        end_date: 출차 시각(DateTimeString)
+        lat: 요청할 주차공간의 기준 위도(Float, 필수)
+        lng: 요청할 주차공간의 기준 경도(Float, 필수)
+        range: 요청할 주차공간의 거리 범위(Float, 필수)
+        // min_price: 최소 가격(Intager)
+        // max_price: 최대 가격(Intager)
+        // start_date: 입차 시각(DateTimeString)
+        // end_date: 출차 시각(DateTimeString)
         filter: 필터링 항목([Type Array...])
 
         * 응답: places = [주차공간 Array...]
     */
-    const { lat, lng } = req.query;
+    const {
+        lat, lng,
+        // min_price, max_price,
+        // start_date, end_date,
+        range, filter
+    } = req.query;
+    /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({ lat, lng });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
-    const {
-        range, min_price, max_price,
-        start_date, end_date, filter
-    } = req.query;
-
     try {
-        const whereArray = [];
+        const searchLat = parseFloat(lat); // float 형 변환
+        const searchLng = parseFloat(lng); // float 형 변환
+        const searchRange = parseFloat(range); // float 형 변환
+        const validDataType = isValidDataType({
+            range: searchRange, lat: searchLat, lng: searchLng,
+        }); // 데이터 형식 검사.
+        if (!validDataType.result) {
+            // 데이터의 형식이 올바르지 않음.
+            return res.status(202).send({ msg: validDataType.message });
+        }
+        
+        const whereArray = []; // 검색 식 배열
+
+        /*
         const minPrice = parseInt(min_price); // int 형 변환
         const maxPrice = parseInt(max_price); // int 형 변환
         !isNaN(minPrice) && whereArray.push({
@@ -117,6 +172,8 @@ router.get('/', async (req, res, next) => {
         end_date && whereArray.push({
             oper_end_time: { [Op.lte]: end_date }
         }); // 출차 예정 시각 필터링 있으면 추가.
+        */
+
         filter && Array.isArray(filter) && whereArray.push({
             [Op.or]: filter.map(f => ({ place_type: f }))
         }); // 타입 필터가 배열로 넘어오면 추가.
@@ -124,17 +181,16 @@ router.get('/', async (req, res, next) => {
         const resultPlaces = await Place.findAll({
             where: { [Op.and]: whereArray }
         }); // 주차공간 리스트 조회.
-        const RANGE = range ? parseFloat(range) : 1000;
         const places = resultPlaces.filter(place => 
-            calculateDistance(parseFloat(lat), parseFloat(lng), place.lat, place.lng) <= RANGE
+            calculateDistance(searchLat, searchLng, place.lat, place.lng) <= searchRange
         ); // 전체 장소 중 range 내의 주차공간을 필터링.
         return res.status(200).send({ msg: 'success', places });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -144,9 +200,13 @@ router.get('/:place_id', async (req, res, next) => {
         주차공간 상세 정보 요청 API(GET): /api/place/:place_id
         { params: place_id }: 상세 보기할 주차공간 id
         
-        * 응답: place = { 주차공간 상세 정보 Object }
+        * 응답:
+            place = { 주차공간 상세 정보 Object }
+            reviews = [주차공간의 리뷰 Array...]
+		    likes = 주차공간 좋아요 수
     */
     const { place_id } = req.params;
+    /* request 데이터 읽어 옴. */
     try {
         const placeID = parseInt(place_id); // int 형 변환
         const place = await Place.findOne({
@@ -154,7 +214,7 @@ router.get('/:place_id', async (req, res, next) => {
         }); // 주차공간 조회.
         if (!place) {
             // 주차공간이 없으면 상세 조회할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 주차공간입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
         const reviews = await Review.findAll({
             where: { place_id: placeID }
@@ -162,13 +222,20 @@ router.get('/:place_id', async (req, res, next) => {
         const likes = await Like.findAll({
             where: { place_id: placeID }
         }); // 해당 주차공간의 좋아요 수 가져옴.
+
+        const UpdatePlaceHit = await Place.update({
+            hit: place.dataValues.hit + 1
+        }, {
+            where: { place_id: placeID }
+        }); // 주차공간 조회 수 증가.
+
         return res.status(200).send({ msg: 'success', place, reviews, likes: likes.length });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -183,6 +250,7 @@ router.get('/like', verifyToken, async (req, res, next) => {
         * 응답: places = [주차공간 Array...]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const resultLikes = Like.findAll({
             where: { user_id }
@@ -203,9 +271,9 @@ router.get('/like', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -218,6 +286,7 @@ router.get('/my', verifyToken, async (req, res, next) => {
         * 응답: places = [주차공간 Array...]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const places = Place.findAll({
             where: { user_id }
@@ -226,9 +295,9 @@ router.get('/my', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -236,20 +305,21 @@ router.get('/my', verifyToken, async (req, res, next) => {
 
 
 /* UPDATE */
-router.put('/:place_id', verifyToken, async (req, res, next) => {
+router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, res, next) => {
     /*
         주차공간 수정 요청 API(PUT): /api/place/:place_id
         { headers }: JWT_TOKEN(유저 로그인 토큰)
+        { params: place_id } 수정할 주차공간 id
 
         addr: 주차공간 주소(String)
         addr_detail: 주차공간 상세주소(String)
         addr_extra: 주차공간 여분주소(String)
         post_num: 주차공간 우편번호(String)
-        lat: 주차공간의 위도(Float) => 세로
-        lng: 주차공간의 경도(Float) => 가로
+        lat: 주차공간의 위도(Float)
+        lng: 주차공간의 경도(Float)
         place_name: 주차공간 이름(String)
         place_comment: 주차공간 설명(String)
-        place_img: 주차공간 이미지([FileList])
+        place_images: 주차공간 이미지([ImageFileList])
         place_fee: 주차공간 요금 / 30분 기준(Intager)
         oper_start_time: 운영 시작 시간(DateTimeString)
         oper_end_time: 운영 종료 시간(DateTimeString)
@@ -260,49 +330,61 @@ router.put('/:place_id', verifyToken, async (req, res, next) => {
     const {
         addr, addr_detail, addr_extra, post_num,
         lat, lng,
-        place_name, place_comment, place_img, place_fee,
+        place_name, place_comment, place_fee,
         oper_start_time, oper_end_time
     } = req.body;
+    const { place_images } = req.files;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
+    const placeImages = place_images ? place_images.map(imageObject => imageObject.path) : null;
     try {
         const placeID = parseInt(place_id); // int 형 변환
+        const updateLat = parseFloat(lat); // float 형 변환
+        const updateLng = parseFloat(lng); // float 형 변환
+        const placeFee = parseInt(place_fee); // int 형 변환
+        const operStartTime = new Date(oper_start_time); // Date 형 변환
+        const operEndTime = new Date(oper_end_time); // Date 형 변환
+
         const existPlace = await Place.findOne({
             where: { user_id, place_id: placeID }
         }); // 수정할 주차공간이 존재하는지 조회.
         if (!existPlace) {
             // 주차공간이 없으면 수정할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 주차공간입니다.' });
+            filesDeleter(placeImages);
+            return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
-        const preValue = existPlace.dataValues;
-        // 기존 값으로 업데이트하기 위한 객체.
-        const updateLat = parseFloat(lat); // float 형 변환
-        const updateLng = parseFloat(lng); // float 형 변환
-        const updatePlace = Place.update({
-            addr: addr ? addr : preValue.addr,
-            addr_detail: addr_detail ? addr_detail : preValue.addr_detail,
-            addr_extra: addr_extra ? addr_extra : preValue.addr_extra,
-            post_num: post_num ? post_num : preValue.post_num,
-            lat: lat ? updateLat : preValue.lat,
-            lng: lng ? updateLng : preValue.lng,
-            place_name: place_name ? place_name : preValue.place_name,
-            place_comment: place_comment ? place_comment : preValue.place_comment,
-            place_img: place_img ? place_img : preValue.place_img,
-            place_fee: place_fee ? place_fee : preValue.place_fee,
-            oper_start_time: oper_start_time ? oper_start_time : preValue.oper_start_time,
-            oper_end_time: oper_end_time ? oper_end_time : preValue.oper_end_time,
-        }, {
+
+        if (!isNaN(operStartTime) && !isNaN(operEndTime)) {
+            // 운영 시간을 설정했을 때,
+            const diffTime = operEndTime.getTime() - operStartTime.getTime(); // 두 시간의 차이를 구함.
+            if (diffTime < 0) {
+                // 운영 종료 시간이 운영 시작 시간보다 앞이면 오류.
+                return res.status(202).send({ msg: '잘못 설정된 운영 시간입니다.' });
+            }   
+        }
+        
+        const updatePlace = Place.update(updateObjectChecker({
+            addr, addr_detail, addr_extra, post_num,
+            lat: updateLat, lng: updateLng,
+            place_name, place_comment, place_images, place_fee: placeFee,
+            oper_start_time: operStartTime, oper_end_time: operEndTime,
+        }), {
             where: { user_id, place_id: placeID }
         }); // 주차공간 수정.
         if (!updatePlace) {
+            filesDeleter(placeImages);
             return res.status(202).send({ msg: 'failure' });
         }
-        return res.status(200).send({ msg: 'success' });
+        const { place_images } = existPlace.dataValues;
+        filesDeleter(place_images); // 주차 공간 이미지 제거
+        return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 수정 도중 오류 발생.
+        filesDeleter(placeImages);
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -320,14 +402,15 @@ router.delete('/:place_id', verifyToken, async (req, res, next) => {
     */
     const { place_id } = req.params;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
         const placeID = parseInt(place_id); // int 형 변환
         const existPlace = await Place.findOne({
             where: { user_id, place_id: placeID }
-        }); // 삭제할 주차공간이 존재하는지 조회.
+        }); // 삭제할 주차공간이 존재하는지 확인.
         if (!existPlace) {
             // 주차공간이 없으면 삭제할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 주차공간입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
         const deletePlace = await Place.destroy({
             where: { user_id, place_id: placeID }
@@ -335,13 +418,14 @@ router.delete('/:place_id', verifyToken, async (req, res, next) => {
         if (!deletePlace) {
             return res.status(202).send({ msg: 'failure' });
         }
+        filesDeleter(existPlace.dataValues.place_images);
         return res.status(200).send({ msg: 'success' });
     } catch (e) {
         // DB 삭제 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });

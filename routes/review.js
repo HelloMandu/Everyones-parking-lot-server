@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const { Review } = require('../models');
+const { Review, Comment } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
+const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const updateObjectChecker = require('../lib/updateObjectChecker');
 
 
 
@@ -31,13 +33,14 @@ router.post('/', verifyToken, async (req, res, next) => {
     });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
-        return res.status(400).send({ msg: omissionResult.message });
+        return res.status(202).send({ msg: omissionResult.message });
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
-        
+        const rentalID = parseInt(rental_id); // int 형 변환
+        const reviewRating = parseFloat(review_rating); // float 형 변환
         const existReview = await Review.findOne({
-            where: { user_id, rental_id, place_id: placeID }
+            where: { user_id, rental_id: rentalID, place_id: placeID }
         }); // 기존에 작성한 리뷰가 있는지 확인.
         if (existReview) {
             // 리뷰가 있으면 작성할 수 없음.
@@ -45,10 +48,10 @@ router.post('/', verifyToken, async (req, res, next) => {
         }
         const createReview = await Review.create({
             user_id,
-            rental_id,
+            rental_id: rentalID,
             place_id: placeID,
             review_body,
-            review_rating: parseFloat(review_rating),
+            review_rating: reviewRating,
         }); // 리뷰 작성.
         if (!createReview) {
             return res.status(202).send({ msg: 'failure' });
@@ -57,9 +60,9 @@ router.post('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -83,9 +86,9 @@ router.get('/', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -95,7 +98,9 @@ router.get('/:review_id', async (req, res, next) => {
         리뷰 상세 정보 요청 API(GET): /api/review/:review_id
         { params: review_id }: 상세 보기할 리뷰 id
 
-        * 응답: review = { 리뷰 상세 정보 Object }
+        * 응답:
+            review = { 리뷰 상세 정보 Object }
+            comments = [리뷰에 속한 댓글 Array...]
     */
     const { review_id } = req.params;
     try {
@@ -104,15 +109,24 @@ router.get('/:review_id', async (req, res, next) => {
             where: { review_id: reviewID }
         }); // 리뷰 상세 정보 조회.
         if (!review) {
-            return res.status(404).send({ msg: '조회할 수 없는 리뷰입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
-        return res.status(200).send({ msg: 'success', review });
+        const comments = await Comment.findAll({
+            where: { review_id: reviewID }
+        }); // 리뷰에 속한 댓글 리스트 조회.
+
+        const UpdateReviewHit = await Review.update({
+            hit: review.dataValues.hit + 1
+        }, {
+            where: { review_id: reviewID }
+        }); // 리뷰 조회 수 증가.
+        return res.status(201).send({ msg: 'success', review, comments });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -126,8 +140,8 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         { params: review_id }: 수정할 리뷰 id
         
-        review_body: 수정할 리뷰 내용(String, 필수)
-        review_rating: 수정할 리뷰 평점(String, 필수)
+        review_body: 수정할 리뷰 내용(String)
+        review_rating: 수정할 리뷰 평점(Float)
 
         * 응답: success / failure
     */
@@ -144,15 +158,16 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
     }
     try {
         const reviewID = parseInt(review_id); // int 형 변환
+        const reviewRating = parseFloat(review_rating); // float 형 변환
         const existReview = await Review.findOne({
             where: { review_id: reviewID, user_id }
         }); // 수정할 리뷰가 존재하는지 확인.
         if (!existReview) {
             // 리뷰가 없으면 수정할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 리뷰입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
         const updateReview = await Review.update(
-            { review_body, review_rating },
+            updateObjectChecker({ review_body, review_rating: reviewRating }),
             { where: { review_id: reviewID, user_id } },
         ); // 리뷰 수정.
         if (!updateReview) {
@@ -162,9 +177,9 @@ router.put('/:review_id', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 수정 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });
@@ -189,7 +204,7 @@ router.delete('/:review_id', verifyToken, async (req, res, next) => {
         }); // 삭제할 리뷰가 존재하는지 확인.
         if (!existReview) {
             // 리뷰가 없으면 삭제할 수 없음.
-            return res.status(404).send({ msg: '조회할 수 없는 리뷰입니다.' });
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
         const deleteReview = await Review.destroy({
             where: { review_id: reviewID, user_id }
@@ -201,9 +216,9 @@ router.delete('/:review_id', verifyToken, async (req, res, next) => {
     } catch (e) {
         // DB 삭제 도중 오류 발생.
         if (e.table) {
-            return res.status(400).send({ msg: foreignKeyChecker(e.table) });
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            return res.status(400).send({ msg: 'database error', error: e });
+            return res.status(202).send({ msg: 'database error', error: e });
         }
     }
 });

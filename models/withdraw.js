@@ -1,30 +1,26 @@
 module.exports = (sequelize, DataTypes) => {
     return sequelize.define(
-        'card',
+        'withdraw',
         {
-            card_id: {
+            withdraw_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
                 autoIncrement: true,
-                comment: "카드 id"
+                comment: "출금 요청 id"
             },
-            bank_name: {
-                allowNull: false,
+            account_number: {
                 type: DataTypes.STRING(255),
-                comment: "은행 이름"
-            },
-            card_num: {
                 allowNull: false,
-                type: DataTypes.STRING(255),
-                comment: "카드 번호"
+                comment: "받을 계좌 번호"
             },
-            card_type: {
+            withdraw_point: {
+                type: DataTypes.INTEGER.UNSIGNED,
                 allowNull: false,
-                type: DataTypes.STRING(255),
-                comment: "카드 타입"
+                defaultValue: 0,
+                comment: "출금 요청 포인트"
             },
-        },
+        }, 
         {
             timestamps: true,
             underscored: true,

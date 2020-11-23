@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: 0,
                 comment: "쿠폰 가격"
             },
-            minimum_cost: {
+            cp_minimum: {
                 type: DataTypes.INTEGER.UNSIGNED,
                 defaultValue: 0,
                 comment: "사용 최소 비용"

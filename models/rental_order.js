@@ -3,9 +3,10 @@ module.exports = (sequelize, DataTypes) => {
         'rental_order',
         {
             rental_id: {
-                type: DataTypes.STRING(45),
+                type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
+                autoIncrement: true,
                 comment: "대여 주문 번호"
             },
             total_price: {
@@ -38,17 +39,13 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "취소금액"
             },
             calculated_price: {
-                type: DataTypes.DOUBLE,
+                type: DataTypes.DOUBLE.UNSIGNED,
                 defaultValue: 0.00,
                 comment: "정산 금액"
             },
             payment_type: {
-                type: DataTypes.STRING(255),
-                comment: "결제방식"
-            },
-            order_status: {
-                type: DataTypes.STRING(255),
-                comment: "입금대기(주문접수): deposit_wait / 주문취소: order_cancel / 배송중: shipping / 배송완료 : place_complete / 정산완료: order_complete"
+                type: DataTypes.INTEGER,
+                comment: "결제 수단"
             },
             rental_start_time: {
                 type: DataTypes.DATE,
@@ -59,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "대여 종료 시간"
             },
             cancel_reason: {
-                type: DataTypes.DATE,
+                type: DataTypes.STRING(255),
                 comment: "취소 사유"
             },
             cancel_time: {
@@ -70,12 +67,8 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.DATE,
                 comment: "정산시간"
             },
-            payment_time: {
-                type: DataTypes.DATE,
-                comment: "결제시간"
-            },
             deleted: {
-                type: DataTypes.DATE,
+                type: DataTypes.BOOLEAN,
                 comment: "0: 정상, 1: 삭제됨"
             },
         },
