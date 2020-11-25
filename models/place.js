@@ -29,12 +29,12 @@ module.exports = (sequelize, DataTypes) => {
             },
             lat: {
                 allowNull: false,
-                type: DataTypes.GEOMETRY,
+                type: DataTypes.FLOAT,
                 comment: "위도"
             },
             lng: {
                 allowNull: false,
-                type: DataTypes.GEOMETRY,
+                type: DataTypes.FLOAT,
                 comment: "경도"
             },
             place_name: {

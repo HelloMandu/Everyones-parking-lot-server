@@ -106,6 +106,7 @@ router.post('/', async (req, res, next) => {
         return res.status(200).send({ msg: 'success', token });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
+        console.log(e);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {

@@ -106,6 +106,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
         return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
+        console.log(e);
         filesDeleter(placeImages);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
