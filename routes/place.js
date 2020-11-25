@@ -73,7 +73,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
     try {
         const insertLat = parseFloat(lat); // float 형 변환
         const insertLng = parseFloat(lng); // float 형 변환
-        const placeType = parseInt(placeType); // int 형 변환
+        const placeType = parseInt(place_type); // int 형 변환
         const placeFee = parseInt(place_fee); // int 형 변환
         const operStartTime = new Date(oper_start_time); // Date 형 변환
         const operEndTime = new Date(oper_end_time); // Date 형 변환
