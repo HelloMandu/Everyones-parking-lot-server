@@ -57,7 +57,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
         oper_start_time, oper_end_time
     } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
-    const { place_images } = req.files;
+    const place_images = req.files;
     /* request 데이터 읽어 옴. */
     const placeImages = place_images ? place_images.map(imageObject => imageObject.path) : [];
     const omissionResult = omissionChecker({
@@ -73,7 +73,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
     try {
         const insertLat = parseFloat(lat); // float 형 변환
         const insertLng = parseFloat(lng); // float 형 변환
-        const placeType = parseInt(placeType); // int 형 변환
+        const placeType = parseInt(place_type); // int 형 변환
         const placeFee = parseInt(place_fee); // int 형 변환
         const operStartTime = new Date(oper_start_time); // Date 형 변환
         const operEndTime = new Date(oper_end_time); // Date 형 변환
@@ -96,7 +96,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
             user_id,
             addr, addr_detail, addr_extra, post_num,
             lat: insertLat, lng: insertLng,
-            place_type: placeType, place_name, place_comment, place_images, place_fee: placeFee,
+            place_type: placeType, place_name, place_comment, place_images: placeImages, place_fee: placeFee,
             oper_start_time: operStartTime, oper_end_time: operEndTime
         }); // 주차공간 생성.
         if (!createPlace) {
