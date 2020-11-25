@@ -6,7 +6,8 @@ const logger = require('morgan');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const sequelize = require('./models').sequelize;
-const indexRouter = require('./routes/index');
+
+const apiRouter = require('./routes/index');
 
 const app = express();
 
@@ -25,7 +26,8 @@ app.use(express.static(path.join(__dirname, 'public'))); // public 폴더를 접
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // uploads 폴더를 접근할 수 있게 함.
 app.use(cors()); // CORS 제한을 제거함.
 
-app.use('/api', indexRouter); // api 서버 라우팅.
+app.get('/', (req, res, next) => { res.render('index') }); // '/' 경로 라우팅
+app.use('/api', apiRouter); // api 서버 라우팅.
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

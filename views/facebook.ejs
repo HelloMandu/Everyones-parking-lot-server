@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+            var fbAsyncInit = function () {
+                FB.init({
+                    appId: <%= appId %>,
+                    cookie: true,
+                    xfbml: true,
+                    version: 'v9.0',
+                });
+                FB.AppEvents.logPageView();
+            };
+
+            (function (d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) {
+                    return;
+                }
+                js = d.createElement(s);
+                js.id = id;
+                js.src = 'https://connect.facebook.net/en_US/sdk.js';
+                fjs.parentNode.insertBefore(js, fjs);
+            })(document, 'script', 'facebook-jssdk');
+
+            window.onload = function () {
+                fbAsyncInit(); // 페이스북 정보 입력
+                FB.login(function (response) { 
+                    if (response.status === 'connected') {
+                        // Logged into your webpage and Facebook.
+                        FB.api('/me/permissions', function (response) {
+                            FB.api('/me', { fields: 'email, name, birthday' }, function (response) {
+                                window.location.replace('/api/Oauth/facebook/callback?id=' + response.id + '&email=' + response.email + '&name=' + response.name + '&birthday=' + response.birthday);
+                            });
+                        });
+                    } else {
+                        window.location.replace('/api/Oauth/facebook/callback?error=failure');
+                        // The person is not logged into your webpage or we are unable to tell. 
+                    }
+                }, { scope: 'email' });
+            }
+        </script>
+        <title>Station Space</title>
+    </head>
+    <body>
+        <h1>Station Space</h1>
+        <p>Welcome to Station Space</p>
+    </body>
+</html>
