@@ -61,7 +61,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
     /* request 데이터 읽어 옴. */
     const placeImages = place_images ? place_images.map(imageObject => imageObject.path) : [];
     const omissionResult = omissionChecker({
-        addr, lat, lng,
+        addr, addr_detail, lat, lng,
         place_type, place_name, place_comment, place_images, place_fee,
         oper_start_time, oper_end_time
     });
@@ -111,6 +111,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
+            console.log(e);
             return res.status(202).send({ msg: 'database error', error: e });
         }
     }

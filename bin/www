@@ -15,11 +15,12 @@ const https = require('https');
  * Get port from environment and store in Express.
  */
 
-// const OPTIONS = {
-//     key: fs.readFileSync(path.join(__dirname, '../keys/key.pem')), // keys 폴더아래 개인키를 불러옴
-//     cert: fs.readFileSync(path.join(__dirname, '../keys/cert.pem')) // keys 폴더아래 공인키를 불러옴
-// }
-
+/*
+const OPTIONS = {
+    key: fs.readFileSync(path.join(__dirname, '../keys/key.pem')), // keys 폴더아래 개인키를 불러옴
+    cert: fs.readFileSync(path.join(__dirname, '../keys/cert.pem')) // keys 폴더아래 공인키를 불러옴
+}
+*/
 
 const port = normalizePort(process.env.PORT || '8080');
 app.set('port', port);

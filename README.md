@@ -478,13 +478,13 @@
 ---------------------------------------
 ### 알림함 페이지
 
-#### 알림 리스트 요청 API(GET): /api/notification(incomplete)
+#### 알림 리스트 요청 API(GET): /api/notification
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 		
 	=> 응답: notifications = [알림 Array…]
 ```
-#### 알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id(incomplete)
+#### 알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: notification_id }: 읽음 처리할 알림 id
@@ -492,10 +492,10 @@
 	=> 응답: success / failure
 ```
 
-#### 알림 삭제 요청 API(DELETE): /api/notification/:notification_id(incomplete)
+#### 알림 삭제 요청 API(DELETE): /api/notification/:notification_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
-+	{ params: notification_id }: 삭제 처리할 알림 id
++	{ params: notification_id }: 삭제할 알림 id
 
 	=> 응답: success / failure
 ```
