@@ -9,5 +9,4 @@ router.use('/naver', naver);
 router.use('/kakao', kakao);
 router.use('/facebook', facebook);
 
-
 module.exports = router;

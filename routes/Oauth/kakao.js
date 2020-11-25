@@ -9,12 +9,12 @@ const { User } = require('../../models');
 
 const REDIRECT_VIEW = 'http://localhost:3000/Oauth';
 
-const STATE = 'test1234';
+const STATE = 'fa13022c2457797b71b9a284665472ad';
 
-const KAKAO_AUTH_URL = 'https://kauth.kakao.com/oauth/authorize';
-const KAKAO_REDIRECT_URL = 'http://localhost:8080/api/Oauth/kakao/callback';
-const KAKAO_TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
-const KAKAO_PROFILE_URL = 'https://kapi.kakao.com/v2/user/me';
+const AUTH_URL = 'https://kauth.kakao.com/oauth/authorize';
+const REDIRECT_URL = 'http://localhost:8080/api/Oauth/kakao/callback';
+const TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
+const PROFILE_URL = 'https://kapi.kakao.com/v2/user/me';
 
 router.get('/', async (req, res, next) => {
     /*
@@ -23,19 +23,18 @@ router.get('/', async (req, res, next) => {
     const AUTH_DATA = querystring.stringify({
         client_id: process.env.KAKAO_ID,
         response_type: "code",
-        redirect_uri: KAKAO_REDIRECT_URL,
+        redirect_uri: REDIRECT_URL,
         state: STATE
     });
-    res.redirect(`${KAKAO_AUTH_URL}?${AUTH_DATA}`);
+    res.redirect(`${AUTH_URL}?${AUTH_DATA}`);
 });
-
 
 router.get('/callback', async (req, res, next) => {
     /*
         카카오 로그인 완료 콜백 요청 API(GET): /api/Oauth/kakao/callback
     */
     const { code, state, error } = req.query;
-
+    
     if (error) {
         // API 요청 실패 시
     }
@@ -43,12 +42,12 @@ router.get('/callback', async (req, res, next) => {
         // API 요청 성공 시
         try {
             /* ----- 접근 토큰 발급 ----- */
-            const token_res = await axios.get(KAKAO_TOKEN_URL, {
+            const token_res = await axios.get(TOKEN_URL, {
                 params: {
                     grant_type: 'authorization_code',
                     client_id: process.env.KAKAO_ID,
                     client_secret: process.env.KAKAO_SECRET,
-                    redirect_uri: KAKAO_REDIRECT_URL,
+                    redirect_uri: REDIRECT_URL,
                     code
                 }
             });
@@ -56,16 +55,14 @@ router.get('/callback', async (req, res, next) => {
             /* ----- 접근 토큰 발급 완료 ----- */
 
             /* ----- 프로필 API 호출 ----- */
-            const profile_res = await axios.post(KAKAO_PROFILE_URL, null, {
+            const profile_res = await axios.post(PROFILE_URL, null, {
                 headers: {
                     'Authorization': `Bearer ${token_data.access_token}`
                 }  
             });
             const { data: profile_data } = profile_res;
             if (!profile_data) {
-                const data = querystring.stringify({
-                    msg: 'failure'
-                });
+                const data = querystring.stringify({ msg: 'failure' });
                 return res.redirect(`${REDIRECT_VIEW}?${data}`);
             }
             const { id: kakao_id, properties, kakao_account } = profile_data;
@@ -80,9 +77,7 @@ router.get('/callback', async (req, res, next) => {
                 // 로그인.
                 if (existUser.dataValues.register_type !== 'kakao') {
                     // 카카오 로그인 가입자가 아니므로 오류.
-                    const data = querystring.stringify({
-                        msg: 'failure'
-                    });
+                    const data = querystring.stringify({ msg: '해당 소셜 로그인 가입자가 아닙니다.' });
                     return res.redirect(`${REDIRECT_VIEW}?${data}`);
                 }
                 const { user_id, email } = existUser.dataValues;
@@ -109,9 +104,7 @@ router.get('/callback', async (req, res, next) => {
                 });
                 if (!createUser) {
                     // 오류
-                    const data = querystring.stringify({
-                        msg: 'failure'
-                    });
+                    const data = querystring.stringify({ msg: 'failure' });
                     return res.redirect(`${REDIRECT_VIEW}?${data}`);
                 }
                 // 회원가입 성공 및 로그인
@@ -129,10 +122,7 @@ router.get('/callback', async (req, res, next) => {
         } catch (error) {
             // 오류
             console.log(error);
-            const data = querystring.stringify({
-                msg: 'failure',
-                error: JSON.stringify(error)
-            });
+            const data = querystring.stringify({ msg: 'failure' });
             return res.redirect(`${REDIRECT_VIEW}?${data}`);
         }
     }

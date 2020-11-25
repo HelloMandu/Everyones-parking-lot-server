@@ -2,9 +2,9 @@
 <html>
     <head>
         <script>
-            window.fbAsyncInit = function () {
+            var fbAsyncInit = function () {
                 FB.init({
-                    appId: '215325773295414',
+                    appId: <%= appId %>,
                     cookie: true,
                     xfbml: true,
                     version: 'v9.0',
@@ -13,8 +13,7 @@
             };
 
             (function (d, s, id) {
-                var js,
-                    fjs = d.getElementsByTagName(s)[0];
+                var js, fjs = d.getElementsByTagName(s)[0];
                 if (d.getElementById(id)) {
                     return;
                 }
@@ -25,9 +24,20 @@
             })(document, 'script', 'facebook-jssdk');
 
             window.onload = function () {
-                FB.login(function (response) {
-                    console.log(response);
-                });
+                fbAsyncInit(); // 페이스북 정보 입력
+                FB.login(function (response) { 
+                    if (response.status === 'connected') {
+                        // Logged into your webpage and Facebook.
+                        FB.api('/me/permissions', function (response) {
+                            FB.api('/me', { fields: 'email, name, birthday' }, function (response) {
+                                window.location.replace('/api/Oauth/facebook/callback?id=' + response.id + '&email=' + response.email + '&name=' + response.name + '&birthday=' + response.birthday);
+                            });
+                        });
+                    } else {
+                        window.location.replace('/api/Oauth/facebook/callback?error=failure');
+                        // The person is not logged into your webpage or we are unable to tell. 
+                    }
+                }, { scope: 'email' });
             }
         </script>
         <title>Station Space</title>
