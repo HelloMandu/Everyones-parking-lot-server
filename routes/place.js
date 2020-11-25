@@ -96,7 +96,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
             user_id,
             addr, addr_detail, addr_extra, post_num,
             lat: insertLat, lng: insertLng,
-            place_type: placeType, place_name, place_comment, place_images: placeImages, place_fee: placeFee,
+            place_type: placeType, place_name, place_comment, place_images, place_fee: placeFee,
             oper_start_time: operStartTime, oper_end_time: operEndTime
         }); // 주차공간 생성.
         if (!createPlace) {
@@ -370,7 +370,7 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
         const updatePlace = Place.update(updateObjectChecker({
             addr, addr_detail, addr_extra, post_num,
             lat: updateLat, lng: updateLng,
-            place_type: placeType, place_name, place_comment, place_images: placeImages, place_fee: placeFee,
+            place_type: placeType, place_name, place_comment, place_images, place_fee: placeFee,
             oper_start_time: operStartTime, oper_end_time: operEndTime,
         }), {
             where: { user_id, place_id: placeID }
@@ -379,8 +379,8 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
             filesDeleter(placeImages);
             return res.status(202).send({ msg: 'failure' });
         }
-        const { place_images: prev_place_images } = existPlace.dataValues;
-        filesDeleter(prev_place_images); // 주차 공간 이미지 제거
+        const { place_images } = existPlace.dataValues;
+        filesDeleter(place_images); // 주차 공간 이미지 제거
         return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 수정 도중 오류 발생.
