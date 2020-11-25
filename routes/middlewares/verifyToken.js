@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const verifyToken = (req, res, next) => {
     try {
         if (!req.headers.authorization) {
-            res.status(401).json({ msg: 'please request token' });
+            return res.status(401).json({ msg: 'please request token' });
         }
         const CLIENT_TOKEN = req.headers.authorization.split('Bearer ')[1];
         const decoded = jwt.verify(CLIENT_TOKEN, process.env.JWT_SECRET);
@@ -13,13 +13,13 @@ const verifyToken = (req, res, next) => {
                 req.decodeToken = decoded;
                 next();
             } else {
-                res.status(401).json({ msg: 'unauthorized' });
+                return res.status(401).json({ msg: 'unauthorized' });
             }
         } else {
-            res.status(401).json({ msg: 'unauthorized' });
+            return res.status(401).json({ msg: 'unauthorized' });
         }
     } catch (err) {
-        res.status(401).json({ msg: 'token expired', err });
+        return res.status(401).json({ msg: 'token expired', err });
     }
 };
 

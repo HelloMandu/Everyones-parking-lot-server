@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { Review, Comment } = require('../models');
+const { Review, Comment, User, Place } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -39,6 +39,18 @@ router.post('/', verifyToken, async (req, res, next) => {
         const placeID = parseInt(place_id); // int 형 변환
         const rentalID = parseInt(rental_id); // int 형 변환
         const reviewRating = parseFloat(review_rating); // float 형 변환
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 유저가 존재하는지 확인.
+        if (!existUser) {
+            return res.status(202).send({ msg: '조회할 수 없는 유저입니다.' });
+        }
+        const existPlace = await Place.findOne({
+            where: { place_id: placeID }
+        }); // 리뷰를 작성할 주차공간이 존재하는지 확인.
+        if (!existPlace) {
+            return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
+        }
         const existReview = await Review.findOne({
             where: { user_id, rental_id: rentalID, place_id: placeID }
         }); // 기존에 작성한 리뷰가 있는지 확인.
@@ -46,6 +58,14 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 리뷰가 있으면 작성할 수 없음.
             return res.status(202).send({ msg: '이미 리뷰가 등록된 주차공간입니다.' });
         }
+
+        /* ----- 알림 생성 ----- */
+        const notification_body = `${existUser.dataValues.name}님이 ${existPlace.dataValues.place_name}에 리뷰를 남기셨습니다.`;
+        const notification_type = 'review';
+        const notification_url = BASE_URL;
+        sendCreateNotification(existPlace.dataValues.user_id, notification_body, notification_type, notification_url);
+        /* ----- 알림 생성 완료 ----- */
+
         const createReview = await Review.create({
             user_id,
             rental_id: rentalID,

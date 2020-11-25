@@ -8,6 +8,7 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { isCellPhoneForm, isValidDataType } = require('../lib/formatChecker');
+const { sendCreateNotification } = require('../actions/notificationSender');
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -204,7 +205,13 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 결제 정보 추가 완료 ----- */
 
         // 주차공간 보유 유저에게 대여 비용을 포인트로 전환해 줘야 함.
-        // 대여 알림을 줘야 함.
+        
+        /* ----- 알림 생성 ----- */
+        const notification_body = `${orderUser.dataValues.name}님이 ${orderPlace.dataValues.place_name}을 대여 신청하셨습니다.`;
+        const notification_type = 'rental';
+        const notification_url = BASE_URL;
+        sendCreateNotification(orderPlace.dataValues.place_user_id, notification_body, notification_type, notification_url);
+        /* ----- 알림 생성 완료 ----- */
 
         /* ----- 대여 정보 추가 ----- */
         const createRentalOrder = await RentalOrder.create({
@@ -350,7 +357,10 @@ router.put('/:rental_id', verifyToken, async (req, res, next) => {
         /* ----- 결제 취소 완료 ----- */
 
         // 주차공간 보유 유저에게 포인트를 환급 받아야 함.
-        // 대여 취소 알림을 줘야 함.
+        
+        /* ----- 알림 생성 ----- */
+        
+        /* ----- 알림 생성 완료 ----- */
 
         /* ----- 결제 취소 상태 기입 ----- */
         const updateRentalOrder = RentalOrder.update({
