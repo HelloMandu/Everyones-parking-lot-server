@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const { Comment } = require('../models');
+const { Comment, User, Review } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const { sendCreateNotification } = require('../actions/notificationSender');
 
 
 /* CREATE */
@@ -29,6 +30,26 @@ router.post('/', verifyToken, async (req, res, next) => {
     }
     try {
         const reviewID = parseInt(review_id); // int 형 변환
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 유저가 존재하는지 확인.
+        if (!existUser) {
+            return res.status(202).send({ msg: '조회할 수 없는 유저입니다.' });
+        }
+        const existReview = await Review.findOne({
+            where: { user_id, review_id: reviewID }
+        }); // 리뷰가 존재하는지 확인.
+        if (!existUser) {
+            return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
+        }
+
+        /* ----- 알림 생성 ----- */
+        const notification_body = `${existUser.dataValues.name}님이 리뷰에 댓글을 남기셨습니다.`;
+        const notification_type = 'comment';
+        const notification_url = BASE_URL;
+        sendCreateNotification(existReview.dataValues.user_id, notification_body, notification_type, notification_url);
+        /* ----- 알림 생성 완료 ----- */
+
         const createComment = await Comment.create({
             review_id: reviewID,
             user_id,

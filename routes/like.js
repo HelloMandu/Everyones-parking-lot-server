@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const { Like } = require('../models');
+const { Like, Place, User } = require('../models');
+
+const { sendCreateNotification, sendDeleteNotification } = require('../actions/notificationSender');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
-
+const BASE_URL = '/';
 
 /* CREATE */
 router.post('/', verifyToken, async (req, res, next) => {
@@ -29,6 +31,18 @@ router.post('/', verifyToken, async (req, res, next) => {
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 좋아요 누른 유저가 존재하는지 확인.
+        if (!existUser) {
+            return res.status(202).send({ msg: '조회할 수 없는 유저입니다.' });
+        }
+        const existPlace = await Place.findOne({
+            where: { place_id: placeID }
+        }); // 주차공간이 존재하는지 확인.
+        if (!existPlace) {
+            return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
+        }
         const existLike = await Like.findOne({
             where: { user_id, place_id: placeID }
         }); // 좋아요가 있는지 확인.
@@ -36,9 +50,18 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 좋아요가 있으면 추가할 수 없음.
             return res.status(202).send({ msg: '이미 좋아요를 한 주차공간입니다.' });
         }
+
+        /* ----- 알림 생성 ----- */
+        const notification_body = `${existUser.dataValues.name}님이 ${existPlace.dataValues.place_name}을 즐겨찾기 하셨습니다.`;
+        const notification_type = 'like';
+        const notification_url = BASE_URL;
+        const notification_id = sendCreateNotification(existPlace.dataValues.user_id, notification_body, notification_type, notification_url);
+        /* ----- 알림 생성 완료 ----- */
+
         const createLike = await Like.create({
             user_id,
-            place_id: placeID
+            place_id: placeID,
+            notification_id
         }); // 좋아요 추가.
         if (!createLike) {
             return res.status(202).send({ msg: 'failure', status: false });
@@ -83,13 +106,18 @@ router.delete('/', verifyToken, async (req, res, next) => {
             // 좋아요가 없으면 삭제할 수 없음.
             return res.status(202).send({ msg: '좋아요하지 않은 주차공간입니다.' });
         } 
-        const destroyLike = await Like.destroy({
+
+        /* ----- 알림 제거 ----- */
+        const result = sendDeleteNotification(existLike.dataValues.notification_id);
+        /* ----- 알림 제거 완료 ----- */
+
+        const deleteLike = await Like.destroy({
             where: {
                 user_id,
                 place_id: placeID
             }
         }); // 좋아요 삭제.
-        if (!destroyLike) {
+        if (!deleteLike) {
             return res.status(202).send({ msg: 'failure', status: true });
         }
         return res.status(200).send({ msg: 'success', status: false });

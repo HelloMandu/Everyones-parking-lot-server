@@ -153,7 +153,9 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 결제 정보 추가 완료 ----- */
 
         // 주차공간 보유 유저에게 대여 비용을 포인트로 전환해 줘야 함.
-        // 대여 알림을 줘야 함.
+
+        /* ----- 알림 생성 ----- */
+        /* ----- 알림 생성 완료 ----- */
 
         /* ----- 연장 정보 갱신 및 추가 ----- */
         const updateRentalOrder = await RentalOrder.update({
