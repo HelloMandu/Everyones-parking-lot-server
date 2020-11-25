@@ -40,6 +40,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
         post_num: 주차공간 우편번호(String)
         lat: 주차공간의 위도(Float, 필수) => 세로
         lng: 주차공간의 경도(Float, 필수) => 가로
+        place_type: 주차공간 타입(String, 필수, 주차공간 타입 = 0: 주차타운, 1: 지하주차장, 2: 지상주차장, 3: 지정주차)
         place_name: 주차공간 이름(String, 필수)
         place_comment: 주차공간 설명(String, 필수)
         place_images: 주차공간 이미지([ImageFileList], 필수)
@@ -52,7 +53,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
     const {
         addr, addr_detail, addr_extra, post_num,
         lat, lng,
-        place_name, place_comment, place_fee,
+        place_type, place_name, place_comment, place_fee,
         oper_start_time, oper_end_time
     } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
@@ -61,7 +62,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
     const placeImages = place_images ? place_images.map(imageObject => imageObject.path) : [];
     const omissionResult = omissionChecker({
         addr, lat, lng,
-        place_name, place_comment, place_images, place_fee,
+        place_type, place_name, place_comment, place_images, place_fee,
         oper_start_time, oper_end_time
     });
     if (!omissionResult.result) {
@@ -72,6 +73,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
     try {
         const insertLat = parseFloat(lat); // float 형 변환
         const insertLng = parseFloat(lng); // float 형 변환
+        const placeType = parseInt(placeType); // int 형 변환
         const placeFee = parseInt(place_fee); // int 형 변환
         const operStartTime = new Date(oper_start_time); // Date 형 변환
         const operEndTime = new Date(oper_end_time); // Date 형 변환
@@ -94,7 +96,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
             user_id,
             addr, addr_detail, addr_extra, post_num,
             lat: insertLat, lng: insertLng,
-            place_name, place_comment, place_images, place_fee: placeFee,
+            place_type: placeType, place_name, place_comment, place_images, place_fee: placeFee,
             oper_start_time: operStartTime, oper_end_time: operEndTime
         }); // 주차공간 생성.
         if (!createPlace) {
@@ -175,7 +177,7 @@ router.get('/', async (req, res, next) => {
         */
 
         filter && Array.isArray(filter) && whereArray.push({
-            [Op.or]: filter.map(f => ({ place_type: f }))
+            [Op.or]: filter.map(f => ({ place_type: parseInt(f) }))
         }); // 타입 필터가 배열로 넘어오면 추가.
 
         const resultPlaces = await Place.findAll({
@@ -317,6 +319,7 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
         post_num: 주차공간 우편번호(String)
         lat: 주차공간의 위도(Float)
         lng: 주차공간의 경도(Float)
+        place_type: 주차공간 타입(String, 주차공간 타입 = 0: 주차타운, 1: 지하주차장, 2: 지상주차장, 3: 지정주차)
         place_name: 주차공간 이름(String)
         place_comment: 주차공간 설명(String)
         place_images: 주차공간 이미지([ImageFileList])
@@ -330,7 +333,7 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
     const {
         addr, addr_detail, addr_extra, post_num,
         lat, lng,
-        place_name, place_comment, place_fee,
+        place_type, place_name, place_comment, place_fee,
         oper_start_time, oper_end_time
     } = req.body;
     const { place_images } = req.files;
@@ -341,6 +344,7 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
         const placeID = parseInt(place_id); // int 형 변환
         const updateLat = parseFloat(lat); // float 형 변환
         const updateLng = parseFloat(lng); // float 형 변환
+        const placeType = parseInt(placeType); // int 형 변환
         const placeFee = parseInt(place_fee); // int 형 변환
         const operStartTime = new Date(oper_start_time); // Date 형 변환
         const operEndTime = new Date(oper_end_time); // Date 형 변환
@@ -366,7 +370,7 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
         const updatePlace = Place.update(updateObjectChecker({
             addr, addr_detail, addr_extra, post_num,
             lat: updateLat, lng: updateLng,
-            place_name, place_comment, place_images, place_fee: placeFee,
+            place_type: placeType, place_name, place_comment, place_images, place_fee: placeFee,
             oper_start_time: operStartTime, oper_end_time: operEndTime,
         }), {
             where: { user_id, place_id: placeID }

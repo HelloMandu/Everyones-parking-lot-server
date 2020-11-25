@@ -111,7 +111,7 @@
 -	lat: 요청할 주차공간의 기준 위도(Float, 필수)
 -	lng: 요청할 주차공간의 기준 경도(Float, 필수)
 -	range: 요청할 주차공간의 거리 범위(Float, km 단위, default 값은 1000km)
--	filter: 필터링 항목([type…])
+-	filter: 필터링 항목([Type Array...] 정보 요청할 Type을 배열에 넣으면 됨.)
 
 	=> 응답: places = [주차공간 Array…]
 ```
@@ -437,6 +437,7 @@
 -	post_num: 주차공간 우편번호(String)
 -	lat: 주차공간의 위도(Float, 필수) 	=> 세로
 -	lng: 주차공간의 경도(Float, 필수) 	=> 가로
+-	place_type: 주차공간 타입(String, 필수, 주차공간 타입 = 0: 주차타운, 1: 지하주차장, 2: 지상주차장, 3: 지정주차)
 -	place_name: 주차공간 이름(String, 필수)
 -	place_comment: 주차공간 설명(String, 필수)
 -	place_images: 주차공간 이미지([ImageFileList], 필수)
@@ -456,6 +457,7 @@
 -	post_num: 주차공간 우편번호(String)
 -	lat: 주차공간의 위도(Float) 	=> 세로
 -	lng: 주차공간의 경도(Float) 	=> 가로
+-	place_type: 주차공간 타입(String, 주차공간 타입 = 0: 주차타운, 1: 지하주차장, 2: 지상주차장, 3: 지정주차)
 -	place_name: 주차공간 이름(String)
 -	place_comment: 주차공간 설명(String)
 -	place_images: 주차공간 이미지([ImageFileList])
