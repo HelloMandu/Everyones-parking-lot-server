@@ -198,51 +198,6 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.get('/:place_id', async (req, res, next) => {
-    /*
-        주차공간 상세 정보 요청 API(GET): /api/place/:place_id
-        { params: place_id }: 상세 보기할 주차공간 id
-        
-        * 응답:
-            place = { 주차공간 상세 정보 Object }
-            reviews = [주차공간의 리뷰 Array...]
-		    likes = 주차공간 좋아요 수
-    */
-    const { place_id } = req.params;
-    /* request 데이터 읽어 옴. */
-    try {
-        const placeID = parseInt(place_id); // int 형 변환
-        const place = await Place.findOne({
-            where: { place_id: placeID }
-        }); // 주차공간 조회.
-        if (!place) {
-            // 주차공간이 없으면 상세 조회할 수 없음.
-            return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
-        }
-        const reviews = await Review.findAll({
-            where: { place_id: placeID }
-        }); // 해당 주차공간의 리뷰 가져옴.
-        const likes = await Like.findAll({
-            where: { place_id: placeID }
-        }); // 해당 주차공간의 좋아요 수 가져옴.
-
-        const UpdatePlaceHit = await Place.update({
-            hit: place.dataValues.hit + 1
-        }, {
-            where: { place_id: placeID }
-        }); // 주차공간 조회 수 증가.
-
-        return res.status(200).send({ msg: 'success', place, reviews, likes: likes.length });
-    } catch (e) {
-        // DB 조회 도중 오류 발생.
-        if (e.table) {
-            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
-        } else {
-            return res.status(202).send({ msg: 'database error', error: e });
-        }
-    }
-});
-
 router.get('/like', verifyToken, async (req, res, next) => {
     /*
         즐겨찾는 주차공간 리스트 요청 API(GET): /api/place/like
@@ -305,6 +260,50 @@ router.get('/my', verifyToken, async (req, res, next) => {
     }
 });
 
+router.get('/:place_id', async (req, res, next) => {
+    /*
+        주차공간 상세 정보 요청 API(GET): /api/place/:place_id
+        { params: place_id }: 상세 보기할 주차공간 id
+        
+        * 응답:
+            place = { 주차공간 상세 정보 Object }
+            reviews = [주차공간의 리뷰 Array...]
+		    likes = 주차공간 좋아요 수
+    */
+    const { place_id } = req.params;
+    /* request 데이터 읽어 옴. */
+    try {
+        const placeID = parseInt(place_id); // int 형 변환
+        const place = await Place.findOne({
+            where: { place_id: placeID }
+        }); // 주차공간 조회.
+        if (!place) {
+            // 주차공간이 없으면 상세 조회할 수 없음.
+            return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
+        }
+        const reviews = await Review.findAll({
+            where: { place_id: placeID }
+        }); // 해당 주차공간의 리뷰 가져옴.
+        const likes = await Like.findAll({
+            where: { place_id: placeID }
+        }); // 해당 주차공간의 좋아요 수 가져옴.
+
+        const UpdatePlaceHit = await Place.update({
+            hit: place.dataValues.hit + 1
+        }, {
+            where: { place_id: placeID }
+        }); // 주차공간 조회 수 증가.
+
+        return res.status(200).send({ msg: 'success', place, reviews, likes: likes.length });
+    } catch (e) {
+        // DB 조회 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
 
 
 /* UPDATE */
