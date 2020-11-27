@@ -247,7 +247,7 @@ router.get('/my', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
     try {
-        const places = Place.findAll({
+        const places = await Place.findAll({
             where: { user_id }
         }); // user_id에 해당하는 주차공간 리스트를 가져옴.
         return res.status(200).send({ msg: 'success', places });
