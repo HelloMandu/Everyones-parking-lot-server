@@ -106,6 +106,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
         return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
+        console.log(e);
         filesDeleter(placeImages);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
@@ -235,7 +236,7 @@ router.get('/my', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
     try {
-        const places = Place.findAll({
+        const places = await Place.findAll({
             where: { user_id }
         }); // user_id에 해당하는 주차공간 리스트를 가져옴.
         return res.status(200).send({ msg: 'success', places });
