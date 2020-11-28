@@ -9,6 +9,7 @@ const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { isCellPhoneForm, isValidDataType } = require('../lib/formatChecker');
 const { sendCreateNotification } = require('../actions/notificationSender');
+const { sendDepositPoint, sendWithdrawPoint } = require('../actions/pointManager');
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -24,7 +25,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
         place_id: 결제할 주차공간 id(Interger, 필수)
-        coupon_id: 사용할 쿠폰 id(Integer)
+        cp_id: 사용할 쿠폰 id(Integer)
         rental_start_time: 대여 시작 시간(DateTimeString, 필수)
         rental_end_time: 대여 종료 시간(DateTimeString, 필수)
         rental_price: 대여비(UNSIGNED Integer, 필수)
@@ -37,7 +38,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         * 응답: rental_id = 대여 주문 번호
     */
     const {
-        place_id, coupon_id,
+        place_id, cp_id,
         rental_start_time, rental_end_time,
         payment_type,
         rental_price, deposit, point_price,
@@ -60,7 +61,7 @@ router.post('/', verifyToken, async (req, res, next) => {
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
-        const couponID = parseInt(coupon_id); // int 형 변환
+        const couponID = parseInt(cp_id); // int 형 변환
         const cardID = parseInt(card_id); // int 형 변환
         const rentalStartTime = new Date(rental_start_time); // Date 형 변환
         const rentalEndTime = new Date(rental_end_time); // Date 형 변환
@@ -85,8 +86,11 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 유저 정보가 없으면 대여할 수 없음.
             return res.status(202).send({ msg: '조회할 수 없는 유저입니다.' });
         }
+        const { point: order_user_point } = orderUser.dataValues;
+
         const orderPlace = await Place.findOne({
-            where: { place_id: placeID }
+            where: { place_id: placeID },
+            include: [{ model: User }]
         }); // 주차공간이 존재하는지 조회.
         if (!orderPlace) {
             // 주차공간이 없으면 대여할 수 없음.
@@ -97,6 +101,9 @@ router.post('/', verifyToken, async (req, res, next) => {
             oper_start_time, oper_end_time,
             place_fee
         } = orderPlace.dataValues;
+        const {
+            point: place_user_point,
+        } = orderPlace.dataValues.user;
 
         /* ----- 대여 시간 비교 알고리즘 ----- */
         const diffTime = rentalEndTime.getTime() - rentalStartTime.getTime(); // 두 시간의 차이를 구함.
@@ -152,12 +159,11 @@ router.post('/', verifyToken, async (req, res, next) => {
                 return res.status(202).send({ msg: '조회할 수 없는 카드입니다.' });
             }
         }
-
         /* ----- 쿠폰 확인 ----- */
-        const orderCoupon = coupon_id ? await Coupon.findOne({
-            where: { user_id: order_user_id, coupon_id: couponID }
+        const orderCoupon = cp_id ? await Coupon.findOne({
+            where: { user_id: order_user_id, cp_id: couponID }
         }) : null; // 쿠폰 가져오기.
-        if (coupon_id && !orderCoupon) {
+        if (cp_id && !orderCoupon) {
             // 찾을 수 없는 쿠폰임.
             return res.status(202).send({ msg: '조회할 수 없는 쿠폰입니다.' });
         }
@@ -166,7 +172,6 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '이미 사용한 쿠폰입니다.' });
         }
         /* ----- 쿠폰 확인 완료  ----- */
-
         /* ----- 포인트 확인 및 요금 계산 ----- */
         let paymentPrice = rentalPrice + rentalDeposit;
         if (point_price) {
@@ -177,12 +182,16 @@ router.post('/', verifyToken, async (req, res, next) => {
             }
             paymentPrice -= pointPrice;
         }
-        if (coupon_id) {
+        if (cp_id) {
             // 사용 쿠폰이 있으면 결제 금액에서 차감
             paymentPrice -= orderCoupon.dataValues.cp_price;
+            await Coupon.update(
+                { use_state: true },
+                { where: { user_id: order_user_id, cp_id: couponID } }
+            ); // 쿠폰 사용 처리.
         }
-        
-        // 계산된 요금이 request한 요금과 일치하는지 확인해야 함.
+
+        // ****** 계산된 요금이 request한 요금과 일치하는지 확인해야 함.
 
         /* ----- 결제 정보 추가 ----- */
         const createPersonalPayment = await PersonalPayment.create({
@@ -204,14 +213,20 @@ router.post('/', verifyToken, async (req, res, next) => {
         }
         /* ----- 결제 정보 추가 완료 ----- */
 
-        // 주차공간 보유 유저에게 대여 비용을 포인트로 전환해 줘야 함.
-        
+
+        /* ----- 포인트 전환 ----- */
+        if (point_price) {
+            sendWithdrawPoint(order_user_id, order_user_point, pointPrice, "주차공간에서 할인 사용");
+        }
+        sendDepositPoint(place_user_id, place_user_point, rentalPrice, "주차공간 대여 수익금");
+        /* ----- 포인트 전환 완료 ----- */
         /* ----- 알림 생성 ----- */
         const notification_body = `${orderUser.dataValues.name}님이 ${orderPlace.dataValues.place_name}을 대여 신청하셨습니다.`;
         const notification_type = 'rental';
         const notification_url = BASE_URL;
-        sendCreateNotification(orderPlace.dataValues.place_user_id, notification_body, notification_type, notification_url);
+        sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
+
 
         /* ----- 대여 정보 추가 ----- */
         const createRentalOrder = await RentalOrder.create({
@@ -219,7 +234,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             place_user_id, // 주차공간 보유 유저 id
             ppayment_id: createPersonalPayment.dataValues.ppayment_id, // 결제 정보 id
             place_id: placeID, // 주차공간 id
-            coupon_id: coupon_id ? couponID : null, // 쿠폰 id
+            cp_id: cp_id ? couponID : null, // 쿠폰 id
             total_price: rental_price, // 전체 금액
             term_price: place_fee, // 기간 금액
             deposit: rentalDeposit, point_price: pointPrice, // 보증금, 포인트 할인 금액
@@ -323,19 +338,55 @@ router.put('/:rental_id', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
     try {
         const rentalID = parseInt(rental_id); // int 형 변환
+
+        const cancelUser = await User.findOne({
+            where: { user_id: order_user_id }
+        }); // 주문 유저가 존재하는지 조회.
+        if (!cancelUser) {
+            // 유저 정보가 없으면 대여할 수 없음.
+            return res.status(202).send({ msg: '조회할 수 없는 유저입니다.' });
+        }
+        const { point: cancel_user_point } = cancelUser.dataValues;
+
         const existRentalOrder = await RentalOrder.findOne({
             where: { order_user_id, rental_id: rentalID }
         }); // 대여 주문이 존재하는지 조회.
         if (!existRentalOrder) {
             return res.status(202).send({ msg: '조회할 수 없는 주문 번호입니다.' })
         }
-        const { place_user_id, ppayment_id, payment_price, payment_type } = existRentalOrder.dataValues;
+        const {
+            place_user_id,
+            place_id,
+            ppayment_id,
+            payment_price,
+            payment_type,
+            rental_start_time,
+            cp_id,
+            total_price,
+            point_price
+        } = existRentalOrder.dataValues;
+        const rentalStartTime = new Date(rental_start_time); // Date 형 변환
+        if (rentalStartTime.getTime() < Date.now()) {
+            // 취소하는 시간이 대여 시작 시간을 넘으면 취소할 수 없음.
+            return res.status(202).send({ msg: '이미 대여 중인 주차공간입니다.' });
+        }
+
         const orderPersonalPayment = await PersonalPayment.findOne({
             where: { user_id: order_user_id, ppayment_id }
         }); // 결제 정보 조회.
         if (!orderPersonalPayment) {
             return res.status(202).send({ msg: '결제하지 않은 주문 번호입니다.' });
         }
+        const cancelPlace = await Place.findOne({
+            where: { place_id },
+            include: [{ model: User }]
+        }); // 주차공간이 존재하는지 조회.
+        if (!cancelPlace) {
+            // 주차공간이 없으면 대여할 수 없음.
+            return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
+        }
+        const { point: place_user_point, } = cancelPlace.dataValues.user;
+
         const { card_id } = orderPersonalPayment.dataValues;
 
         /* ----- 결제 취소 ----- */
@@ -356,9 +407,23 @@ router.put('/:rental_id', verifyToken, async (req, res, next) => {
         }
         /* ----- 결제 취소 완료 ----- */
 
-        // 주차공간 보유 유저에게 포인트를 환급 받아야 함.
-        
+        if (cp_id) {
+            await Coupon.update(
+                { use_state: false },
+                { where: { user_id: order_user_id, cp_id } }
+            ); // 쿠폰 사용 철회.
+        }
+        /* ----- 포인트 전환 ----- */
+        if (point_price) {
+            sendDepositPoint(order_user_id, cancel_user_point, point_price, "주차공간에서 할인 사용");
+        }
+        sendWithdrawPoint(place_user_id, place_user_point, total_price, "주차공간 대여 수익금");
+        /* ----- 포인트 전환 완료 ----- */
         /* ----- 알림 생성 ----- */
+        const notification_body = `${cancelUser.dataValues.name}님이 ${cancelPlace.dataValues.place_name}을 대여 취소하셨습니다.`;
+        const notification_type = 'cancel';
+        const notification_url = BASE_URL;
+        sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
         /* ----- 결제 취소 상태 기입 ----- */

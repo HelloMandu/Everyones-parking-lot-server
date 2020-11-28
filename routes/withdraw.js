@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
-const { Withdraw, User, PointLog } = require('../models');
+const { Withdraw, User } = require('../models');
 
 const MINIMUM_WITHDRAW_POINT = 0; // 최소 출금 포인트
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const { sendWithdrawPoint } = require('../actions/pointManager');
 
 
 
@@ -44,7 +45,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         }
 
         const user_point = existUser.dataValues.point; // 유저 보유 포인트 가져옴.
-        if (user_point < withdrawPoint ) {
+        if (user_point < withdrawPoint) {
             // 유저가 보유한 포인트보다 많은 포인트를 출금할 수 없음.
             return res.status(202).send({ msg: '보유한 포인트보다 많은 포인트를 출금할 수 없습니다.' });
         }
@@ -58,23 +59,14 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(201).send({ msg: 'success' });
             // 현재는 신청 직후 바로 출금되기 때문에 필요 없음.
         */
-        const updateUser = await User.update(
-            { point: user_point - withdrawPoint },
-            { where: { user_id, email } }
-        ); // 유저 포인트 수정.
-        if (!updateUser) {
-            return res.status(202).send({ msg: 'failure' });
-        }
-        const createPointLog = await PointLog.create({
-            user_point: withdraw_point,
-            remain_point: updateUser.dataValues.point,
-            point_text: "(계좌: " + account_number + ")",
-            use_type: true
-        }); // 포인트 기록 생성.
-        if (!createPointLog) {
+
+        /* ----- 출금 기록 생성 ----- */
+        const withdrawResult = sendWithdrawPoint(user_id, user_point, withdrawPoint, "(계좌: " + account_number + ")");
+        if (!withdrawResult) {
             return res.status(202).send({ msg: 'failure' });
         }
         return res.status(201).send({ msg: 'success' });
+        /* ----- 출금 기록 생성 완료 ----- */
     } catch (e) {
         // DB 삽입 도중 오류 발생.
         if (e.table) {

@@ -211,21 +211,10 @@ router.get('/like', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
     try {
         const resultLikes = Like.findAll({
-            where: { user_id }
-        }); // 좋아요 한 리스트 가져옴.
-        if (resultLikes.length) {
-            // 좋아요를 하나 이상 했으면.
-            const wherePlaceId = resultLikes.map(({ place_id }) => ({
-                place_id
-            })); // 좋아요 한 모든 주차공간 ID를 가져옴.
-            const places = Place.findAll({
-                where: { [Op.or]: wherePlaceId }
-            }); // 그 주차공간 ID를 통해 주차공간 리스트 가져옴.
-            return res.status(200).send({ msg: 'success', places });
-        } else {
-            // 좋아요 한 주차공간이 없으면.
-            return res.status(200).send({ msg: 'success', places: [] });
-        }
+            where: { user_id },
+            include: [{ model: Place }]
+        }); // 좋아요 한 주차공간 리스트 가져옴.
+        return res.status(200).send({ msg: 'success', places: resultLikes });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {

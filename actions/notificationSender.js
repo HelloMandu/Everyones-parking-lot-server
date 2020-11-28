@@ -1,7 +1,7 @@
 const { Notification } = require('../models');
 
 /*
-    특정 API Method를 수행한 후 그 행위에 대한 알림을 전달하기 위해
+    특정 API Method를 수행한 후 그 행위에 대한 알림을 전달하기 위해,
     공용적으로 알림을 생성하기 위한 Actions
 */
 
@@ -24,7 +24,7 @@ const sendCreateNotification = (user_id, body, type, url) => {
     }
 }
 
-const sendReadNotification = (notification_id) => {
+const sendReadNotification = notification_id => {
     try {
         const updateNotification = Notification.update({
             read_at: new Date()
@@ -42,7 +42,7 @@ const sendReadNotification = (notification_id) => {
     }
 }
 
-const sendDeleteNotification = (notification_id) => {
+const sendDeleteNotification = notification_id => {
     try {
         const destroyNotification = Notification.destroy({
             where: { notification_id }

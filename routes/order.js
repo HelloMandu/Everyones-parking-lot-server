@@ -56,9 +56,8 @@ router.get('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
 
-        /* 요금 계산 */
+        /* ----- 요금 계산 ----- */
         const { place_fee } = orderPlace.dataValues;
-        // 전체 요금을 계산하기 위해 두 Date 객체 생성.
         const diffTime = rentalEndTime.getTime() - rentalStartTime.getTime(); // 두 시간의 차이를 구함.
         if (diffTime < 0) {
             // 대여 종료 시간이 대여 시작 시간보다 앞이면 오류.
@@ -69,8 +68,7 @@ router.get('/', verifyToken, async (req, res, next) => {
             // 대여 시간이 30분 이하일 경우
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
         }
-        /* 요금 계산 완료 */
-
+        /* ----- 요금 계산 완료 ----- */
         return res.status(200).send({ msg: 'success', place: orderPlace, total_price: place_fee * feeTime, deposit: DEPOSIT });
         // 보증금, 전체 요금, 주차공간 정보를 모두 반환.
     } catch (e) {

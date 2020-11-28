@@ -60,18 +60,35 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 데이터의 형식이 올바르지 않음.
             return res.status(202).send({ msg: validDataType.message });
         }
-        
+        const orderUser = await User.findOne({
+            where: { user_id: order_user_id }
+        }); // 주문 유저가 존재하는지 조회.
+        if (!orderUser) {
+            // 유저 정보가 없으면 대여할 수 없음.
+            return res.status(202).send({ msg: '조회할 수 없는 유저입니다.' });
+        }
+
         const existRentalOrder = await RentalOrder.findOne({
             where: { order_user_id, rental_id: rentalID }
         }); // 대여 주문이 존재하는지 조회.
         if (!existRentalOrder) {
             return res.status(202).send({ msg: '조회할 수 없는 주문 번호입니다.' })
         }
-        const { place_id, total_price, payment_price, rental_end_time } = existRentalOrder.dataValues;
+        const {
+            place_user_id,
+            place_id,
+            total_price,
+            payment_price,
+            rental_end_time
+        } = existRentalOrder.dataValues;
         const orderPlace = await Place.findOne({
-            where: { place_id }
+            where: { place_id },
+            include: [{ model: User }]
         }); // 주차공간 조회.
         const { oper_start_time, oper_end_time, place_fee } = orderPlace.dataValues;
+        const {
+            point: place_user_point,
+        } = orderPlace.dataValues.user;
 
         const rentalEndTime = new Date(rental_end_time); // Date 형 변환
 
@@ -130,7 +147,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             }
         }
         
-        // 계산된 요금이 request한 요금과 일치하는지 확인해야 함.
+        // ***** 계산된 요금이 request한 요금과 일치하는지 확인해야 함.
 
         /* ----- 결제 정보 추가 ----- */
         const createPersonalPayment = await PersonalPayment.create({
@@ -152,9 +169,15 @@ router.post('/', verifyToken, async (req, res, next) => {
         }
         /* ----- 결제 정보 추가 완료 ----- */
 
-        // 주차공간 보유 유저에게 대여 비용을 포인트로 전환해 줘야 함.
+        /* ----- 포인트 전환 ----- */
+        sendDepositPoint(place_user_id, place_user_point, extensionPrice, "주차공간 연장 대여 수익금");
+        /* ----- 포인트 전환 완료 ----- */
 
         /* ----- 알림 생성 ----- */
+        const notification_body = `${orderUser.dataValues.name}님이 ${orderPlace.dataValues.place_name}을 연장 신청하셨습니다.`;
+        const notification_type = 'extension';
+        const notification_url = BASE_URL;
+        sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
         /* ----- 연장 정보 갱신 및 추가 ----- */

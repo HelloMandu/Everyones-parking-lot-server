@@ -166,7 +166,7 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	place_id: 결제할 주차공간 id(Interger, 필수)
--	coupon_id: 사용할 쿠폰 id(Integer)
+-	cp_id: 사용할 쿠폰 id(Integer)
 -	rental_start_time: 대여 시작 시간(DateTimeString, 필수)
 -	rental_end_time: 대여 종료 시간(DateTimeString, 필수)
 -	rental_price: 대여비(UNSIGNED Integer, 필수)

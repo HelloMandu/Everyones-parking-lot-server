@@ -100,8 +100,9 @@ router.get('/', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodedToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
         const reviews = await Review.findAll({
-            where: { user_id }
-        }); // 리뷰 리스트 조회.
+            where: { user_id },
+            include: [{ model: Place }]
+        }); // 리뷰 리스트(주차공간 포함) 조회.
         res.status(200).send({ msg: 'success', reviews });
     } catch (e) {
         // DB 조회 도중 오류 발생.
@@ -126,8 +127,9 @@ router.get('/:review_id', async (req, res, next) => {
     try {
         const reviewID = parseInt(review_id); // int 형 변환
         const review = await Review.findOne({
-            where: { review_id: reviewID }
-        }); // 리뷰 상세 정보 조회.
+            where: { review_id: reviewID },
+            include: [{ model: Place }]
+        }); // 리뷰 상세 정보(주차공간 포함) 조회.
         if (!review) {
             return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
@@ -135,11 +137,10 @@ router.get('/:review_id', async (req, res, next) => {
             where: { review_id: reviewID }
         }); // 리뷰에 속한 댓글 리스트 조회.
 
-        const UpdateReviewHit = await Review.update({
-            hit: review.dataValues.hit + 1
-        }, {
-            where: { review_id: reviewID }
-        }); // 리뷰 조회 수 증가.
+        Review.update(
+            { hit: review.dataValues.hit + 1 },
+            { where: { review_id: reviewID } }
+        ); // 리뷰 조회 수 증가.
         return res.status(201).send({ msg: 'success', review, comments });
     } catch (e) {
         // DB 조회 도중 오류 발생.

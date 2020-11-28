@@ -108,7 +108,7 @@ router.delete('/', verifyToken, async (req, res, next) => {
         } 
 
         /* ----- 알림 제거 ----- */
-        const result = sendDeleteNotification(existLike.dataValues.notification_id);
+        sendDeleteNotification(existLike.dataValues.notification_id);
         /* ----- 알림 제거 완료 ----- */
 
         const deleteLike = await Like.destroy({
