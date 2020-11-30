@@ -299,7 +299,8 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
     try {
         const rentalID = parseInt(rental_id); // int 형 변환
         const order = await RentalOrder.findOne({
-            where: { order_user_id, rental_id: rentalID }
+            where: { order_user_id, rental_id: rentalID },
+            include: [{ model: User }]
         }); // 대여 주문 상세 정보 조회.
         const { cp_id, place_user_id } = order.dataValues;
         const coupon = await Coupon.findOne({
