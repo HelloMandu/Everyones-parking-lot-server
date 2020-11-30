@@ -9,7 +9,7 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
-const BASE_URL = '/';
+const NOTIFICATION_BASE_URL = '/';
 
 /* CREATE */
 router.post('/', verifyToken, async (req, res, next) => {
@@ -54,7 +54,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${existUser.dataValues.name}님이 ${existPlace.dataValues.place_name}을 즐겨찾기 하셨습니다.`;
         const notification_type = 'like';
-        const notification_url = BASE_URL;
+        const notification_url = NOTIFICATION_BASE_URL;
         const notification_id = sendCreateNotification(existPlace.dataValues.user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
