@@ -19,6 +19,7 @@ const event = require('./event');
 const notice = require('./notice');
 const faq = require('./faq');
 const qna = require('./qna');
+const point = require('./point_log');
 
 router.use('/user', user);
 router.use('/Oauth', Oauth);
@@ -38,6 +39,7 @@ router.use('/event', event);
 router.use('/notice', notice);
 router.use('/faq', faq);
 router.use('/qna', qna);
+router.use('./point_log', point);
 
 
 

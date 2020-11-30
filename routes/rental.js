@@ -16,7 +16,6 @@ const MINUTE = 60 * SECOND;
 
 const DEPOSIT = 10000; // 보증금
 
-const NOTIFICATION_BASE_URL = '/';
 
 
 /* CREATE */
@@ -118,8 +117,8 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
         }
         // 운영시간과 겹치는지 안 겹치는지.
-        if (!moment(rentalStartTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")
-            || !moment(rentalEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")) {
+        if (moment(rentalStartTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")
+            || moment(rentalEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")) {
             // 대여 시간이 운영 시간에 포함되지 않으면 대여할 수 없음.
             return res.status(202).send({ msg: '운영 시간 외에는 대여할 수 없습니다.' });
         }
@@ -135,8 +134,8 @@ router.post('/', verifyToken, async (req, res, next) => {
         const overlapOrderList = diffOrderList.filter(orderData => {
             const { rental_start_time: st, rental_end_time: et, cancel_time } = orderData;
             // 주문 목록에서 해당 주문의 대여 시간 정보를 가져옴.
-            return !cancel_time && (moment(rentalStartTime).isBetween(st, et, undefined, "()")
-            || moment(rentalEndTime).isBetween(st, bt, undefined, "()"));
+            return !cancel_time && (moment(rentalStartTime).isBetween(st, et, undefined, "[]")
+            || moment(rentalEndTime).isBetween(st, bt, undefined, "[]"));
         });
         if (overlapOrderList.length) {
             // 겹치는 대여가 하나라도 있으면 대여할 수 없음.
@@ -224,7 +223,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${orderUser.dataValues.name}님이 ${orderPlace.dataValues.place_name}을 대여 신청하셨습니다.`;
         const notification_type = 'rental';
-        const notification_url = NOTIFICATION_BASE_URL;
+        const notification_url = BASE_URL;
         sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
@@ -299,8 +298,7 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
     try {
         const rentalID = parseInt(rental_id); // int 형 변환
         const order = await RentalOrder.findOne({
-            where: { order_user_id, rental_id: rentalID },
-            include: [{ model: User }]
+            where: { order_user_id, rental_id: rentalID }
         }); // 대여 주문 상세 정보 조회.
         const { cp_id, place_user_id } = order.dataValues;
         const coupon = await Coupon.findOne({
@@ -424,7 +422,7 @@ router.put('/:rental_id', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${cancelUser.dataValues.name}님이 ${cancelPlace.dataValues.place_name}을 대여 취소하셨습니다.`;
         const notification_type = 'cancel';
-        const notification_url = NOTIFICATION_BASE_URL;
+        const notification_url = BASE_URL;
         sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
