@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             card_type: {
                 allowNull: false,
-                type: DataTypes.STRING(255),
+                type: DataTypes.INTEGER,
                 comment: "카드 타입"
             },
         },

@@ -16,19 +16,19 @@ router.post('/', verifyToken, async (req, res, next) => {
         
         bank_name: 은행 이름(String, 필수)
         card_num: 카드 번호(String, 필수)
-        card_type: 카드 타입(String, 필수)
 
         * 응답: card = { 카드 정보 Object }
     */
-    const { bank_name, card_num, card_type } = req.body;
+    const { bank_name, card_num } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
-    const omissionResult = omissionChecker({ bank_name, card_num, card_type });
+    const omissionResult = omissionChecker({ bank_name, card_num });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
     try {
+        const card_type = Math.ceil(Math.random() * 10); // 1 ~ 10
         const createCard = await Card.create({
             user_id,
             bank_name, card_num, card_type
@@ -56,6 +56,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
         * 응답: cards = [사용 가능한 카드 Array...]
+        * card_type은 이미지 번호
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
