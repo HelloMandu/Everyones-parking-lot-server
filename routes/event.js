@@ -8,7 +8,6 @@ const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { fileDeleter, filesDeleter } = require('../lib/fileDeleter');
 const updateObjectChecker = require('../lib/updateObjectChecker');
-const { min } = require('moment');
 
 
 

@@ -13,8 +13,6 @@ const updateObjectChecker = require('../lib/updateObjectChecker');
 const { isValidDataType } = require('../lib/formatChecker');
 const { filesDeleter } = require('../lib/fileDeleter');
 
-
-
 /* multer storage */
 const storage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -106,7 +104,6 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
         return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
-        console.log(e);
         filesDeleter(placeImages);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });

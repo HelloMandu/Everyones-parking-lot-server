@@ -12,6 +12,7 @@ const { isValidDataType } = require('../lib/formatChecker');
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 
+const NOTIFICATION_BASE_URL = '/';
 
 
 /* CREATE */
@@ -104,8 +105,8 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
         }
         // 운영시간과 겹치는지 안 겹치는지.
-        if (moment(rentalEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")
-            || moment(extensionEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")) {
+        if (!moment(rentalEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")
+            || !moment(extensionEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")) {
             // 연장 시간이 운영 시간에 포함되지 않으면 대여할 수 없음.
             return res.status(202).send({ msg: '운영 시간 외에는 대여할 수 없습니다.' });
         }
@@ -176,7 +177,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${orderUser.dataValues.name}님이 ${orderPlace.dataValues.place_name}을 연장 신청하셨습니다.`;
         const notification_type = 'extension';
-        const notification_url = BASE_URL;
+        const notification_url = NOTIFICATION_BASE_URL;
         sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
