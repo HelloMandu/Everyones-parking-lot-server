@@ -39,7 +39,7 @@ router.use('/event', event);
 router.use('/notice', notice);
 router.use('/faq', faq);
 router.use('/qna', qna);
-router.use('./point_log', point);
+router.use('/point_log', point);
 
 
 
