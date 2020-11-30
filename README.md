@@ -187,13 +187,13 @@
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
 	=> 응답: cards = [사용 가능한 카드 Array...]
+	* card_type은 이미지 번호
 ```
 #### 카드 등록 요청 API(POST): /api/card
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	bank_name: 은행 이름(String, 필수)
 -	card_num: 카드 번호(String, 필수)
--	card_type: 카드 타입(String, 필수)
 
 	=> 응답: card = { 카드 정보 Object }
 ```

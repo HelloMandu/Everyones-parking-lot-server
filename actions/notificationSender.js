@@ -5,7 +5,7 @@ const { Notification } = require('../models');
     공용적으로 알림을 생성하기 위한 Actions
 */
 
-const sendCreateNotification = (user_id, body, type, url) => {
+const sendCreateNotification = async (user_id, body, type, url) => {
     try {
         const createNotification = Notification.create({
             user_id,
@@ -24,7 +24,7 @@ const sendCreateNotification = (user_id, body, type, url) => {
     }
 }
 
-const sendReadNotification = notification_id => {
+const sendReadNotification = async notification_id => {
     try {
         const updateNotification = Notification.update({
             read_at: new Date()
