@@ -5,7 +5,7 @@ const { PointLog, User } = require('../models');
     공용적으로 포인트 로그를 생성하기 위한 Actions
 */
 
-const sendDepositPoint = (user_id, prev_point, point, text) => {
+const sendDepositPoint = async (user_id, prev_point, point, text) => {
     // 포인트 증감을 위한 메소드
     try {
         const updateUser = await User.update(
@@ -26,7 +26,7 @@ const sendDepositPoint = (user_id, prev_point, point, text) => {
     }
 }
 
-const sendWithdrawPoint = (user_id, prev_point, point, text) => {
+const sendWithdrawPoint = async (user_id, prev_point, point, text) => {
     // 포인트 차감을 위한 메소드
     try {
         const updateUser = await User.update(
