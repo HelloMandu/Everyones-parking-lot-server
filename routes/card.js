@@ -6,6 +6,18 @@ const { Card } = require('../models');
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
+const { isValidDataType } = require('../lib/formatChecker');
+
+const cardName = [
+    "현대카드",
+    "삼성카드",
+    "삼성카드",
+    "삼성카드",
+    "삼성카드",
+    "삼성카드",
+    "삼성카드",
+    "삼성카드"
+];
 
 
 /* CREATE */
@@ -14,24 +26,35 @@ router.post('/', verifyToken, async (req, res, next) => {
         카드 등록 요청 API(POST): /api/card
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         
-        bank_name: 은행 이름(String, 필수)
         card_num: 카드 번호(String, 필수)
+        valid_term: 유효 기간(DateString, 필수)
+        card_password: 카드 비밀번호(String, 필수)
 
         * 응답: card = { 카드 정보 Object }
     */
-    const { bank_name, card_num } = req.body;
+    const { card_num, valid_term, card_password } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
-    const omissionResult = omissionChecker({ bank_name, card_num });
+    const omissionResult = omissionChecker({ card_num, valid_term, card_password });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
     }
     try {
-        const card_type = Math.ceil(Math.random() * 10); // 1 ~ 10
+        const card_type = Math.ceil(Math.random() * 8); // 1 ~ 8 랜덤 값.
+        const validTerm = new Date(valid_term); // Date 형 변환
+
+        const validDataType = isValidDataType({
+            valid_term: validTerm
+        }); // 데이터 형식 검사.
+        if (!validDataType.result) {
+            // 데이터의 형식이 올바르지 않음.
+            return res.status(202).send({ msg: validDataType.message });
+        }
         const createCard = await Card.create({
             user_id,
-            bank_name, card_num, card_type
+            bank_name: cardName[card_type - 1],
+            card_num, card_type
         }); // 카드 등록.
         if (!createCard) {
             return res.status(202).send({ msg: 'failure' });
