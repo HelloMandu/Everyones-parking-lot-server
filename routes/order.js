@@ -48,7 +48,7 @@ router.get('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: validDataType.message });
         }
 
-        const orderPlace = Place.findOne({
+        const orderPlace = await Place.findOne({
             where: { place_id: placeID }
         }); // 결제할 주차공간이 존재하는지 확인.
         if (!orderPlace) {
