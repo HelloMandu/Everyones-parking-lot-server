@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { Notice } = require('../models');
+const { User, Notice } = require('../models');
 
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
@@ -52,7 +52,9 @@ router.get('/', async (req, res, next) => {
         * 응답: notices = [공지사항 Array...]
     */
     try {
-        const notices = await Notice.findAll(); // 공지사항 리스트 조회.
+        const notices = await Notice.findAll({
+            include: [{ model: User }]
+        }); // 공지사항 리스트 조회.
         res.status(200).send({ msg: 'success', notices });
     } catch (e) {
         // DB 조회 도중 오류 발생.
@@ -74,7 +76,8 @@ router.get('/:notice_id', async (req, res, next) => {
     try {
         const noticeID = parseInt(notice_id) // int 형 변환
         const notice = await Notice.findOne({
-            where: { notice_id: noticeID }
+            where: { notice_id: noticeID },
+            include: [{ model: User }]
         }); // 공지사항 상세 정보 조회.
         if (!notice) {
             // 해당 공지사항 id가 DB에 없음.
