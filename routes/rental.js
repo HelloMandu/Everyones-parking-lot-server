@@ -248,7 +248,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         if (!createRentalOrder) {
             return res.status(202).send({ msg: 'failure' });
         }
-        return res.status(202).send({ msg: 'success', rental_id: createRentalOrder.dataValues.rental_id });
+        return res.status(201).send({ msg: 'success', rental_id: createRentalOrder.dataValues.rental_id });
         /* ----- 대여 정보 추가 완료 ----- */
     } catch (e) {
         // DB 삽입 도중 오류 발생.
