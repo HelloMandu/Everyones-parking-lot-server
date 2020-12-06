@@ -44,6 +44,13 @@
 #### 네이버 로그인 요청 API(GET): /api/Oauth/naver (저 링크로 리다이렉트 하면 됨)
 #### 페이스북 로그인 요청 API(GET): /api/Oauth/facebook(저 링크로 리다이렉트 하면 됨)
 
+#### 푸시알림 디바이스 토큰 등록 요청 API(PUT): /api/user/native_token
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+-	native_token: 디바이스의 Native Token(String, 필수)
+
+	=> 응답: success / failure
+```
 ---------------------------------------
 ### 회원가입 페이지
 

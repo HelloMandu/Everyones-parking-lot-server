@@ -712,6 +712,49 @@ router.put('/agree_push', verifyToken, async (req, res, next) => {
     }
 });
 
+router.put('/native_token', verifyToken, async (req, res, next) => {
+    /*
+        푸시알림 디바이스 토큰 등록 요청 API(PUT): /api/user/native_token
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        native_token: 디바이스의 native_token
+
+        * 응답: success / failure
+    */
+    const { native_token } = req.body;
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
+    const omissionResult = omissionChecker({ native_token });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const existUser = await User.findOne({
+            where: { user_id, email }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 푸시알림 수신 동의 변경을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { native_token },
+            { where: { user_id, email } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(201).send({ msg: 'success' });
+    } catch (e) {
+        // DB 수정 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
 
 
 /* DELETE */

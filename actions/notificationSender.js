@@ -1,4 +1,5 @@
-const { Notification } = require('../models');
+const { Notification, User } = require('../models');
+const { sendPushNotification } = require('./pushSender');
 
 /*
     특정 API Method를 수행한 후 그 행위에 대한 알림을 전달하기 위해,
@@ -7,12 +8,27 @@ const { Notification } = require('../models');
 
 const sendCreateNotification = async (user_id, body, type, url) => {
     try {
-        const createNotification = Notification.create({
+
+        const existUser = await User.findOne({
+            where: { user_id }
+        }); // 유저 정보 조회.
+        if (!existUser) {
+            return -1;
+        }
+        const { agree_push, native_token } = existUser.dataValues;
+
+        const createNotification = await Notification.create({
             user_id,
             notification_body: body,
             notification_type: type,
             url
         }); // 유저 알림 생성.
+
+        if (agree_push && native_token) {
+            // 푸쉬 알림 보냄
+            sendPushNotification(existUser.dataValues.native_token, type, body);
+        }
+
 
         if (!createNotification) {
             return -1; // 알림 생성에 실패했을 경우 id값을 -1로.
@@ -26,7 +42,7 @@ const sendCreateNotification = async (user_id, body, type, url) => {
 
 const sendReadNotification = async notification_id => {
     try {
-        const updateNotification = Notification.update({
+        const updateNotification = await Notification.update({
             read_at: new Date()
         }, {
             where: { notification_id }
@@ -42,9 +58,9 @@ const sendReadNotification = async notification_id => {
     }
 }
 
-const sendDeleteNotification = notification_id => {
+const sendDeleteNotification = async notification_id => {
     try {
-        const destroyNotification = Notification.destroy({
+        const destroyNotification = await Notification.destroy({
             where: { notification_id }
         }); // 알림 삭제.
         if (!destroyNotification) {

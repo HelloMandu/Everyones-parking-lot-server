@@ -154,7 +154,7 @@ router.get('/book', verifyToken, async (req, res, next) => {
             }
         }); // 쿠폰북 리스트 조회.
 
-        const coupons = couponZones.dataValues.forEach(coupon => {
+        const coupons = couponZones.dataValues.forEach(async coupon => {
             const { cz_id } = coupon;
             const existCoupon = await Coupon.findOne({
                 where: { user_id, cz_id }
