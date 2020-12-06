@@ -187,7 +187,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 사용 쿠폰이 있으면 결제 금액에서 차감
             paymentPrice -= orderCoupon.dataValues.cp_price;
             await Coupon.update(
-                { use_state: true },
+                { use_state: 1 },
                 { where: { user_id: order_user_id, cp_id: couponID } }
             ); // 쿠폰 사용 처리.
         }
@@ -411,7 +411,7 @@ router.put('/:rental_id', verifyToken, async (req, res, next) => {
 
         if (cp_id) {
             await Coupon.update(
-                { use_state: false },
+                { use_state: 0 },
                 { where: { user_id: order_user_id, cp_id } }
             ); // 쿠폰 사용 철회.
         }

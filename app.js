@@ -14,6 +14,8 @@ const app = express();
 dotenv.config(); // env 파일에 접근할 수 있게 함.
 sequelize.sync(); // Sequelize를 통해 DB 접근.
 
+require('./assets/init')(); // DB 기본값 넣기.
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

@@ -2,7 +2,7 @@ const express = require('express');
 const moment = require('moment');
 const router = express.Router();
 
-const { Coupon, CouponZone } = require('../models');
+const { Coupon, CouponZone, Sequelize: { Op } } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -35,6 +35,15 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 쿠폰 코드가 없으면 쿠폰을 발급 받을 수 없음.
             return res.status(202).send({ msg: '유효하지 않은 쿠폰 코드입니다.' });
         }
+
+        const existCoupon = await Coupon.findOne({
+            user_id, cz_id: cp_code
+        }); // 발급 받은 적 있는 쿠폰인지 조회.
+        if (existCoupon) {
+            // 발급 받은 적 있으면 쿠폰을 발급 받을 수 없음.
+            return res.status(202).send({ msg: '이미 발급 받으신 쿠폰 코드입니다.' });
+        }
+
         const { cz_subject, cz_target, cz_preiod, cz_price, cz_minimum, cz_download } = coupon_zone.dataValues;
         const createCoupon = await Coupon.create({
             user_id,
@@ -48,7 +57,8 @@ router.post('/', verifyToken, async (req, res, next) => {
         if (!createCoupon) {
             return res.status(202).send({ msg: 'failure' });
         }
-        const updateCouponZone = await CouponZone.update(
+        
+        CouponZone.update(
             { cz_download: cz_download + 1 },
             { where: { cz_id: cp_code } }
         ); // 쿠폰존 다운로드 횟수를 줄임.
@@ -133,8 +143,26 @@ router.get('/book', verifyToken, async (req, res, next) => {
 
         * 응답: coupons = [쿠폰 Array...]
     */
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
     try {
-        const coupons = await CouponZone.findAll(); // 쿠폰북 리스트 조회.
+        const couponZones = await CouponZone.findAll({
+            where: {
+                cz_end_date: {
+                    [Op.gte]: new Date()
+                }
+            }
+        }); // 쿠폰북 리스트 조회.
+
+        const coupons = couponZones.dataValues.forEach(coupon => {
+            const { cz_id } = coupon;
+            const existCoupon = await Coupon.findOne({
+                where: { user_id, cz_id }
+            }); // 다운 받은 적이 있는 쿠폰은 다운로드 했다고 표시.
+            coupon.down_status = existCoupon ? true : false;
+            return coupon;
+        }); // 다운로드했던 쿠폰 표시.
+
         return res.status(200).send({ msg: 'success', coupons });
     } catch (e) {
         // DB 조회 도중 오류 발생.
