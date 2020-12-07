@@ -445,7 +445,7 @@
 -	post_num: 주차공간 우편번호(String)
 -	lat: 주차공간의 위도(Float, 필수) 	=> 세로
 -	lng: 주차공간의 경도(Float, 필수) 	=> 가로
--	place_type: 주차공간 타입(String, 필수, 주차공간 타입 = 0: 주차타운, 1: 지하주차장, 2: 지상주차장, 3: 지정주차)
+-	place_type: 주차공간 타입(Integer, 필수, 주차공간 타입 = 0: 주차타운, 1: 지하주차장, 2: 지상주차장, 3: 지정주차)
 -	place_name: 주차공간 이름(String, 필수)
 -	place_comment: 주차공간 설명(String, 필수)
 -	place_images: 주차공간 이미지([ImageFileList], 필수)
