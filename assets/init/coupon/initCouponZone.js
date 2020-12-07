@@ -51,13 +51,13 @@ const init = () => {
     initialValue.forEach(async value => {
         const { cz_id } = value;
         const existCouponZone = await CouponZone.findOne({
-            where: { cz_id }
+            cz_id
         });
         if (!existCouponZone) {
             await CouponZone.create(value);
         }
     });
-};
+}
 
 module.exports = {
     init

@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
+                autoIncrement: true,
                 comment: "쿠폰 번호"
             },
             cp_subject: {
