@@ -1,7 +1,8 @@
 const fs = require('fs');
+const path = require('path');
 const { Place } = require('../../../models');
 
-const initValue = JSON.parse(fs.readFileSync('../../json/ParkingLot.json'));
+const initValue = JSON.parse(fs.readFileSync(path.join(__dirname, '../../json/ParkingLot.json')));
 
 const init = () => {
     initValue.forEach(async value => {
@@ -19,7 +20,7 @@ const init = () => {
             const place_fee = parseInt(Basic_parking_fee);
             const addr = Road_name_address !== "" ? Road_name_address : Location_number_address;
             await Place.create({
-                addr, lat, lng,
+                addr, addr_detail: '', lat, lng,
                 place_type: 0,
                 place_name, place_comment, place_images: ['test1.png', 'test2.png', 'test3.png'],
                 place_fee,

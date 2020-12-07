@@ -10,7 +10,7 @@ const initUser = {
 };
 
 
-const init = () => {
+const init = async () => {
     const { user_id } = initUser;
     const existUser = await User.findOne({
         where: { user_id }
