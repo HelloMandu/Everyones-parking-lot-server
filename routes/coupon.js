@@ -94,7 +94,7 @@ router.get('/', verifyToken, async (req, res, next) => {
     try {
         // const placeID = parseInt(place_id); // int 형 변환
         const coupons = await Coupon.findAll({
-            where: { user_id }
+            where: { user_id, use_state: 0 }
         }); // 사용 가능한 쿠폰 리스트 조회.
         return res.status(200).send({ msg: 'success', coupons });
     } catch (e) {
@@ -120,7 +120,7 @@ router.get('/my', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
     try {
         const coupons = await Coupon.findAll({
-            where: { user_id, use_state: 0 }
+            where: { user_id }
         }); // 내 쿠폰 리스트 조회.
         return res.status(200).send({ msg: 'success', coupons });
     } catch (e) {

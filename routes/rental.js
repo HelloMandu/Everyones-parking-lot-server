@@ -168,7 +168,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 찾을 수 없는 쿠폰임.
             return res.status(202).send({ msg: '조회할 수 없는 쿠폰입니다.' });
         }
-        if (orderCoupon && !orderCoupon.dataValues.use_state) {
+        if (orderCoupon && orderCoupon.dataValues.use_state) {
             // 사용하거나 회수된 쿠폰임.
             return res.status(202).send({ msg: '이미 사용한 쿠폰입니다.' });
         }
