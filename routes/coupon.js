@@ -29,14 +29,14 @@ router.post('/', verifyToken, async (req, res, next) => {
     }
     try {
         const coupon_zone = await CouponZone.findOne({
-            cz_id: cp_code
+            where: { cz_id: cp_code }
         }); // 쿠폰 코드가 쿠폰존에 등록되어 있는지 조회.
         if (!coupon_zone) {
             // 쿠폰 코드가 없으면 쿠폰을 발급 받을 수 없음.
             return res.status(202).send({ msg: '유효하지 않은 쿠폰 코드입니다.' });
         }
         const existCoupon = await Coupon.findOne({
-            user_id, cz_id: cp_code
+            where: { user_id, cz_id: cp_code }
         }); // 발급 받은 적 있는 쿠폰인지 조회.
         if (existCoupon) {
             // 발급 받은 적 있으면 쿠폰을 발급 받을 수 없음.
