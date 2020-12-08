@@ -27,15 +27,16 @@ router.post('/', verifyToken, async (req, res, next) => {
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         
         card_num: 카드 번호(String, 필수)
-        valid_term: 유효 기간(DateString, 필수)
         card_password: 카드 비밀번호(String, 필수)
+        valid_term: 유효 기간(DateString, 필수)
+        cvc: cvc 코드(String, 필수)
 
         * 응답: card = { 카드 정보 Object }
     */
-    const { card_num, valid_term, card_password } = req.body;
+    const { card_num, valid_term, cvc, card_password } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
-    const omissionResult = omissionChecker({ card_num, valid_term, card_password });
+    const omissionResult = omissionChecker({ card_num, valid_term, cvc, card_password });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });

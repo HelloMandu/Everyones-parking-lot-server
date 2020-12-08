@@ -202,6 +202,7 @@
 -	card_num: 카드 번호(String, 필수)
 -	valid_term: 유효 기간(DateString, 필수)
 -	card_password: 카드 비밀번호(String, 필수)
+-	cvc: cvc 코드(String, 필수)
 
 	=> 응답: card = { 카드 정보 Object }
 ```
@@ -367,6 +368,7 @@
 #### 출금 신청 API(POST): /api/withdraw
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+-	bank_name: 받을 은행 이름(String, 필수)
 -	account_number: 받을 계좌 번호(String, 필수)
 -	withdraw_point: 출금할 액수(UNSIGNED Integer, 필수)
 
@@ -393,6 +395,7 @@
 #### 비밀번호 변경 요청 API(PUT): /api/user/password
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+-	prev_password: 현재 비밀번호(String, 필수)
 -	password: 변경할 패스워드(String, 필수)
 
 	=> 응답: success / failure
