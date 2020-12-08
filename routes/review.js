@@ -95,7 +95,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         리뷰 리스트 요청 API(GET): /api/review
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
-        * 응답: reviews = [리뷰 Array...]
+        * 응답: reviews = [리뷰(주차공간 포함) Array...]
     */
     const { user_id } = req.decodedToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
@@ -120,7 +120,7 @@ router.get('/:review_id', async (req, res, next) => {
         { params: review_id }: 상세 보기할 리뷰 id
 
         * 응답:
-            review = { 리뷰 상세 정보 Object }
+            review = { 리뷰 상세 정보 Object, 주차공간 Object }
             comments = [리뷰에 속한 댓글 Array...]
     */
     const { review_id } = req.params;
@@ -137,11 +137,13 @@ router.get('/:review_id', async (req, res, next) => {
             where: { review_id: reviewID }
         }); // 리뷰에 속한 댓글 리스트 조회.
 
-        Review.update(
-            { hit: review.dataValues.hit + 1 },
-            { where: { review_id: reviewID } }
-        ); // 리뷰 조회 수 증가.
-        return res.status(201).send({ msg: 'success', review, comments });
+        // Review.update(
+        //     { hit: review.dataValues.hit + 1 },
+        //     { where: { review_id: reviewID } }
+        // ); // 리뷰 조회 수 증가.
+        await review.increment('hit', { by: 1 }); // 리뷰 조회 수 증가.
+
+        return res.status(200).send({ msg: 'success', review, comments });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {

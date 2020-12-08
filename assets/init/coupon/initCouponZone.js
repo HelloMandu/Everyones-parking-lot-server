@@ -50,12 +50,10 @@ const initialValue = [
 const init = () => {
     initialValue.forEach(async value => {
         const { cz_id } = value;
-        const existCouponZone = await CouponZone.findOne({
-            cz_id
+        await CouponZone.findOrCreate({
+            where: { cz_id },
+            defaults: value
         });
-        if (!existCouponZone) {
-            await CouponZone.create(value);
-        }
     });
 }
 

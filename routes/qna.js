@@ -80,7 +80,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         1:1 문의 리스트 요청 API(GET): /api/qna
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
-        * 응답: qnas = [1:1 문의 Array...]
+        * 응답: qnas = [1:1 문의(유저 포함) Array...]
     */
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
@@ -105,7 +105,7 @@ router.get('/:qna_id', verifyToken, async (req, res, next) => {
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         { params: qna_id }: 상세 정보를 가져올 1:1 문의 id
 
-        * 응답: qna = { 1:1 문의 상세 정보 Object }
+        * 응답: qna = { 1:1 문의 상세 정보 Object, 유저 Object }
     */
     const { qna_id } = req.params;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
@@ -120,11 +120,14 @@ router.get('/:qna_id', verifyToken, async (req, res, next) => {
             // 해당 1:1 문의 id가 DB에 없음.
             return res.status(202).send({ msg: '조회할 수 없는 1:1 문의입니다.' });
         }
-        const UpdateQnaHit = await Qna.update({
-            hit: qna.dataValues.hit + 1
-        }, {
-            where: { user_id, qna_id: qnaID }
-        }); // 1:1 문의 조회 수 증가.
+        // const UpdateQnaHit = await Qna.update({
+        //     hit: qna.dataValues.hit + 1
+        // }, {
+        //     where: { user_id, qna_id: qnaID }
+        // }); // 1:1 문의 조회 수 증가.
+
+        await qna.increment('hit', { by: 1 }); // 1:1 문의 조회 수 증가.
+        
         return res.status(200).send({ msg: 'success', qna });
     } catch (e) {
         // DB 조회 도중 오류 발생.

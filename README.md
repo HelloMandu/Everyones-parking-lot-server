@@ -232,7 +232,9 @@
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	{ params: rental_id }: 대여 주문 번호
 	
-	=> 응답: order = { 대여 주문 정보 Object }
+	=> 응답:
+		order = { 대여 주문 정보 Object, 유저 Object, 주차공간 Object },
+		review = { 리뷰 Object }
 ```
 
 ---------------------------------------
@@ -243,7 +245,7 @@
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	filter: 필터링 항목(아마도 날짜?)
 
-	=> orders: = [대여 주문 정보 Array...]
+	=> orders: = [대여 주문 정보(주차공간 포함) Array...]
 ```
 
 ---------------------------------------
@@ -254,7 +256,9 @@
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: rental_id }: 대여 주문 번호
 	
-	=> 응답: order = { 대여 주문 정보 Object }
+	=> 응답:
+		order = { 대여 주문 정보 Object, 유저 Object, 주차공간 Object },
+		review = { 리뷰 Object }
 ```
 
 ---------------------------------------
@@ -312,7 +316,7 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 	
-	=> 응답: reviews = [리뷰 Array…]
+	=> 응답: reviews = [리뷰(주차공간 포함) Array...]
 ```
 
 ---------------------------------------
@@ -323,7 +327,7 @@
 +	{ params: review_id }: 상세 보기할 리뷰 id
 
 	=> 응답:
-		review = { 리뷰 상세 정보 Object }
+		review = { 리뷰 상세 정보 Object, 주차공간 Object }
 		comments = [리뷰에 속한 댓글 Array...]
 	
 ```
@@ -632,14 +636,14 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
-	=> 응답: qnas = [1:1 문의 Array…]
+	=> 응답: qnas = [1:1 문의(유저 포함) Array…]
 ```
 #### 1:1 문의 상세 정보 요청 API(GET): /api/qna/:qna_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 +	{ params: qna_id }: 상세 보기할 1:1 문의 id(Integer, 필수)
 
-	=> 응답: qna = { 1:1 문의 상세 정보 Object }
+	=> 응답: qna = { 1:1 문의 상세 정보 Object, 유저 Object }
 ```
 #### 1:1 문의 작성 요청 API(POST): /api/qna
 ```

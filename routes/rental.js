@@ -2,7 +2,7 @@ const express = require('express');
 const moment = require('moment');
 const router = express.Router();
 
-const { RentalOrder, Coupon, PersonalPayment, Place, Card, User, Sequelize: { Op } } = require('../models');
+const { RentalOrder, Coupon, PersonalPayment, Place, Card, User, Sequelize: { Op }, Review } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -268,12 +268,15 @@ router.get('/', verifyToken, async (req, res, next) => {
         이용 내역 리스트 요청 API(GET): /api/rental
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
-        * 응답: orders = [대여 주문 정보 Array...]
+        * 응답: orders = [대여 주문 정보(주차공간 포함) Array...]
     */
     const { user_id: order_user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
     try {
-        const orders = await RentalOrder.findAll({ where: { order_user_id } }); // 대여 주문 기록 리스트 조회.
+        const orders = await RentalOrder.findAll({
+            where: { order_user_id },
+            include: [{ model: Place }]
+        }); // 대여 주문 기록 리스트 조회.
         return res.status(200).send({ msg: 'success', orders });
     } catch (e) {
         // DB 조회 도중 오류 발생.
@@ -291,7 +294,9 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
         { headers }: JWT_TOKEN(유저 로그인 토큰)
         { params: rental_id }: 대여 주문 번호
 
-        * 응답: order = { 대여 주문 정보 Object }
+        * 응답:
+            order = { 대여 주문 정보 Object, 유저 Object, 주차공간 Object },
+            review = { 리뷰 Object }
     */
     const { rental_id } = req.params;
     const { user_id: order_user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
@@ -300,20 +305,29 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
         const rentalID = parseInt(rental_id); // int 형 변환
         const order = await RentalOrder.findOne({
             where: { order_user_id, rental_id: rentalID },
-            include: [{ model: User }]
+            include: [{ model: User }, { model: Place }, { model: Coupon }]
         }); // 대여 주문 상세 정보 조회.
-        const { cp_id, place_user_id } = order.dataValues;
-        const coupon = await Coupon.findOne({
-            where: { user_id: order_user_id, cp_id }
-        }); // 쿠폰 상세 정보 조회.
-        const place_user = await User.findOne({
-            where: { user_id: place_user_id }
-        }); // 공간 보유자 정보 조회.
-
         if (!order) {
             return res.status(202).send({ msg: '조회할 수 없는 주문 번호입니다.' });
         }
-        return res.status(200).send({ msg: 'success', order, coupon, place_user });
+        const review = await Review.findOne({
+            where: { user_id: order_user_id, rental_id }
+        }); // 리뷰가 존재하는지 조회.
+
+        const { place_id, created_at } = order.dataValues;
+        const prev_order = await RentalOrder.findOne({
+            where: {
+                place_id,
+                rental_end_time: {
+                    [Op.lte]: created_at
+                }
+            },
+            order: [['rental_end_time', 'DESC']],
+            attributes: [''],
+            include: [{ model: User }]
+        }); // 이전 대여자를 찾기 위해 검색. (테스트)
+
+        return res.status(200).send({ msg: 'success', order, review, prev_order });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {

@@ -12,12 +12,10 @@ const initUser = {
 
 const init = async () => {
     const { user_id } = initUser;
-    const existUser = await User.findOne({
-        where: { user_id }
+    await User.findOrCreate({
+        where: { user_id },
+        defaults: initUser
     });
-    if (!existUser) {
-        await User.create(initUser);
-    }
 };
 
 module.exports = {
