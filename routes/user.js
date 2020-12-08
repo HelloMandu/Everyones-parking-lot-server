@@ -385,13 +385,22 @@ router.put('/password', verifyToken, async (req, res, next) => {
         비밀번호 재설정 API(PUT): /api/user/password
         { headers }: JWT_TOKEN(유저 임시 토큰 or 유저 로그인 토큰)
 
+        prev_password: 마이페이지에서 재설정 시 필요한 현재 비밀번호(String)
         password: 새 비밀번호(String, 필수)
         
         * 응답: success / failure
     */
-    const { password } = req.body;
-    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
-    const omissionResult = omissionChecker({ password });
+    const { prev_password, password } = req.body;
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+
+    let omissionResult = {};
+    if (email !== 'temporary') {
+        // 임시 토큰으로 진행하지 않을 경우 현재 비밀번호 필요.
+        omissionResult = omissionChecker({ password, prev_password });
+    } else {
+        // 임시 토큰으로 진행할 경우 현재 비밀번호 X
+        omissionResult = omissionChecker({ password });
+    }
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
@@ -406,6 +415,14 @@ router.put('/password', verifyToken, async (req, res, next) => {
         if (!existUser) {
             // 가입하지 않은 유저는 비밀번호 변경을 할 수 없음.
             return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        if (email !== 'temporary') {
+            // 임시 토큰으로 진행하지 않을 경우 현재 비밀번호와 비교.
+            const result = await bcrypt.compare(prev_password, existUser.password);
+            if (!result) {
+                // 해싱한 비밀번호가 일치하지 않음.
+                return res.status(202).send({ msg: '비밀번호가 일치하지 않습니다.' });
+            }
         }
         const hash = await bcrypt.hash(password, 12); // 비밀번호 해싱.
         if (!hash) {

@@ -10,7 +10,7 @@ const sendDepositPoint = async (user_id, prev_point, point, text) => {
     try {
         const updateUser = await User.update(
             { point: prev_point + point },
-            { where: { user_id, email } }
+            { where: { user_id } }
         ); // 유저 포인트 수정.
         if (!updateUser) { return false; }
         const createPointLog = await PointLog.create({
@@ -31,7 +31,7 @@ const sendWithdrawPoint = async (user_id, prev_point, point, text) => {
     try {
         const updateUser = await User.update(
             { point: prev_point - point },
-            { where: { user_id, email } }
+            { where: { user_id } }
         ); // 유저 포인트 수정.
         if (!updateUser) { return false; }
         const createPointLog = await PointLog.create({

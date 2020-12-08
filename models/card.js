@@ -24,6 +24,16 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 comment: "카드 타입"
             },
+            cvc: {
+                allowNull: false,
+                type: DataTypes.STRING(5),
+                comment: "CVC 코드"
+            },
+            valid_term: {
+                allowNull: false,
+                type: DataTypes.DATE,
+                comment: "유효기간"
+            },
         },
         {
             timestamps: true,

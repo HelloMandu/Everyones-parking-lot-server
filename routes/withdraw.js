@@ -18,15 +18,16 @@ router.post('/', verifyToken, async (req, res, next) => {
         출금 신청 API(POST): /api/withdraw
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
+        bank_name: 받을 은행 이름(String, 필수)
         account_number: 받을 계좌 번호(String, 필수)
         withdraw_point: 출금할 액수(UNSIGNED Integer, 필수)
 
 	    * 응답: success / failure
     */
 
-    const { account_number, withdraw_point } = req.body;
+    const { bank_name, account_number, withdraw_point } = req.body;
     const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
-    const omissionResult = omissionChecker({ account_number, withdraw_point });
+    const omissionResult = omissionChecker({ bank_name, account_number, withdraw_point });
     if (!omissionResult.result) {
         // 필수 항목이 누락됨.
         return res.status(202).send({ msg: omissionResult.message });
@@ -51,7 +52,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         }
         /*
             const createWithdraw = Withdraw.create({
-                user_id, withdraw_point: withdrawPoint, account_number
+                user_id, withdraw_point: withdrawPoint, account_number, bank_name
             }); // 출금 신청 생성.
             if (!createWithdraw) {
                 return res.status(202).send({ msg: 'failure' });
