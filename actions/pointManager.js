@@ -5,17 +5,19 @@ const { PointLog, User } = require('../models');
     공용적으로 포인트 로그를 생성하기 위한 Actions
 */
 
-const sendDepositPoint = async (user_id, prev_point, point, text) => {
+const sendDepositPoint = async (user_id, point, text) => {
     // 포인트 증감을 위한 메소드
     try {
-        const updateUser = await User.update(
-            { point: prev_point + point },
+        const existUser = await User.findOne(
             { where: { user_id } }
         ); // 유저 포인트 수정.
-        if (!updateUser) { return false; }
+        if (!existUser) { return false; }
+        await existUser.increment('point', { by: point });
+        await existUser.reload();
         const createPointLog = await PointLog.create({
+            user_id,
             use_point: point,
-            remain_point: updateUser.dataValues.point,
+            remain_point: existUser.dataValues.point,
             point_text: text,
             use_type: false
         }); // 포인트 기록 생성.
@@ -26,18 +28,19 @@ const sendDepositPoint = async (user_id, prev_point, point, text) => {
     }
 }
 
-const sendWithdrawPoint = async (user_id, prev_point, point, text) => {
+const sendWithdrawPoint = async (user_id, point, text) => {
     // 포인트 차감을 위한 메소드
     try {
-        const updateUser = await User.update(
-            { point: prev_point - point },
+        const existUser = await User.findOne(
             { where: { user_id } }
         ); // 유저 포인트 수정.
-        if (!updateUser) { return false; }
+        if (!existUser) { return false; }
+        await existUser.decrement('point', { by: point });
+        await existUser.reload();
         const createPointLog = await PointLog.create({
             user_id,
             use_point: point,
-            remain_point: updateUser.dataValues.point,
+            remain_point: existUser.dataValues.point,
             point_text: text,
             use_type: true
         }); // 포인트 기록 생성.
