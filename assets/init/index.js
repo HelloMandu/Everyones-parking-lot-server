@@ -6,7 +6,7 @@ const initCouponZone = require('./coupon/initCouponZone');
 const init = () => {
     // initUser.init();
     // initPlace.init();
-    // initCouponZone.init();
+    initCouponZone.init();
 }
 
 module.exports = init;

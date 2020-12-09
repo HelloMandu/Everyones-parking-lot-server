@@ -314,22 +314,23 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
             where: { user_id: order_user_id, rental_id }
         }); // 리뷰가 존재하는지 조회.
 
-        const { place_id, created_at } = order.dataValues;
+        const { place_id, createdAt } = order.dataValues;
         const prev_order = await RentalOrder.findOne({
             where: {
                 place_id,
                 rental_end_time: {
-                    [Op.lte]: created_at
+                    [Op.lte]: createdAt
                 }
             },
             order: [['rental_end_time', 'DESC']],
-            attributes: [''],
+            attributes: ['rental_id'],
             include: [{ model: User }]
         }); // 이전 대여자를 찾기 위해 검색. (테스트)
 
         return res.status(200).send({ msg: 'success', order, review, prev_order });
     } catch (e) {
         // DB 조회 도중 오류 발생.
+        console.log(e);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
