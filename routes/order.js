@@ -1,7 +1,8 @@
 const express = require('express');
+const moment = require('moment');
 const router = express.Router();
 
-const { Place } = require('../models');
+const { Place, RentalOrder, Sequelize: { Op } } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -56,8 +57,38 @@ router.get('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
 
+        /* ----- 대여 시간 비교 알고리즘 ----- */
+        const {
+            oper_start_time, oper_end_time,
+            place_fee
+        } = orderPlace.dataValues;
+        // 운영시간과 겹치는지 안 겹치는지.
+        if (!moment(rentalStartTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")
+            || !moment(rentalEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")) {
+            // 대여 시간이 운영 시간에 포함되지 않으면 대여할 수 없음.
+            return res.status(202).send({ msg: '운영 시간 외에는 대여할 수 없습니다.' });
+        }
+        const diffOrderList = await RentalOrder.findAll({
+            where: {
+                place_id: placeID,
+                rental_end_time: {
+                    [Op.gte]: rentalStartTime
+                } // 대여 요청 시작 시간 이후로 이용 예정 되어 있는 모든 대여 정보를 가져옴.
+            }
+        }); // 대여하려는 place의 대여 리스트를 가져옴.
+        const overlapOrderList = diffOrderList.filter(orderData => {
+            const { rental_start_time: st, rental_end_time: et, cancel_time } = orderData;
+            // 주문 목록에서 해당 주문의 대여 시간 정보를 가져옴.
+            return !cancel_time
+            && (moment(rentalStartTime).isBetween(st, et, undefined, "[)")
+            || moment(rentalEndTime).isBetween(st, et, undefined, "(]"));
+        });
+        if (overlapOrderList.length) {
+            // 겹치는 대여가 하나라도 있으면 대여할 수 없음.
+            return res.status(202).send({ msg: '타 주문과 대여 시간이 중복될 수 없습니다.' });
+        }
+        /* ----- 대여 시간 비교 알고리즘 완료 ----- */
         /* ----- 요금 계산 ----- */
-        const { place_fee } = orderPlace.dataValues;
         const diffTime = rentalEndTime.getTime() - rentalStartTime.getTime(); // 두 시간의 차이를 구함.
         if (diffTime < 0) {
             // 대여 종료 시간이 대여 시작 시간보다 앞이면 오류.
@@ -73,6 +104,7 @@ router.get('/', verifyToken, async (req, res, next) => {
         // 보증금, 전체 요금, 주차공간 정보를 모두 반환.
     } catch (e) {
         // DB 삽입 도중 오류 발생.
+        console.log(e);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {

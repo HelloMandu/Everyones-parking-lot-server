@@ -2,7 +2,7 @@ const express = require('express');
 const moment = require('moment');
 const router = express.Router();
 
-const { RentalOrder, Coupon, PersonalPayment, Place, Card, User, Sequelize: { Op }, Review } = require('../models');
+const { RentalOrder, Coupon, PersonalPayment, Place, Card, User, Review, Sequelize: { Op } } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -106,6 +106,8 @@ router.post('/', verifyToken, async (req, res, next) => {
             point: place_user_point,
         } = orderPlace.dataValues.user;
 
+        
+
         /* ----- 대여 시간 비교 알고리즘 ----- */
         const diffTime = rentalEndTime.getTime() - rentalStartTime.getTime(); // 두 시간의 차이를 구함.
         if (diffTime < 0) {
@@ -135,8 +137,9 @@ router.post('/', verifyToken, async (req, res, next) => {
         const overlapOrderList = diffOrderList.filter(orderData => {
             const { rental_start_time: st, rental_end_time: et, cancel_time } = orderData;
             // 주문 목록에서 해당 주문의 대여 시간 정보를 가져옴.
-            return !cancel_time && (moment(rentalStartTime).isBetween(st, et, undefined, "()")
-            || moment(rentalEndTime).isBetween(st, et, undefined, "()"));
+            return !cancel_time
+            && (moment(rentalStartTime).isBetween(st, et, undefined, "[)")
+            || moment(rentalEndTime).isBetween(st, et, undefined, "(]"));
         });
         if (overlapOrderList.length) {
             // 겹치는 대여가 하나라도 있으면 대여할 수 없음.
@@ -178,8 +181,8 @@ router.post('/', verifyToken, async (req, res, next) => {
         if (point_price) {
             // 사용 포인트가 있으면 결제 금액에서 차감
             if (orderUser.dataValues.point < pointPrice) {
-                // 보유한 포인트보다 많은 포인트를 사용할 수 없음
-                return res.status(202).send({ msg: '' })
+                // 보유한 포인트보다 많은 포인트를 사용할 수 없음.
+                return res.status(202).send({ msg: '사용할 수 없는 포인트입니다.' })
             }
             paymentPrice -= pointPrice;
         }
@@ -217,9 +220,9 @@ router.post('/', verifyToken, async (req, res, next) => {
 
         /* ----- 포인트 전환 ----- */
         if (point_price) {
-            sendWithdrawPoint(order_user_id, order_user_point, pointPrice, "주차공간에서 할인 사용");
+            await sendWithdrawPoint(order_user_id, pointPrice, "주차공간에서 할인 사용");
         }
-        sendDepositPoint(place_user_id, place_user_point, rentalPrice, "주차공간 대여 수익금");
+        await sendDepositPoint(place_user_id, rentalPrice, "주차공간 대여 수익금");
         /* ----- 포인트 전환 완료 ----- */
         /* ----- 알림 생성 ----- */
         const notification_body = `${orderUser.dataValues.name}님이 ${orderPlace.dataValues.place_name}을 대여 신청하셨습니다.`;
@@ -311,25 +314,26 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 주문 번호입니다.' });
         }
         const review = await Review.findOne({
-            where: { user_id: order_user_id, rental_id }
+            where: { user_id: order_user_id, rental_id: rentalID }
         }); // 리뷰가 존재하는지 조회.
 
-        const { place_id, created_at } = order.dataValues;
-        const prev_order = await RentalOrder.findOne({
-            where: {
-                place_id,
-                rental_end_time: {
-                    [Op.lte]: created_at
-                }
-            },
-            order: [['rental_end_time', 'DESC']],
-            attributes: [''],
-            include: [{ model: User }]
-        }); // 이전 대여자를 찾기 위해 검색. (테스트)
+        // const { place_id, created_at } = order.dataValues;
+        // const prev_order = await RentalOrder.findOne({
+        //     where: {
+        //         place_id,
+        //         rental_end_time: {
+        //             [Op.lte]: created_at
+        //         }
+        //     },
+        //     order: [['rental_end_time', 'DESC']],
+        //     attributes: [''],
+        //     include: [{ model: User }]
+        // }); // 이전 대여자를 찾기 위해 검색. (테스트)
 
-        return res.status(200).send({ msg: 'success', order, review, prev_order });
+        return res.status(200).send({ msg: 'success', order, review/*, prev_order*/ });
     } catch (e) {
         // DB 조회 도중 오류 발생.
+        console.log(e); 
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
