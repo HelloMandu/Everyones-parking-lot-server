@@ -26,9 +26,10 @@ router.get('/callback', async (req, res, next) => {
         페이스북 로그인 완료 콜백 요청 API(GET): /api/Oauth/facebook/callback
     */
     const { id: facebook_id, email: facebook_email, name: facebook_name, birthday, error } = req.query;
-
     if (error) {
         // API 요청 실패 시
+        const data = querystring.stringify({ msg: 'failure' });
+        return res.redirect(`${REDIRECT_VIEW}?${data}`);
     }
     else {
         // API 요청 성공 시
@@ -60,7 +61,7 @@ router.get('/callback', async (req, res, next) => {
                     email: facebook_email, name: facebook_name,
                     password: hash,
                     phone_number: '00012345678',
-                    birth: new Date(birthday),
+                    birth: birthday !== 'undefined' ? new Date(birthday) : new Date(0),
                     register_type: 'facebook',
                     email_verified_at: new Date()
                 });
@@ -82,10 +83,9 @@ router.get('/callback', async (req, res, next) => {
                 return res.redirect(`${REDIRECT_VIEW}?${data}`);
             }
         } catch (e) {
-            console.log(error);
             const data = querystring.stringify({
                 msg: 'failure',
-                error: JSON.stringify(error)
+                error: JSON.stringify(e)
             });
             return res.redirect(`${REDIRECT_VIEW}?${data}`);
         }
