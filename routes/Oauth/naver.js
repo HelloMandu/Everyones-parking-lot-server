@@ -122,12 +122,11 @@ router.get('/callback', async (req, res, next) => {
                 });
                 return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             }
-        } catch (error) {
+        } catch (e) {
             // 오류
-            console.log(error);
             const data = querystring.stringify({
                 msg: 'failure',
-                error: JSON.stringify(error)
+                error: JSON.stringify(e)
             });
             return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
         }

@@ -108,7 +108,6 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
-            console.log(e);
             return res.status(202).send({ msg: 'database error', error: e });
         }
     }
@@ -280,7 +279,7 @@ router.get('/:place_id', async (req, res, next) => {
         // }, {
         //     where: { place_id: placeID }
         // }); // 주차공간 조회 수 증가.
-        await Place.increment('hit'); // 주차공간 조회 수 증가
+        await place.increment('hit'); // 주차공간 조회 수 증가
 
         return res.status(200).send({ msg: 'success', place, reviews, likes: likes.length });
     } catch (e) {

@@ -119,9 +119,10 @@ router.get('/callback', async (req, res, next) => {
                 });
                 return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             }
-        } catch (error) {
+        } catch (e) {
             // 오류
-            const data = querystring.stringify({ msg: 'failure' });
+            console.log(e);
+            const data = querystring.stringify({ msg: 'failure', e });
             return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
         }
     }

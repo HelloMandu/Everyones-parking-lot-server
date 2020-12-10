@@ -20,7 +20,8 @@ router.get('/', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
     try {
         const notifications = Notification.findAll({
-            where: { user_id }
+            where: { user_id },
+            order: [['createdAt', 'DESC']]
         }); // 알림 리스트를 가져옴.
         return res.status(200).send({ msg: 'success', notifications });
     } catch (e) {
