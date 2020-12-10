@@ -23,6 +23,7 @@
         "mysql2": "^2.2.5",
         "node-gcm": "^1.0.3",
         "prettier": "^2.1.2",
-        "sequelize": "^6.3.5"
+        "sequelize": "^6.3.5",
+        "solapi": "^4.0.18"
     }
 }

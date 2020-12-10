@@ -13,7 +13,7 @@ const app = express();
 
 dotenv.config(); // env 파일에 접근할 수 있게 함.
 sequelize.sync().then(() => {
-    require('./assets/init')(); // DB 기본값 넣기.
+    // require('./assets/init')(); // DB 기본값 넣기.
 }); // Sequelize를 통해 DB 접근.
 
 // view engine setup
@@ -24,12 +24,17 @@ app.use(logger('dev')); // 접속 기록 로그를 찍는 미들웨어 추가.
 app.use(express.json()); // req.body에서 json 읽어 옴.
 app.use(express.urlencoded({ extended: false })); // req.body 인식.
 app.use(cookieParser()); // 쿠키를 파싱.
-app.use(express.static(path.join(__dirname, 'public'))); // public 폴더를 접근할 수 있게 함.
+app.use(express.static(path.join(__dirname, 'build'))); // build 폴더를 접근할 수 있게 함.
+// app.use(express.static(path.join(__dirname, 'public'))); // public 폴더를 접근할 수 있게 함.
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // uploads 폴더를 접근할 수 있게 함.
 app.use(cors()); // CORS 제한을 제거함.
 
 app.get('/', (req, res, next) => { res.render('index') }); // '/' 경로 라우팅
 app.use('/api', apiRouter); // api 서버 라우팅.
+
+app.get('*', (req, res, next) => {
+    res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

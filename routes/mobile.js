@@ -11,6 +11,15 @@ const { isCellPhoneForm } = require('../lib/formatChecker');
 
 const createAuthNumber = NUMBER_LENTH => [...new Array(NUMBER_LENTH).keys()].map(() => Math.floor(Math.random() * DECIMAL)).join('');
 
+const { config, Group } = require('solapi');
+config.init({
+    apiKey: 'ENTER API_KEY',
+    apiSecret: 'ENTER API_SECRET',
+});
+async function send(message, agent = {}) {
+    console.log(await Group.sendSimpleMessage(message, agent));
+}
+
 
 
 router.post('/auth', async (req, res, next) => {
@@ -51,6 +60,14 @@ router.post('/auth', async (req, res, next) => {
                 { phone_number, auth_number }
             ); // 휴대폰 인증 번호 생성.
         }
+
+        // send({
+        //     text: `[인증번호] Space Station: 인증번호는 ${auth_number}입니다. 3분 후에 만료됩니다. 다른 사람에게 이 코드를 공유하지 마세요.`,
+        //     to: phone_number,
+        //     from: 'Sender Number',
+        // });
+        // 인증 번호 전송.
+
         if (!statePhoneVerify) {
             return res.status(202).send({ msg: 'failure' });
         }
