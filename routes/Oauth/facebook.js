@@ -3,22 +3,15 @@ const router = express.Router();
 const querystring = require('querystring');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const axios = require('axios');
 
 const { User } = require('../../models');
-
-const REDIRECT_VIEW = 'http://localhost:3000/Oauth';
-
-const AUTH_URL = 'https://nid.naver.com/oauth2.0/authorize';
-const REDIRECT_URL = 'http://localhost:8080/api/Oauth/naver/callback';
-const TOKEN_URL = 'https://nid.naver.com/oauth2.0/token';
-const PROFILE_URL = 'https://openapi.naver.com/v1/nid/me';
 
 router.get('/', async (req, res, next) => {
     /*
         페이스북 로그인 요청 API(GET): /api/Oauth/facebook
     */
-    res.render('facebook', { appId: process.env.FACEBOOK_ID });
+    const REDIRECT_URL = process.env.REDIRECT_BASE + '/facebook/callback';
+    res.render('facebook', { appId: process.env.FACEBOOK_ID, redirectUrl: REDIRECT_URL });
 });
 
 router.get('/callback', async (req, res, next) => {
@@ -29,7 +22,7 @@ router.get('/callback', async (req, res, next) => {
     if (error) {
         // API 요청 실패 시
         const data = querystring.stringify({ msg: 'failure' });
-        return res.redirect(`${REDIRECT_VIEW}?${data}`);
+        return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
     }
     else {
         // API 요청 성공 시
@@ -42,7 +35,7 @@ router.get('/callback', async (req, res, next) => {
                 if (existUser.dataValues.register_type !== 'facebook') {
                     // 페이스북 로그인 가입자가 아니므로 오류.
                     const data = querystring.stringify({ msg: '해당 소셜 로그인 가입자가 아닙니다.' });
-                    return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                    return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
                 }
                 const { user_id, email } = existUser.dataValues;
                 const token = jwt.sign(
@@ -53,7 +46,7 @@ router.get('/callback', async (req, res, next) => {
                     msg: 'success',
                     token
                 });
-                return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             } else {
                 // 회원가입.
                 const hash = await bcrypt.hash(facebook_id, 12); // 비밀번호 해싱.
@@ -68,7 +61,7 @@ router.get('/callback', async (req, res, next) => {
                 if (!createUser) {
                     // 오류
                     const data = querystring.stringify({ msg: 'failure' });
-                    return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                    return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
                 }
                 // 회원가입 성공 및 로그인.
                 const { user_id, email } = createUser.dataValues;
@@ -80,14 +73,14 @@ router.get('/callback', async (req, res, next) => {
                     msg: 'success',
                     token
                 });
-                return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             }
         } catch (e) {
             const data = querystring.stringify({
                 msg: 'failure',
                 error: JSON.stringify(e)
             });
-            return res.redirect(`${REDIRECT_VIEW}?${data}`);
+            return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
         }
     }
 });

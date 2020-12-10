@@ -7,12 +7,9 @@ const axios = require('axios');
 
 const { User } = require('../../models');
 
-const REDIRECT_VIEW = 'http://localhost:3000/Oauth';
-
 const STATE = 'fa13022c2457797b71b9a284665472ad';
 
 const AUTH_URL = 'https://kauth.kakao.com/oauth/authorize';
-const REDIRECT_URL = 'http://localhost:8080/api/Oauth/kakao/callback';
 const TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
 const PROFILE_URL = 'https://kapi.kakao.com/v2/user/me';
 
@@ -20,6 +17,8 @@ router.get('/', async (req, res, next) => {
     /*
         카카오 로그인 요청 API(GET): /api/Oauth/kakao
     */
+    const REDIRECT_URL = process.env.REDIRECT_BASE + '/kakao/callback';
+    
     const AUTH_DATA = querystring.stringify({
         client_id: process.env.KAKAO_ID,
         response_type: "code",
@@ -33,8 +32,9 @@ router.get('/callback', async (req, res, next) => {
     /*
         카카오 로그인 완료 콜백 요청 API(GET): /api/Oauth/kakao/callback
     */
+    const REDIRECT_URL = process.env.REDIRECT_BASE + '/kakao/callback';
+
     const { code, state, error } = req.query;
-    
     if (error) {
         // API 요청 실패 시
     }
@@ -63,7 +63,7 @@ router.get('/callback', async (req, res, next) => {
             const { data: profile_data } = profile_res;
             if (!profile_data) {
                 const data = querystring.stringify({ msg: 'failure' });
-                return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             }
             const { id: kakao_id, properties, kakao_account } = profile_data;
             const { email: kakao_email, birthday } = kakao_account;
@@ -78,7 +78,7 @@ router.get('/callback', async (req, res, next) => {
                 if (existUser.dataValues.register_type !== 'kakao') {
                     // 카카오 로그인 가입자가 아니므로 오류.
                     const data = querystring.stringify({ msg: '해당 소셜 로그인 가입자가 아닙니다.' });
-                    return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                    return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
                 }
                 const { user_id, email } = existUser.dataValues;
                 const token = jwt.sign(
@@ -89,7 +89,7 @@ router.get('/callback', async (req, res, next) => {
                     msg: 'success',
                     token
                 });
-                return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             } else {
                 // 회원가입.
                 const hash = await bcrypt.hash(kakao_id.toString(), 12); // 비밀번호 해싱.
@@ -105,7 +105,7 @@ router.get('/callback', async (req, res, next) => {
                 if (!createUser) {
                     // 오류
                     const data = querystring.stringify({ msg: 'failure' });
-                    return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                    return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
                 }
                 // 회원가입 성공 및 로그인
                 const { user_id, email } = createUser.dataValues;
@@ -117,13 +117,12 @@ router.get('/callback', async (req, res, next) => {
                     msg: 'success',
                     token
                 });
-                return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             }
         } catch (error) {
             // 오류
-            console.log(error);
             const data = querystring.stringify({ msg: 'failure' });
-            return res.redirect(`${REDIRECT_VIEW}?${data}`);
+            return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
         }
     }
 });
