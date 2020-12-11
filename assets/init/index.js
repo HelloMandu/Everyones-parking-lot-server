@@ -9,4 +9,4 @@ const init = () => {
     initCouponZone.init();
 }
 
-module.exports = init;
+module.exports = init; 

@@ -21,6 +21,7 @@ const faq = require('./faq');
 const qna = require('./qna');
 const point = require('./point_log');
 const withdraw = require('./withdraw');
+const notification = require('./notification');
 
 router.use('/user', user);
 router.use('/Oauth', Oauth);
@@ -42,6 +43,7 @@ router.use('/faq', faq);
 router.use('/qna', qna);
 router.use('/point_log', point);
 router.use('/withdraw', withdraw);
+router.use('/notification', notification)
 
 
 
