@@ -7,8 +7,10 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const updateObjectChecker = require('../lib/updateObjectChecker');
+const { sendCreateNotification } = require('../actions/notificationSender');
 
 
+const REVIEW_BASE_URL = '/';
 
 /* CREATE */
 router.post('/', verifyToken, async (req, res, next) => {
@@ -62,7 +64,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${existUser.dataValues.name}님이 ${existPlace.dataValues.place_name}에 리뷰를 남기셨습니다.`;
         const notification_type = 'review';
-        const notification_url = BASE_URL;
+        const notification_url = REVIEW_BASE_URL;
         sendCreateNotification(existPlace.dataValues.user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
@@ -79,6 +81,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
+        console.log(e)
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
@@ -97,7 +100,7 @@ router.get('/', verifyToken, async (req, res, next) => {
 
         * 응답: reviews = [리뷰(주차공간 포함) Array...]
     */
-    const { user_id } = req.decodedToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     try {
         const reviews = await Review.findAll({
             where: { user_id },
@@ -137,10 +140,6 @@ router.get('/:review_id', async (req, res, next) => {
             where: { review_id: reviewID }
         }); // 리뷰에 속한 댓글 리스트 조회.
 
-        // Review.update(
-        //     { hit: review.dataValues.hit + 1 },
-        //     { where: { review_id: reviewID } }
-        // ); // 리뷰 조회 수 증가.
         await review.increment('hit', { by: 1 }); // 리뷰 조회 수 증가.
 
         return res.status(200).send({ msg: 'success', review, comments });

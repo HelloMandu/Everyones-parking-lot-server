@@ -506,6 +506,10 @@ router.put('/car_info', verifyToken, upload.single('car_image'), async (req, res
     const { car_location, car_num } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const car_image = req.file.path;
+    console.log('location : ' + car_location)
+    console.log('car_num : ' + car_num)
+    console.log('user_id : ' + user_id)
+    console.log('car_image : ' + car_image)
     /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({
         car_num,

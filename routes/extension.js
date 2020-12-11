@@ -2,12 +2,15 @@ const express = require('express');
 const moment = require('moment');
 const router = express.Router();
 
-const { Card, Place, RentalOrder, ExtensionOrder, PersonalPayment } = require('../models');
+const { User, Card, Place, RentalOrder, ExtensionOrder, PersonalPayment, Sequelize: { Op } } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { isValidDataType } = require('../lib/formatChecker');
+const { sendCreateNotification } = require('../actions/notificationSender');
+const { sendDepositPoint } = require('../actions/pointManager');
+
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -102,6 +105,9 @@ router.post('/', verifyToken, async (req, res, next) => {
         const feeTime = Math.round(diffTime / (30 * MINUTE)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
         if (feeTime < 1) {
             // 대여 시간이 30분 이하일 경우
+            console.log(diffTime);
+            console.log(extension_end_time);
+            console.log(rental_end_time);
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
         }
         // 운영시간과 겹치는지 안 겹치는지.
@@ -205,6 +211,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 연장 정보 갱신 및 추가 완료 ----- */
     } catch (e) {
         // DB 삽입 도중 오류 발생.
+        console.log(e)
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
