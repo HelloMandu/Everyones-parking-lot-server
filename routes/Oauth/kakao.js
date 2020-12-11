@@ -13,11 +13,12 @@ const AUTH_URL = 'https://kauth.kakao.com/oauth/authorize';
 const TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
 const PROFILE_URL = 'https://kapi.kakao.com/v2/user/me';
 
+const REDIRECT_URL = process.env.REDIRECT_BASE + '/kakao/callback';
+
 router.get('/', async (req, res, next) => {
     /*
         카카오 로그인 요청 API(GET): /api/Oauth/kakao
     */
-    const REDIRECT_URL = process.env.REDIRECT_BASE + '/kakao/callback';
     
     const AUTH_DATA = querystring.stringify({
         client_id: process.env.KAKAO_ID,
@@ -32,7 +33,6 @@ router.get('/callback', async (req, res, next) => {
     /*
         카카오 로그인 완료 콜백 요청 API(GET): /api/Oauth/kakao/callback
     */
-    const REDIRECT_URL = process.env.REDIRECT_BASE + '/kakao/callback';
 
     const { code, state, error } = req.query;
     if (error) {
