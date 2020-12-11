@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "주차공간 이미지"
             },
             place_type: {
-                type: DataTypes.BOOLEAN(4),
+                type: DataTypes.INTEGER,
                 defaultValue: 0,
                 comment: "주차공간 타입 = 0: 주차타운, 1: 지하주차장, 2: 지상주차장, 3: 지정주차"
             },
