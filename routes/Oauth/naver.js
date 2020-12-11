@@ -7,19 +7,19 @@ const axios = require('axios');
 
 const { User } = require('../../models');
 
-const REDIRECT_VIEW = 'http://localhost:3000/Oauth';
-
 const STATE = 'e0a76592f35858fc61b749f568242287';
 
 const AUTH_URL = 'https://nid.naver.com/oauth2.0/authorize';
-const REDIRECT_URL = 'http://localhost:8080/api/Oauth/naver/callback';
 const TOKEN_URL = 'https://nid.naver.com/oauth2.0/token';
 const PROFILE_URL = 'https://openapi.naver.com/v1/nid/me';
+
+const REDIRECT_URL = process.env.REDIRECT_BASE + '/naver/callback';
 
 router.get('/', async (req, res, next) => {
     /*
         네이버 로그인 요청 API(GET): /api/Oauth/naver
     */
+    
     const AUTH_DATA = querystring.stringify({
         client_id: process.env.NAVER_ID,
         response_type: "code",
@@ -33,8 +33,8 @@ router.get('/callback', async (req, res, next) => {
     /*
         네이버 로그인 완료 콜백 요청 API(GET): /api/Oauth/naver/callback
     */
-    const { code, state, error, error_description } = req.query;
 
+    const { code, state, error, error_description } = req.query;
     if (error) {
         // API 요청 실패 시
     }
@@ -62,7 +62,7 @@ router.get('/callback', async (req, res, next) => {
             const { data: profile_data } = profile_res;
             if (profile_data.message !== 'success') {
                 const data = querystring.stringify({ msg: 'failure' });
-                return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             }
             const {
                 id: naver_id,
@@ -81,7 +81,7 @@ router.get('/callback', async (req, res, next) => {
                 if (existUser.dataValues.register_type !== 'naver') {
                     // 네이버 로그인 가입자가 아니므로 오류.
                     const data = querystring.stringify({ msg: '해당 소셜 로그인 가입자가 아닙니다.' });
-                    return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                    return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
                 }
                 const { user_id, email } = existUser.dataValues;
                 const token = jwt.sign(
@@ -92,7 +92,7 @@ router.get('/callback', async (req, res, next) => {
                     msg: 'success',
                     token
                 });
-                return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             } else {
                 // 회원가입.
                 const hash = await bcrypt.hash(naver_id, 12); // 비밀번호 해싱.
@@ -108,7 +108,7 @@ router.get('/callback', async (req, res, next) => {
                 if (!createUser) {
                     // 오류
                     const data = querystring.stringify({ msg: 'failure' });
-                    return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                    return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
                 }
                 // 회원가입 성공 및 로그인.
                 const { user_id, email } = createUser.dataValues;
@@ -120,16 +120,15 @@ router.get('/callback', async (req, res, next) => {
                     msg: 'success',
                     token
                 });
-                return res.redirect(`${REDIRECT_VIEW}?${data}`);
+                return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             }
-        } catch (error) {
+        } catch (e) {
             // 오류
-            console.log(error);
             const data = querystring.stringify({
                 msg: 'failure',
-                error: JSON.stringify(error)
+                error: JSON.stringify(e)
             });
-            return res.redirect(`${REDIRECT_VIEW}?${data}`);
+            return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
         }
     }
 });

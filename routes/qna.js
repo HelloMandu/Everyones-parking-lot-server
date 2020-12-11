@@ -114,7 +114,8 @@ router.get('/:qna_id', verifyToken, async (req, res, next) => {
         const qnaID = parseInt(qna_id) // int 형 변환
         const qna = await Qna.findOne({
             where: { user_id, qna_id: qnaID },
-            include: [{ model: User }]
+            include: [{ model: User }],
+            order: [['createdAt', 'DESC']]
         }); // 1:1 문의 상세 정보 조회.
         if (!qna) {
             // 해당 1:1 문의 id가 DB에 없음.

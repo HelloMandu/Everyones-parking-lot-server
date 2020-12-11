@@ -52,7 +52,9 @@ router.get('/', async (req, res, next) => {
         * 응답: notices = [공지사항 Array...]
     */
     try {
-        const notices = await Notice.findAll(); // 공지사항 리스트 조회.
+        const notices = await Notice.findAll({
+            order: [['createdAt', 'DESC']]
+        }); // 공지사항 리스트 조회.
         res.status(200).send({ msg: 'success', notices });
     } catch (e) {
         // DB 조회 도중 오류 발생.

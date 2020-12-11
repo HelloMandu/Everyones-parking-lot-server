@@ -88,7 +88,9 @@ router.get('/', async (req, res, next) => {
         * 응답: events = [이벤트 Array...]
     */
     try {
-        const events = await Event.findAll(); // 이벤트 리스트 조회.
+        const events = await Event.findAll({
+            order: [['createdAt', 'DESC']]
+        }); // 이벤트 리스트 조회.
         res.status(200).send({ msg: 'success', events });
     } catch (e) {
         // DB 조회 도중 오류 발생.

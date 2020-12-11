@@ -318,9 +318,7 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
         const prev_order = await RentalOrder.findOne({
             where: {
                 place_id,
-                rental_end_time: {
-                    [Op.lte]: createdAt
-                }
+                rental_end_time: { [Op.lte]: createdAt }
             },
             order: [['rental_end_time', 'DESC']],
             attributes: ['rental_id'],
@@ -330,7 +328,6 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
         return res.status(200).send({ msg: 'success', order, review, prev_order });
     } catch (e) {
         // DB 조회 도중 오류 발생.
-        console.log(e);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
