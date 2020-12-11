@@ -14,9 +14,9 @@ const https = require('https');
 try {
     const SSL_PORT = 443;
     const OPTIONS = {
-        ca: fs.readFileSync('/etc/letsencrypt/live/등록 시킨 도메인 이름/fullchain.pem'),
-        key: fs.readFileSync(path.resolve(process.cwd(), '/etc/letsencrypt/live/등록 시킨 도메인 이름/privkey.pem'), 'utf8').toString(),
-        cert: fs.readFileSync(path.resolve(process.cwd(), '/etc/letsencrypt/live/등록 시킨 도메인 이름/cert.pem'), 'utf8').toString(),
+        ca: fs.readFileSync('/etc/letsencrypt/live/intospace.kr/fullchain.pem'),
+        key: fs.readFileSync(path.resolve(process.cwd(), '/etc/letsencrypt/live/intospace.kr/privkey.pem'), 'utf8').toString(),
+        cert: fs.readFileSync(path.resolve(process.cwd(), '/etc/letsencrypt/live/intospace.kr/cert.pem'), 'utf8').toString(),
     };
 
     https.createServer(OPTIONS, app).listen(SSL_PORT, () => {
