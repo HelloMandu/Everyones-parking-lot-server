@@ -13,11 +13,11 @@ const createAuthNumber = NUMBER_LENTH => [...new Array(NUMBER_LENTH).keys()].map
 
 const { config, Group } = require('solapi');
 config.init({
-    apiKey: 'ENTER API_KEY',
-    apiSecret: 'ENTER API_SECRET',
+    apiKey: process.env.SOLAPI_KEY,
+    apiSecret: process.env.SOLAPI_SECRET,
 });
 async function send(message, agent = {}) {
-    console.log(await Group.sendSimpleMessage(message, agent));
+    await Group.sendSimpleMessage(message, agent);
 }
 
 
@@ -60,19 +60,20 @@ router.post('/auth', async (req, res, next) => {
                 { phone_number, auth_number }
             ); // 휴대폰 인증 번호 생성.
         }
-
-        // send({
-        //     text: `[인증번호] Space Station: 인증번호는 ${auth_number}입니다. 3분 후에 만료됩니다. 다른 사람에게 이 코드를 공유하지 마세요.`,
-        //     to: phone_number,
-        //     from: 'Sender Number',
-        // });
+        send({
+            type: 'SMS', // 발송할 메시지 타입 (SMS, LMS, MMS, ATA, CTA)
+            text: `[인증번호] Space Station: 인증번호는 ${auth_number}입니다. 3분 후에 만료됩니다.`,
+            to: phone_number,
+            from: process.env.SOLAPI_SENDER,
+        });
         // 인증 번호 전송.
 
         if (!statePhoneVerify) {
             return res.status(202).send({ msg: 'failure' });
         }
-        return res.status(200).send({ msg: 'success', auth_number });
+        return res.status(200).send({ msg: 'success' });
     } catch (e) {
+        console.log(e);
         // DB 생성 도중 오류 발생.
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });

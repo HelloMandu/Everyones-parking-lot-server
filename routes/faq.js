@@ -86,7 +86,8 @@ router.get('/', async (req, res, next) => {
             return res.status(202).send({ msg: validDataType.message });
         }
         const faqs = await Faq.findAll({
-            where: { faq_type: faqType }
+            where: { faq_type: faqType },
+            order: [['createdAt', 'DESC']]
         }); // 자주 묻는 질문 리스트 조회.
         res.status(200).send({ msg: 'success', notices: faqs });
     } catch (e) {

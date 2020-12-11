@@ -13,11 +13,12 @@ const AUTH_URL = 'https://nid.naver.com/oauth2.0/authorize';
 const TOKEN_URL = 'https://nid.naver.com/oauth2.0/token';
 const PROFILE_URL = 'https://openapi.naver.com/v1/nid/me';
 
+const REDIRECT_URL = process.env.REDIRECT_BASE + '/naver/callback';
+
 router.get('/', async (req, res, next) => {
     /*
         네이버 로그인 요청 API(GET): /api/Oauth/naver
     */
-    const REDIRECT_URL = process.env.REDIRECT_BASE + '/naver/callback';
     
     const AUTH_DATA = querystring.stringify({
         client_id: process.env.NAVER_ID,
@@ -32,7 +33,6 @@ router.get('/callback', async (req, res, next) => {
     /*
         네이버 로그인 완료 콜백 요청 API(GET): /api/Oauth/naver/callback
     */
-    const REDIRECT_URL = process.env.REDIRECT_BASE + '/naver/callback';
 
     const { code, state, error, error_description } = req.query;
     if (error) {
@@ -122,12 +122,11 @@ router.get('/callback', async (req, res, next) => {
                 });
                 return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
             }
-        } catch (error) {
+        } catch (e) {
             // 오류
-            console.log(error);
             const data = querystring.stringify({
                 msg: 'failure',
-                error: JSON.stringify(error)
+                error: JSON.stringify(e)
             });
             return res.redirect(`${process.env.REDIRECT_VIEW}?${data}`);
         }

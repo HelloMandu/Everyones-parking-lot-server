@@ -6,11 +6,12 @@ const bcrypt = require('bcrypt');
 
 const { User } = require('../../models');
 
+const REDIRECT_URL = process.env.REDIRECT_BASE + '/facebook/callback';
+
 router.get('/', async (req, res, next) => {
     /*
         페이스북 로그인 요청 API(GET): /api/Oauth/facebook
     */
-    const REDIRECT_URL = process.env.REDIRECT_BASE + '/facebook/callback';
     res.render('facebook', { appId: process.env.FACEBOOK_ID, redirectUrl: REDIRECT_URL });
 });
 

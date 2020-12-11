@@ -104,7 +104,6 @@ router.get('/', verifyToken, async (req, res, next) => {
         // 보증금, 전체 요금, 주차공간 정보를 모두 반환.
     } catch (e) {
         // DB 삽입 도중 오류 발생.
-        console.log(e);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {

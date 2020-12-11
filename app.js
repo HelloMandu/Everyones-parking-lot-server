@@ -4,6 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const dotenv = require('dotenv');
+dotenv.config(); // env 파일에 접근할 수 있게 함.
 const cors = require('cors');
 const sequelize = require('./models').sequelize;
 
@@ -11,7 +12,6 @@ const apiRouter = require('./routes/index');
 
 const app = express();
 
-dotenv.config(); // env 파일에 접근할 수 있게 함.
 sequelize.sync().then(() => {
     // require('./assets/init')(); // DB 기본값 넣기.
 }); // Sequelize를 통해 DB 접근.
