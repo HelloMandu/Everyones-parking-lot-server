@@ -6,11 +6,28 @@ const logger = require('morgan');
 const dotenv = require('dotenv');
 dotenv.config(); // env 파일에 접근할 수 있게 함.
 const cors = require('cors');
-const sequelize = require('./models').sequelize;
-
-const apiRouter = require('./routes/index');
 
 const app = express();
+
+const sequelize = require('./models').sequelize;
+
+/*
+app.all('*', (req, res, next) => {
+    // https 로 경로 자동 변경
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    if (protocol === 'https') {
+        next();
+    } else {
+        const from = `${protocol}://${req.hostname}${req.url}`;
+        const to = `https://${req.hostname}${req.url}`;
+        console.log(`[${req.method}]: ${from} -> ${to}`);
+        res.redirect(to);
+    }
+});
+*/
+
+
+const apiRouter = require('./routes/index');
 
 sequelize.sync().then(() => {
     // require('./assets/init')(); // DB 기본값 넣기.
