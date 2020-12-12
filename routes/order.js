@@ -94,8 +94,8 @@ router.get('/', verifyToken, async (req, res, next) => {
             // 대여 종료 시간이 대여 시작 시간보다 앞이면 오류.
             return res.status(202).send({ msg: '잘못 설정된 대여 시간입니다.' });
         }
-        const feeTime = Math.round(diffTime / (30 * MINUTE)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
-        if (feeTime < 1) {
+        const feeTime = Math.ceil(diffTime / (30 * MINUTE)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
+        if (feeTime <= 1) {
             // 대여 시간이 30분 이하일 경우
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
         }

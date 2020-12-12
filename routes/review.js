@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { Review, Comment, User, Place } = require('../models');
+const { Review, Comment, User, Place, RentalOrder } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -131,13 +131,14 @@ router.get('/:review_id', async (req, res, next) => {
         const reviewID = parseInt(review_id); // int 형 변환
         const review = await Review.findOne({
             where: { review_id: reviewID },
-            include: [{ model: Place }]
+            include: [{ model: Place }, { model: RentalOrder }]
         }); // 리뷰 상세 정보(주차공간 포함) 조회.
         if (!review) {
             return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
         }
         const comments = await Comment.findAll({
-            where: { review_id: reviewID }
+            where: { review_id: reviewID },
+            include: [{ model: User }]
         }); // 리뷰에 속한 댓글 리스트 조회.
 
         await review.increment('hit', { by: 1 }); // 리뷰 조회 수 증가.
