@@ -1,7 +1,7 @@
 const { User } = require('../../../models');
 
 const initUser = {
-    user_id: 0,
+    user_id: 1,
     email: 'parking@gmail.com',
     name: '테스터',
     password: '0',
