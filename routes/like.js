@@ -51,6 +51,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '이미 좋아요를 한 주차공간입니다.' });
         }
 
+        console.log('existPlace: ', existPlace);
         /* ----- 알림 생성 ----- */
         const notification_body = `${existUser.dataValues.name}님이 ${existPlace.dataValues.place_name}을 즐겨찾기 하셨습니다.`;
         const notification_type = 'like';

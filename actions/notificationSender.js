@@ -24,6 +24,8 @@ const sendCreateNotification = async (user_id, body, type, url) => {
             url
         }); // 유저 알림 생성.
 
+        console.log('createNotification: ', createNotification);
+
         if (agree_push && native_token) {
             // 푸쉬 알림 보냄
             sendPushNotification(existUser.dataValues.native_token, type, body);
