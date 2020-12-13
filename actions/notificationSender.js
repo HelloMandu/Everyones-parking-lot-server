@@ -36,6 +36,7 @@ const sendCreateNotification = async (user_id, body, type, url) => {
         return createNotification.dataValues.notification_id;
         // 알림 생성에 성공하면 id값을 반환.
     } catch (e) {
+        console.log(e);
         return -1; // 알림 생성에 실패했을 경우 id값을 -1로.
     }
 }
