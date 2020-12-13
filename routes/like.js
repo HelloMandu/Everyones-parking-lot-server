@@ -79,6 +79,41 @@ router.post('/', verifyToken, async (req, res, next) => {
 
 
 
+/* READ */
+router.get('/', verifyToken, async (req, res, next) => {
+    /*
+        주차공간 좋아요 유무 요청 API(GET): /api/like
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        place_id: 좋아요 유무 확인할 주차공간 id(Integer, 필수)
+
+        * 응답: status = 좋아요 상태        
+    */
+    const { place_id } = req.query;
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    const omissionResult = omissionChecker({ place_id });
+    if (!omissionResult.result) {
+        // 필수 항목이 누락됨.
+        return res.status(202).send({ msg: omissionResult.message });
+    }
+    try {
+        const placeID = parseInt(place_id); // int 형 변환
+        const existLike = await Like.findOne({
+            where: { user_id, place_id: placeID }
+        }); // 좋아요가 있는지 확인.
+        return res.status(200).send({ msg: 'success', status: existLike ? true : false });
+    } catch (e) {
+        // DB 조회 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+
+
 /* DELETE */
 router.delete('/', verifyToken, async (req, res, next) => {
     /*
@@ -105,7 +140,7 @@ router.delete('/', verifyToken, async (req, res, next) => {
         if (!existLike) {
             // 좋아요가 없으면 삭제할 수 없음.
             return res.status(202).send({ msg: '좋아요하지 않은 주차공간입니다.' });
-        } 
+        }
 
         /* ----- 알림 제거 ----- */
         sendDeleteNotification(existLike.dataValues.notification_id);
