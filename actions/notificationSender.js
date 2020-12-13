@@ -23,14 +23,10 @@ const sendCreateNotification = async (user_id, body, type, url) => {
             notification_type: type,
             url
         }); // 유저 알림 생성.
-
-        console.log('createNotification: ', createNotification);
-
         if (agree_push && native_token) {
             // 푸쉬 알림 보냄
             sendPushNotification(existUser.dataValues.native_token, type, body);
         }
-
 
         if (!createNotification) {
             return -1; // 알림 생성에 실패했을 경우 id값을 -1로.
@@ -38,7 +34,6 @@ const sendCreateNotification = async (user_id, body, type, url) => {
         return createNotification.dataValues.notification_id;
         // 알림 생성에 성공하면 id값을 반환.
     } catch (e) {
-        console.log(e);
         return -1; // 알림 생성에 실패했을 경우 id값을 -1로.
     }
 }
