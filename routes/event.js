@@ -17,6 +17,8 @@ const storage = multer.diskStorage({
         callback(null, 'uploads/'); // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
     },
     filename: function (req, file, callback) {
+        console.log(file.originalname);
+        console.log(new String(file.originalname.getBytes("UTF-8"), "8859_1"));
         callback(null, new Date().valueOf() + file.originalname); // cb 콜백함수를 통해 전송된 파일 이름 설정
     },
 });
