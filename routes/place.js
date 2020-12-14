@@ -211,6 +211,7 @@ router.get('/like', verifyToken, async (req, res, next) => {
             where: { user_id },
             include: [{ model: Place }]
         }); // 좋아요 한 주차공간 리스트 가져옴.
+        console.log('RESULT_LIKE:', resultLikes);
         return res.status(200).send({ msg: 'success', places: resultLikes });
     } catch (e) {
         // DB 조회 도중 오류 발생.
