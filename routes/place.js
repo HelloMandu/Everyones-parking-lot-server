@@ -207,7 +207,7 @@ router.get('/like', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
     try {
-        const resultLikes = Like.findAll({
+        const resultLikes = await Like.findAll({
             where: { user_id },
             include: [{ model: Place }]
         }); // 좋아요 한 주차공간 리스트 가져옴.
