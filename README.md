@@ -142,6 +142,13 @@
 		reviews = [주차공간의 리뷰 Array...]
 		likes = 주차공간 좋아요 수
 ```
+#### 주차공간 좋아요 유무 요청 API(GET): /api/like
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+-	place_id: 좋아요 유무 확인할 주차공간 id(Integer, 필수)
+	
+	=> 응답: status = 좋아요 상태
+```
 #### 주차공간 좋아요 추가 요청 API(POST): /api/like
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)

@@ -275,13 +275,7 @@ router.get('/:place_id', async (req, res, next) => {
             where: { place_id: placeID }
         }); // 해당 주차공간의 좋아요 수 가져옴.
 
-        // const UpdatePlaceHit = await Place.update({
-        //     hit: place.dataValues.hit + 1
-        // }, {
-        //     where: { place_id: placeID }
-        // }); // 주차공간 조회 수 증가.
         await place.increment('hit'); // 주차공간 조회 수 증가
-
         return res.status(200).send({ msg: 'success', place, reviews, likes: likes.length });
     } catch (e) {
         // DB 조회 도중 오류 발생.
