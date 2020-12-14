@@ -3,7 +3,7 @@ const router = express.Router();
 
 const multer = require('multer');
 
-const { User, Place, Review, Like, Sequelize: { Op } } = require('../models');
+const { User, Place, Review, Like, Sequelize: { Op }, RentalOrder } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -232,8 +232,20 @@ router.get('/my', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
     try {
+        const now = new Date();
         const places = await Place.findAll({
-            where: { user_id }
+            where: { user_id },
+            include: [{
+                model: RentalOrder,
+                where: {
+                    rental_start_time: {
+                        [Op.lte]: now
+                    }, // 현재 시간 > 대여 시작 시간
+                    rental_end_time: {
+                        [Op.gte]: now
+                    } // 현재 시간 < 대여 종료 시간
+                } // 이 식이 일치하면 현재 대여 중임.
+            }]
         }); // user_id에 해당하는 주차공간 리스트를 가져옴.
         return res.status(200).send({ msg: 'success', places });
     } catch (e) {
