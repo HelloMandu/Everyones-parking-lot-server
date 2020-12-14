@@ -3,7 +3,7 @@ const router = express.Router();
 
 const multer = require('multer');
 
-const { Place, Review, Like, Sequelize: { Op } } = require('../models');
+const { User, Place, Review, Like, Sequelize: { Op } } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -268,7 +268,8 @@ router.get('/:place_id', async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
         const reviews = await Review.findAll({
-            where: { place_id: placeID }
+            where: { place_id: placeID },
+            include: [{ model: User }]
         }); // 해당 주차공간의 리뷰 가져옴.
         const likes = await Like.findAll({
             where: { place_id: placeID }
