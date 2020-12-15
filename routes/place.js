@@ -237,14 +237,14 @@ router.get('/my', verifyToken, async (req, res, next) => {
             where: { user_id },
             include: [{
                 model: RentalOrder,
-                where: {
-                    rental_start_time: {
-                        [Op.lte]: now
-                    }, // 현재 시간 > 대여 시작 시간
-                    rental_end_time: {
-                        [Op.gte]: now
-                    } // 현재 시간 < 대여 종료 시간
-                } // 이 식이 일치하면 현재 대여 중임.
+                // where: {
+                //     rental_start_time: {
+                //         [Op.lte]: now
+                //     }, // 현재 시간 > 대여 시작 시간
+                //     rental_end_time: {
+                //         [Op.gte]: now
+                //     } // 현재 시간 < 대여 종료 시간
+                // } // 이 식이 일치하면 현재 대여 중임.
             }]
         }); // user_id에 해당하는 주차공간 리스트를 가져옴.
         return res.status(200).send({ msg: 'success', places });
