@@ -120,14 +120,20 @@
 -	range: 요청할 주차공간의 거리 범위(Float, km 단위, default 값은 1000km)
 -	filter: 필터링 항목([Type Array...] 정보 요청할 Type을 배열에 넣으면 됨.)
 
-	=> 응답: places = [주차공간 Array…]
+	=> 응답: places = [주차공간 Array...]
 ```
 #### 즐겨찾는 주차공간 리스트 요청 API(GET): /api/place/like
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	filter: 필터링(현재 정체를 모르겠음.)
 
-	=> 응답: places = [주차공간 Array…]
+	=> 응답: places = [주차공간 Array...]
+```
+#### 최근 이용 주차공간 리스트 요청 API(GET): /api/place/recently
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+
+	=> 응답: places = [주차공간 Array...]
 ```
 
 ---------------------------------------

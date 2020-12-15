@@ -260,6 +260,33 @@ router.get('/my', verifyToken, async (req, res, next) => {
     }
 });
 
+router.get('/recently', verifyToken, async (req, res, next) => {
+    /*
+        최근 이용 주차공간 리스트 요청 API(GET): /api/place/recently
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        * 응답: places = [주차공간 Array...]
+    */
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
+    try {
+        const places = await RentalOrder.findAll({
+            where: { user_id },
+            order: [['createdAt', 'DESC']],
+            attributes: ['rental_id'],
+            include: [{ model: Place }]
+        }); // user_id에 해당하는 최근 이용 주차공간 리스트를 가져옴.
+        return res.status(200).send({ msg: 'success', places });
+    } catch (e) {
+        // DB 조회 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
 router.get('/:place_id', async (req, res, next) => {
     /*
         주차공간 상세 정보 요청 API(GET): /api/place/:place_id

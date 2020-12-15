@@ -325,7 +325,7 @@ router.get('/:rental_id', verifyToken, async (req, res, next) => {
             order: [['rental_end_time', 'DESC']],
             attributes: ['rental_id'],
             include: [{ model: User }]
-        }); // 이전 대여자를 찾기 위해 검색. (테스트)
+        }); // 이전 대여자를 찾기 위해 검색.
 
         return res.status(200).send({ msg: 'success', order, review, prev_order });
     } catch (e) {
