@@ -504,7 +504,7 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 		
-	=> 응답: notifications = [알림 Array…]
+	=> 응답: notifications = [알림 Array...]
 ```
 #### 알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id
 ```
@@ -513,7 +513,12 @@
 
 	=> 응답: success / failure
 ```
+#### 알림 전체 읽음 처리 요청 API(PUT): /api/notification
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
+	=> 응답: success / failure
+```
 #### 알림 삭제 요청 API(DELETE): /api/notification/:notification_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
