@@ -19,7 +19,7 @@ router.get('/', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
     try {
-        const notifications = Notification.findAll({
+        const notifications = await Notification.findAll({
             where: { user_id },
             order: [['createdAt', 'DESC']]
         }); // 알림 리스트를 가져옴.
@@ -69,7 +69,7 @@ router.put('/:notification_id', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
 
     const notificationID = parseInt(notification_id); // int 형 변환
-    const result = sendReadNotification(notificationID);
+    const result = await sendReadNotification(notificationID);
     if (result === -1) {
         return res.status(202).send({ msg: 'failure' });
     }
@@ -89,7 +89,7 @@ router.delete('/:notification_id', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
 
     const notificationID = parseInt(notification_id); // int 형 변환
-    const result = sendDeleteNotification(notificationID);
+    const result = await sendDeleteNotification(notificationID);
     if (!result) {
         return res.status(202).send({ msg: 'failure' });
     }
