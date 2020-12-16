@@ -58,12 +58,12 @@ module.exports = (sequelize, DataTypes) => {
             },
             agree_mail: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: false,
+                defaultValue: true,
                 comment: "0: 거부, 1: 동의"
             },
             agree_sms: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: false,
+                defaultValue: true,
                 comment: "0: 거부, 1: 동의"
             },
             agree_push: {
