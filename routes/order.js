@@ -58,6 +58,11 @@ router.get('/', verifyToken, async (req, res, next) => {
         }
 
         /* ----- 대여 시간 비교 알고리즘 ----- */
+        const now = Date.now();
+        if (now > rentalEndTime.getTime() || now > rentalStartTime.getTime()) {
+            // 대여 시간이 현재 시간보다 이전일 수 없음.
+            return res.status(202).send({ msg: '현재 이전 시간을 대여할 수 없습니다.' });
+        }
         const {
             oper_start_time, oper_end_time,
             place_fee
@@ -94,7 +99,7 @@ router.get('/', verifyToken, async (req, res, next) => {
             // 대여 종료 시간이 대여 시작 시간보다 앞이면 오류.
             return res.status(202).send({ msg: '잘못 설정된 대여 시간입니다.' });
         }
-        const feeTime = Math.ceil(diffTime / (30 * MINUTE)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
+        const feeTime = Math.ceil(diffTime / ((30 * MINUTE) - 1)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
         if (feeTime <= 1) {
             // 대여 시간이 30분 이하일 경우
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });

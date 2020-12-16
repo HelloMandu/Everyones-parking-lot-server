@@ -38,7 +38,7 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 유저입니다.' });
         }
         const existReview = await Review.findOne({
-            where: { user_id, review_id: reviewID }
+            where: { review_id: reviewID }
         }); // 리뷰가 존재하는지 확인.
         if (!existUser) {
             return res.status(202).send({ msg: '조회할 수 없는 리뷰입니다.' });
@@ -59,6 +59,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         if (!createComment) {
             return res.status(202).send({ msg: 'failure' });
         }
+        createComment.dataValues.user = existUser.dataValues;
         return res.status(201).send({ msg: 'success', comment: createComment });
     } catch (e) {
         // DB 삽입 도중 오류 발생.

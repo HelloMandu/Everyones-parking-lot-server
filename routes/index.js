@@ -43,11 +43,15 @@ router.use('/faq', faq);
 router.use('/qna', qna);
 router.use('/point_log', point);
 router.use('/withdraw', withdraw);
+<<<<<<< HEAD
 router.use('/notification', notification)
 
 
 
 const test = require('./test');
 router.use('/test', test);
+=======
+router.use('/notification', notification);
+>>>>>>> 56da6d744d36ca6d5878723536355e5cfe08f1a5
 
 module.exports = router;

@@ -31,6 +31,7 @@ const init = () => {
             await Place.findOrCreate({
                 where: { place_name },
                 defaults: {
+                    user_id: 1,
                     addr, addr_detail: '', lat, lng,
                     place_type,
                     place_name, place_comment, place_images: ['test1.png', 'test2.png', 'test3.png'],

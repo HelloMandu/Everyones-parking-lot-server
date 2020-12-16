@@ -57,18 +57,18 @@ module.exports = (sequelize, DataTypes) => {
                 comment: "프로필 이미지"
             },
             agree_mail: {
-                type: DataTypes.BOOLEAN(4),
-                defaultValue: 0,
+                type: DataTypes.BOOLEAN,
+                defaultValue: true,
                 comment: "0: 거부, 1: 동의"
             },
             agree_sms: {
-                type: DataTypes.BOOLEAN(4),
-                defaultValue: 0,
+                type: DataTypes.BOOLEAN,
+                defaultValue: true,
                 comment: "0: 거부, 1: 동의"
             },
             agree_push: {
-                type: DataTypes.BOOLEAN(4),
-                defaultValue: 0,
+                type: DataTypes.BOOLEAN,
+                defaultValue: true,
                 comment: "0: 거부, 1: 동의"
             },
             point: {

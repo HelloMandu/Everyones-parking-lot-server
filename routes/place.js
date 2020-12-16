@@ -3,7 +3,7 @@ const router = express.Router();
 
 const multer = require('multer');
 
-const { Place, Review, Like, Sequelize: { Op } } = require('../models');
+const { User, Place, Review, Like, Sequelize: { Op }, RentalOrder } = require('../models');
 
 const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
@@ -207,7 +207,7 @@ router.get('/like', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
     try {
-        const resultLikes = Like.findAll({
+        const resultLikes = await Like.findAll({
             where: { user_id },
             include: [{ model: Place }]
         }); // 좋아요 한 주차공간 리스트 가져옴.
@@ -232,12 +232,53 @@ router.get('/my', verifyToken, async (req, res, next) => {
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     /* request 데이터 읽어 옴. */
     try {
+        const now = new Date();
         const places = await Place.findAll({
-            where: { user_id }
+            where: { user_id },
+            include: [{
+                model: RentalOrder,
+                where: {
+                    rental_start_time: {
+                        [Op.lte]: now
+                    }, // 현재 시간 >= 대여 시작 시간
+                    rental_end_time: {
+                        [Op.gte]: now
+                    } // 현재 시간 <= 대여 종료 시간
+                }, // 이 식이 일치하면 현재 대여 중임.
+                required: false
+            }]
         }); // user_id에 해당하는 주차공간 리스트를 가져옴.
         return res.status(200).send({ msg: 'success', places });
     } catch (e) {
         // DB 조회 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
+router.get('/recently', verifyToken, async (req, res, next) => {
+    /*
+        최근 이용 주차공간 리스트 요청 API(GET): /api/place/recently
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        * 응답: places = [주차공간 Array...]
+    */
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
+    try {
+        const places = await RentalOrder.findAll({
+            where: { user_id },
+            order: [['createdAt', 'DESC']],
+            attributes: ['rental_id'],
+            include: [{ model: Place }]
+        }); // user_id에 해당하는 최근 이용 주차공간 리스트를 가져옴.
+        return res.status(200).send({ msg: 'success', places });
+    } catch (e) {
+        // DB 조회 도중 오류 발생.
+        console.log(e);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
@@ -268,7 +309,8 @@ router.get('/:place_id', async (req, res, next) => {
             return res.status(202).send({ msg: '조회할 수 없는 주차공간입니다.' });
         }
         const reviews = await Review.findAll({
-            where: { place_id: placeID }
+            where: { place_id: placeID },
+            include: [{ model: User }]
         }); // 해당 주차공간의 리뷰 가져옴.
         const likes = await Like.findAll({
             where: { place_id: placeID }

@@ -61,6 +61,7 @@
 -	password: 유저 비밀번호(String, 필수)
 -	birth: 유저 생년월일(DateString, 필수)
 -	phone_number: 유저 휴대폰 번호(String, 필수)
+-	agree_item: 선택 동의(bool, 필수)
 
 	=> 응답: token = 유저 임시 토큰
 ```
@@ -111,6 +112,13 @@
 ---------------------------------------
 ## 메인 페이지
 
+#### 로그아웃 요청 API(POST): /api/user/logout
+```
++	{ headers }: JWT_TOKEN(유저 임시 토큰)
+
+	=> 응답: success / failure
+```
+
 ### 기본 지도 페이지
 
 #### 주차공간 리스트 요청 API(GET): /api/place
@@ -120,14 +128,20 @@
 -	range: 요청할 주차공간의 거리 범위(Float, km 단위, default 값은 1000km)
 -	filter: 필터링 항목([Type Array...] 정보 요청할 Type을 배열에 넣으면 됨.)
 
-	=> 응답: places = [주차공간 Array…]
+	=> 응답: places = [주차공간 Array...]
 ```
 #### 즐겨찾는 주차공간 리스트 요청 API(GET): /api/place/like
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 -	filter: 필터링(현재 정체를 모르겠음.)
 
-	=> 응답: places = [주차공간 Array…]
+	=> 응답: places = [주차공간 Array...]
+```
+#### 최근 이용 주차공간 리스트 요청 API(GET): /api/place/recently
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
+
+	=> 응답: places = [주차공간 Array...]
 ```
 
 ---------------------------------------
@@ -504,7 +518,7 @@
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 		
-	=> 응답: notifications = [알림 Array…]
+	=> 응답: notifications = [알림 Array...]
 ```
 #### 알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id
 ```
@@ -513,7 +527,12 @@
 
 	=> 응답: success / failure
 ```
+#### 알림 전체 읽음 처리 요청 API(PUT): /api/notification
+```
++	{ headers }: JWT_TOKEN(유저 로그인 토큰)
 
+	=> 응답: success / failure
+```
 #### 알림 삭제 요청 API(DELETE): /api/notification/:notification_id
 ```
 +	{ headers }: JWT_TOKEN(유저 로그인 토큰)

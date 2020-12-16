@@ -34,6 +34,28 @@ router.get('/', verifyToken, async (req, res, next) => {
     }
 });
 
+router.put('/', verifyToken, async (req, res, next) => {
+    /*
+        알림 전체 읽음 처리 요청 API(PUT): /api/notification
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+		
+	    응답: success / failure
+    */
+    const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
+
+    const updateNotification = await Notification.update({
+        read_at: new Date()
+    }, {
+        where: { user_id, read_at: null }
+    }); // 읽지 않은 알림을 읽음 처리 함.
+    if (updateNotification === -1) {
+        return res.status(202).send({ msg: 'failure' });
+    }
+    return res.status(202).send({ msg: 'success' });
+});
+
+
 router.put('/:notification_id', verifyToken, async (req, res, next) => {
     /*
         알림 읽음 처리 요청 API(PUT): /api/notification/:notification_id
@@ -47,7 +69,7 @@ router.put('/:notification_id', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
 
     const notificationID = parseInt(notification_id); // int 형 변환
-    const result = sendReadNotification(notificationID);
+    const result = await sendReadNotification(notificationID);
     if (result === -1) {
         return res.status(202).send({ msg: 'failure' });
     }
@@ -67,7 +89,7 @@ router.delete('/:notification_id', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
 
     const notificationID = parseInt(notification_id); // int 형 변환
-    const result = sendDeleteNotification(notificationID);
+    const result = await sendDeleteNotification(notificationID);
     if (!result) {
         return res.status(202).send({ msg: 'failure' });
     }
