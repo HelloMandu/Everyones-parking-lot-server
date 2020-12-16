@@ -49,15 +49,16 @@ const sendReadNotification = async notification_id => {
         if (!updateNotification) {
             return -1; // 알림 수정에 실패했을 경우 id값을 -1로.
         }
-        return updateNotification.dataValues.notification_id;
+        return updateNotification;
         // 알림 수정에 성공하면 id값을 반환.
     } catch (e) {
+	console.log(e);
         return -1; // 알림 수정에 실패했을 경우 id값을 -1로.
     }
 }
 
 const sendDeleteNotification = async notification_id => {
-    try {
+	try {
         const destroyNotification = await Notification.destroy({
             where: { notification_id }
         }); // 알림 삭제.

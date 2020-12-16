@@ -67,7 +67,7 @@ router.put('/:notification_id', verifyToken, async (req, res, next) => {
     // const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const { notification_id } = req.params;
     /* request 데이터 읽어 옴. */
-
+    
     const notificationID = parseInt(notification_id); // int 형 변환
     const result = await sendReadNotification(notificationID);
     if (result === -1) {
