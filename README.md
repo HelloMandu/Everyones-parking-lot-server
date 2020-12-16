@@ -61,6 +61,7 @@
 -	password: 유저 비밀번호(String, 필수)
 -	birth: 유저 생년월일(DateString, 필수)
 -	phone_number: 유저 휴대폰 번호(String, 필수)
+-	agree_item: 선택 동의(bool, 필수)
 
 	=> 응답: token = 유저 임시 토큰
 ```
@@ -110,6 +111,13 @@
 
 ---------------------------------------
 ## 메인 페이지
+
+#### 로그아웃 요청 API(POST): /api/user/logout
+```
++	{ headers }: JWT_TOKEN(유저 임시 토큰)
+
+	=> 응답: success / failure
+```
 
 ### 기본 지도 페이지
 

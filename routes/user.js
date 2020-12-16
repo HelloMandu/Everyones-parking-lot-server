@@ -37,10 +37,11 @@ router.post('/', async (req, res, next) => {
         password: 유저 비밀번호(String, 필수)
         birth: 유저 생년월일(DateString, 필수)
         phone_number: 유저 휴대폰 번호(String, 필수)
+        agree_item: 선택 동의(bool)
         
         * 응답: success / failure
     */
-    const { email, name, birth, phone_number, password } = req.body;
+    const { email, name, birth, phone_number, password, agree_item } = req.body;
     /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({
         email,
@@ -88,7 +89,8 @@ router.post('/', async (req, res, next) => {
             password: hash,
             phone_number,
             birth: insertBirth,
-            email_verified_at: new Date()
+            email_verified_at: new Date(),
+            agree_mail: agree_item, agree_sms: agree_item
         }); // 유저 생성.
         if (!createUser) {
             return res.status(202).send({ msg: 'failure' });
@@ -194,6 +196,42 @@ router.post('/signin', async (req, res, next) => {
         }
     }
 });
+
+router.post('/logout', verifyToken, async (req, res, next) => {
+    /*
+        로그아웃 요청 API(POST): /api/user/logout
+        { headers }: JWT_TOKEN(유저 로그인 토큰)
+
+        * 응답: success / failure
+    */
+    const { user_id, email } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
+    /* request 데이터 읽어 옴. */
+    try {
+        const existUser = await User.findOne({
+            where: { user_id, email }
+        }); // 가입한 유저인지 확인.
+        if (!existUser) {
+            // 가입하지 않은 유저는 로그아웃을 할 수 없음.
+            return res.status(202).send({ msg: '가입하지 않은 이메일입니다.' });
+        }
+        const updateUser = await User.update(
+            { native_token: null },
+            { where: { user_id, email } },
+        ); // 유저 정보 수정.
+        if (!updateUser) {
+            return res.status(202).send({ msg: 'failure' });
+        }
+        return res.status(200).send({ msg: 'success' });
+    } catch (e) {
+        // DB 삭제 도중 오류 발생.
+        if (e.table) {
+            return res.status(202).send({ msg: foreignKeyChecker(e.table) });
+        } else {
+            return res.status(202).send({ msg: 'database error', error: e });
+        }
+    }
+});
+
 
 router.post('/find/user_id', async (req, res, next) => {
     /*
@@ -506,10 +544,6 @@ router.put('/car_info', verifyToken, upload.single('car_image'), async (req, res
     const { car_location, car_num } = req.body;
     const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const car_image = req.file.path;
-    console.log('location : ' + car_location)
-    console.log('car_num : ' + car_num)
-    console.log('user_id : ' + user_id)
-    console.log('car_image : ' + car_image)
     /* request 데이터 읽어 옴. */
     const omissionResult = omissionChecker({
         car_num,
