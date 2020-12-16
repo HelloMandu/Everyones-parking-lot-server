@@ -81,7 +81,7 @@ router.post('/', verifyToken, async (req, res, next) => {
 
 /* READ */
 router.get('/', verifyToken, async (req, res, next) => {
-    /*
+    /* 
         주차공간 좋아요 유무 요청 API(GET): /api/like
         { headers }: JWT_TOKEN(유저 로그인 토큰)
 
