@@ -210,7 +210,8 @@ router.get('/like', verifyToken, async (req, res, next) => {
     try {
         const resultLikes = await Like.findAll({
             where: { user_id },
-            include: [{ model: Place }]
+            include: [{ model: Place }],
+            order: [['createdAt', 'DESC']]
         }); // 좋아요 한 주차공간 리스트 가져옴.
         return res.status(200).send({ msg: 'success', places: resultLikes });
     } catch (e) {
@@ -236,6 +237,7 @@ router.get('/my', verifyToken, async (req, res, next) => {
         const now = new Date();
         const places = await Place.findAll({
             where: { user_id },
+            order: [['createdAt', 'DESC']],
             include: [{
                 model: RentalOrder,
                 where: {
@@ -314,7 +316,8 @@ router.get('/:place_id', async (req, res, next) => {
             include: [{ model: User }]
         }); // 해당 주차공간의 리뷰 가져옴.
         const likes = await Like.findAll({
-            where: { place_id: placeID }
+            where: { place_id: placeID },
+            order: [['createdAt', 'DESC']]
         }); // 해당 주차공간의 좋아요 수 가져옴.
 
         await place.increment('hit'); // 주차공간 조회 수 증가
@@ -395,7 +398,7 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
             addr, addr_detail, addr_extra, post_num,
             lat: updateLat, lng: updateLng,
             place_type: placeType, place_name, place_comment, place_images: placeImages, place_fee: placeFee,
-            oper_start_time: operStartTime, oper_end_time: operEndTime,
+            oper_start_time: timeFormatter(operStartTime), oper_end_time: timeFormatter(operEndTime),
         }), {
             where: { user_id, place_id: placeID }
         }); // 주차공간 수정.

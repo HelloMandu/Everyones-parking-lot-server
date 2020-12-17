@@ -7,6 +7,7 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { isValidDataType } = require('../lib/formatChecker');
+const timeFormatter = require('../lib/timeFormatter');
 
 const cardName = [
     "현대카드",
@@ -55,7 +56,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         const createCard = await Card.create({
             user_id,
             bank_name: cardName[card_type - 1],
-            card_num, card_type, valid_term, cvc
+            card_num, card_type, valid_term: timeFormatter(validTerm), cvc
         }); // 카드 등록.
         if (!createCard) {
             return res.status(202).send({ msg: 'failure' });

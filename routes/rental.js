@@ -10,6 +10,7 @@ const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { isCellPhoneForm, isValidDataType } = require('../lib/formatChecker');
 const { sendCreateNotification } = require('../actions/notificationSender');
 const { sendDepositPoint, sendWithdrawPoint } = require('../actions/pointManager');
+const timeFormatter = require('../lib/timeFormatter');
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -248,8 +249,8 @@ router.post('/', verifyToken, async (req, res, next) => {
             term_price: place_fee, // 기간 금액
             deposit: rentalDeposit, point_price: pointPrice, // 보증금, 포인트 할인 금액
             payment_price: paymentPrice, // 결제 금액
-            rental_start_time: rentalStartTime, // 대여 시작 시간
-            rental_end_time: rentalEndTime, // 대여 종료 시간
+            rental_start_time: timeFormatter(rentalStartTime), // 대여 시작 시간
+            rental_end_time: timeFormatter(rentalEndTime), // 대여 종료 시간
             payment_type: paymentType, // 결제 방식
             phone_number // 대여자 연락처
         }); // 주문 내역 생성.

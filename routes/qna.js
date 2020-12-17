@@ -87,9 +87,10 @@ router.get('/', verifyToken, async (req, res, next) => {
     try {
         const qnas = await Qna.findAll({
             where: { user_id },
-            include: [{ model: User }]
+            include: [{ model: User }],
+            order: [['createdAt', 'DESC']]
         }); // 1:1 문의 리스트 조회.
-        res.status(200).send({ msg: 'success', qnas });
+        return res.status(200).send({ msg: 'success', qnas });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
@@ -114,18 +115,12 @@ router.get('/:qna_id', verifyToken, async (req, res, next) => {
         const qnaID = parseInt(qna_id) // int 형 변환
         const qna = await Qna.findOne({
             where: { user_id, qna_id: qnaID },
-            include: [{ model: User }],
-            order: [['createdAt', 'DESC']]
+            include: [{ model: User }]
         }); // 1:1 문의 상세 정보 조회.
         if (!qna) {
             // 해당 1:1 문의 id가 DB에 없음.
             return res.status(202).send({ msg: '조회할 수 없는 1:1 문의입니다.' });
         }
-        // const UpdateQnaHit = await Qna.update({
-        //     hit: qna.dataValues.hit + 1
-        // }, {
-        //     where: { user_id, qna_id: qnaID }
-        // }); // 1:1 문의 조회 수 증가.
 
         await qna.increment('hit', { by: 1 }); // 1:1 문의 조회 수 증가.
         
@@ -160,7 +155,6 @@ router.put('/:qna_id', verifyToken, upload.array('q_files'), async (req, res, ne
     const { q_files } = req.files;
     /* request 데이터 읽어 옴. */
     const qFiles = q_files ? q_files.map(file => file.path) : [];
-
     try {
         const qnaID = parseInt(qna_id); // int 형 변환
         const existQna = await Qna.findOne({ where: {
