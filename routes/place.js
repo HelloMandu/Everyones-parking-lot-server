@@ -95,7 +95,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
             addr, addr_detail, addr_extra, post_num,
             lat: insertLat, lng: insertLng,
             place_type: placeType, place_name, place_comment, place_images: placeImages, place_fee: placeFee,
-            oper_start_time: operStartTime, oper_end_time: operEndTime
+            oper_start_time, oper_end_time
         }); // 주차공간 생성.
         if (!createPlace) {
             filesDeleter(placeImages);
