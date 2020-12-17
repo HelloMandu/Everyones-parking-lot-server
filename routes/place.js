@@ -12,6 +12,7 @@ const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const updateObjectChecker = require('../lib/updateObjectChecker');
 const { isValidDataType } = require('../lib/formatChecker');
 const { filesDeleter } = require('../lib/fileDeleter');
+const timeFormatter = require('../lib/timeFormatter');
 
 /* multer storage */
 const storage = multer.diskStorage({
@@ -95,7 +96,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
             addr, addr_detail, addr_extra, post_num,
             lat: insertLat, lng: insertLng,
             place_type: placeType, place_name, place_comment, place_images: placeImages, place_fee: placeFee,
-            oper_start_time, oper_end_time
+            oper_start_time: timeFormatter(operStartTime), oper_end_time: timeFormatter(operEndTime)
         }); // 주차공간 생성.
         if (!createPlace) {
             filesDeleter(placeImages);
