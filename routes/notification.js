@@ -49,7 +49,7 @@ router.put('/', verifyToken, async (req, res, next) => {
     }, {
         where: { user_id, read_at: null }
     }); // 읽지 않은 알림을 읽음 처리 함.
-    if (updateNotification === -1) {
+    if (!updateNotification) {
         return res.status(202).send({ msg: 'failure' });
     }
     return res.status(202).send({ msg: 'success' });
@@ -67,7 +67,7 @@ router.put('/:notification_id', verifyToken, async (req, res, next) => {
     // const { user_id } = req.decodeToken; // JWT_TOKEN에서 추출한 값 가져옴
     const { notification_id } = req.params;
     /* request 데이터 읽어 옴. */
-
+    
     const notificationID = parseInt(notification_id); // int 형 변환
     const result = await sendReadNotification(notificationID);
     if (result === -1) {

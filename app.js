@@ -11,7 +11,6 @@ const app = express();
 
 const sequelize = require('./models').sequelize;
 
-/*
 app.all('*', (req, res, next) => {
     // https 로 경로 자동 변경
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
@@ -24,7 +23,6 @@ app.all('*', (req, res, next) => {
         res.redirect(to);
     }
 });
-*/
 
 
 const apiRouter = require('./routes/index');

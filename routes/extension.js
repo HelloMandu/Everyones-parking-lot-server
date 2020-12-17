@@ -90,9 +90,6 @@ router.post('/', verifyToken, async (req, res, next) => {
             include: [{ model: User }]
         }); // 주차공간 조회.
         const { oper_start_time, oper_end_time, place_fee } = orderPlace.dataValues;
-        const {
-            point: place_user_point,
-        } = orderPlace.dataValues.user;
 
         const rentalEndTime = new Date(rental_end_time); // Date 형 변환
 
@@ -102,13 +99,14 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 대여 종료 시간이 대여 시작 시간보다 앞이면 오류.
             return res.status(202).send({ msg: '잘못 설정된 대여 시간입니다.' });
         }
-        const feeTime = Math.ceil(diffTime / ((30 * MINUTE) - 1)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
-        if (feeTime <= 1) {
+        const feeTime = Math.ceil(diffTime / (30 * MINUTE)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
+        if ((diffTime !== 30 * MINUTE) && feeTime < 1) {
             // 대여 시간이 30분 이하일 경우
+            // 정확하게 30분일 경우엔 예외처리.
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
         }
         if (extensionPrice !== place_fee * feeTime) {
-            return res.status(202).send({ msg: '잘못 계산된 금액입니다.' });
+           return res.status(202).send({ msg: '잘못 계산된 금액입니다.' });
         }
         // 운영시간과 겹치는지 안 겹치는지.
         if (!moment(rentalEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")
@@ -178,7 +176,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 결제 정보 추가 완료 ----- */
 
         /* ----- 포인트 전환 ----- */
-        sendDepositPoint(place_user_id, place_user_point, extensionPrice, "주차공간 연장 대여 수익금");
+        sendDepositPoint(place_user_id, extensionPrice, "주차공간 연장 대여 수익금");
         /* ----- 포인트 전환 완료 ----- */
 
         /* ----- 알림 생성 ----- */
