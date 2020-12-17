@@ -283,7 +283,8 @@ router.get('/', verifyToken, async (req, res, next) => {
     try {
         const orders = await RentalOrder.findAll({
             where: { order_user_id },
-            include: [{ model: Place }]
+            include: [{ model: Place }],
+            order: [['createdAt', 'DESC']]
         }); // 대여 주문 기록 리스트 조회.
         return res.status(200).send({ msg: 'success', orders });
     } catch (e) {
