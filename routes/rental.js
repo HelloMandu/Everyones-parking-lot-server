@@ -79,7 +79,10 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 데이터의 형식이 올바르지 않음.
             return res.status(202).send({ msg: validDataType.message });
         }
-
+        console.log('대여 시간: ', rentalStartTime, rentalEndTime);
+        if (rentalDeposit !== DEPOSIT) {
+            return res.status(202).send({ msg: '보증금이 올바르지 않습니다.' });
+        }
         const orderUser = await User.findOne({
             where: { user_id: order_user_id }
         }); // 주문 유저가 존재하는지 조회.
@@ -114,8 +117,9 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '잘못 설정된 대여 시간입니다.' });
         }
         const feeTime = Math.ceil(diffTime / (30 * MINUTE)); // 30분으로 나눴을 때 나오는 수 * 요금이 전체 요금.
-        if (feeTime < 1) {
+        if ((diffTime !== 30 * MINUTE) && feeTime < 1) {
             // 대여 시간이 30분 이하일 경우
+            // 정확하게 30분일 경우엔 예외처리.
             return res.status(202).send({ msg: '최소 대여 시간보다 적게 대여할 수 없습니다.' });
         }
         if (rentalPrice !== place_fee * feeTime) {
@@ -232,7 +236,6 @@ router.post('/', verifyToken, async (req, res, next) => {
         const notification_url = NOTIFICATION_BASE_URL;
         sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
-
 
         /* ----- 대여 정보 추가 ----- */
         const createRentalOrder = await RentalOrder.create({
