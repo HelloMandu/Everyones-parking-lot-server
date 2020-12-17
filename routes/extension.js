@@ -90,9 +90,6 @@ router.post('/', verifyToken, async (req, res, next) => {
             include: [{ model: User }]
         }); // 주차공간 조회.
         const { oper_start_time, oper_end_time, place_fee } = orderPlace.dataValues;
-        const {
-            point: place_user_point,
-        } = orderPlace.dataValues.user;
 
         const rentalEndTime = new Date(rental_end_time); // Date 형 변환
 
@@ -178,7 +175,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 결제 정보 추가 완료 ----- */
 
         /* ----- 포인트 전환 ----- */
-        sendDepositPoint(place_user_id, place_user_point, extensionPrice, "주차공간 연장 대여 수익금");
+        sendDepositPoint(place_user_id, extensionPrice, "주차공간 연장 대여 수익금");
         /* ----- 포인트 전환 완료 ----- */
 
         /* ----- 알림 생성 ----- */
