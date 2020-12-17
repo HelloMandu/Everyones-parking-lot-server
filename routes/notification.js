@@ -49,7 +49,7 @@ router.put('/', verifyToken, async (req, res, next) => {
     }, {
         where: { user_id, read_at: null }
     }); // 읽지 않은 알림을 읽음 처리 함.
-    if (updateNotification === -1) {
+    if (!updateNotification) {
         return res.status(202).send({ msg: 'failure' });
     }
     return res.status(202).send({ msg: 'success' });
