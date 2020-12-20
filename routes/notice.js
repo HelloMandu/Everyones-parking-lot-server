@@ -82,11 +82,6 @@ router.get('/:notice_id', async (req, res, next) => {
             // 해당 공지사항 id가 DB에 없음.
             return res.status(202).send({ msg: '조회할 수 없는 공지사항입니다.' });
         }
-        // const UpdateNoticeHit = await Notice.update({
-        //     hit: notice.dataValues.hit + 1
-        // }, {
-        //     where: { notice_id: noticeID }
-        // }); // 공지사항 조회 수 증가.
         await notice.increment('hit', { by: 1 }); // 공지사항 조회 수 증가.
         return res.status(200).send({ msg: 'success', notice });
     } catch (e) {
@@ -115,15 +110,13 @@ router.put('/:notice_id', async (req, res, next) => {
     const { notice_title, notice_body, notice_images } = req.body;
     try {
         const noticeID = parseInt(notice_id); // int 형 변환
-        const existNotice = await Notice.findOne({ where: {
-            notice_id: noticeID
-        }}); // 수정할 공지사항이 존재하는지 확인.
+        const existNotice = await Notice.findOne({
+            where: { notice_id: noticeID }
+        }); // 수정할 공지사항이 존재하는지 확인.
         if (!existNotice) {
             // 공지사항이 없으면 수정할 수 없음.
             return res.status(202).send({ msg: '조회할 수 없는 공지사항입니다.' });
-        } 
-        const preValue = existNotice.dataValues;
-        // 기존 값으로 업데이트하기 위한 객체.
+        }
         const updateNotice = Notice.update(updateObjectChecker({
             notice_title,
             notice_body,

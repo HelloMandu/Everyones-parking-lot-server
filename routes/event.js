@@ -91,7 +91,7 @@ router.get('/', async (req, res, next) => {
         const events = await Event.findAll({
             order: [['createdAt', 'DESC']]
         }); // 이벤트 리스트 조회.
-        res.status(200).send({ msg: 'success', events });
+        return res.status(200).send({ msg: 'success', events });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
@@ -119,11 +119,6 @@ router.get('/:event_id', async (req, res, next) => {
             // 해당 이벤트 id가 DB에 없음.
             return res.status(202).send({ msg: '조회할 수 없는 이벤트입니다.' });
         }
-        // const UpdateEventHit = await Event.update({
-        //     hit: event.dataValues.hit + 1
-        // }, {
-        //     where: { event_id: eventID }
-        // }); // 이벤트 조회 수 증가.
 
         await event.increment('hit', { by: 1 }); // 이벤트 조회 수 증가.
         return res.status(200).send({ msg: 'success', event });
