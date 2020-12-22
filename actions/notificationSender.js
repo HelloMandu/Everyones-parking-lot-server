@@ -23,8 +23,10 @@ const sendCreateNotification = async (user_id, body, type, url) => {
             notification_type: type,
             url
         }); // 유저 알림 생성.
+        console.log('알림 오나?', agree_push, native_token);
         if (agree_push && native_token) {
             // 푸쉬 알림 보냄
+            console.log('오나?')
             sendPushNotification(native_token, type, body);
         }
 
