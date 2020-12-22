@@ -181,7 +181,7 @@ router.get('/', async (req, res, next) => {
 
         if (filter.length) {
             // 필터링 항목이 없으면 반환 배열 0
-            return res.status(200).send({ msg: 'success', places });
+            return res.status(200).send({ msg: 'success', places: [] });
         }
 
         const resultPlaces = await Place.findAll({
