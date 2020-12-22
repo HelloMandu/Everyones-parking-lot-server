@@ -408,7 +408,7 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
         }
         const { place_images: prev_place_images } = existPlace.dataValues;
         filesDeleter(prev_place_images); // 주차 공간 이미지 제거
-        return res.status(201).send({ msg: 'success' });
+        return res.status(201).send({ msg: 'success', place: updatePlace });
     } catch (e) {
         // DB 수정 도중 오류 발생.
         filesDeleter(placeImages);
