@@ -6,6 +6,10 @@ const logger = require('morgan');
 const dotenv = require('dotenv');
 dotenv.config(); // env 파일에 접근할 수 있게 함.
 const cors = require('cors');
+// const admin = require('firebase-admin');
+// admin.initializeApp({
+//     credential: admin.credential.cert(process.env.PUSH_KEY)
+// }); // 푸쉬 알림 초기화
 
 const app = express();
 

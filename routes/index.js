@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
+const app_info = require('./app_info');
+
 const user = require('./user');
 const Oauth = require('./Oauth');
 const mobile = require('./mobile');
@@ -22,6 +24,8 @@ const qna = require('./qna');
 const point = require('./point_log');
 const withdraw = require('./withdraw');
 const notification = require('./notification');
+
+router.use('/app_info', app_info);
 
 router.use('/user', user);
 router.use('/Oauth', Oauth);

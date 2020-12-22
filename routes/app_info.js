@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
     */
     try {
         const info = await AppInfo.findOne({
-            where: { id: 1 }
+            where: { com_id: 1 }
         }); // 앱 정보 조회.
         if (!info) {
             return res.status(202).send({ msg: '애플리케이션 정보가 없습니다.' });
