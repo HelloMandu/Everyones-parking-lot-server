@@ -106,7 +106,7 @@ const initialValue = {
 }
 
 
-const init = () => {
+const init = async () => {
     const { com_name } = initialValue;
     await AppInfo.findOrCreate({
         where: { com_name },
