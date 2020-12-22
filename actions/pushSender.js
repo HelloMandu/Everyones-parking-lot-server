@@ -28,7 +28,7 @@ const sendPushNotification = async (native_token, url, title, body) => {
             };
             const config = {
                 headers: {
-                    Authorization: `key=${process.env.PUSH_KEY}`,
+                    Authorization: `key=${process.env.PUSH_KEY.replace('\r\n', '')}`,
                     'Content-Type': 'application/json'
                 }
             }
