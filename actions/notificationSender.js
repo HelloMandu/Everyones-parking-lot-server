@@ -25,7 +25,7 @@ const sendCreateNotification = async (user_id, body, type, url) => {
         }); // 유저 알림 생성.
         if (agree_push && native_token) {
             // 푸쉬 알림 보냄
-            sendPushNotification(native_token, url, type, body);
+            sendPushNotification(native_token, url, 'IntoSpace', body);
         }
 
         if (!createNotification) {
