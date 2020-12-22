@@ -12,7 +12,7 @@ const { isCellPhoneForm } = require('../lib/formatChecker');
 const createAuthNumber = NUMBER_LENTH => [...new Array(NUMBER_LENTH).keys()].map(() => Math.floor(Math.random() * DECIMAL)).join('');
 
 const { config, Group } = require('solapi');
-console.log('ENV 확인: ', process.env);
+
 config.init({
     apiKey: process.env.SOLAPI_KEY,
     apiSecret: process.env.SOLAPI_SECRET,

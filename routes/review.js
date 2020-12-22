@@ -10,7 +10,8 @@ const updateObjectChecker = require('../lib/updateObjectChecker');
 const { sendCreateNotification } = require('../actions/notificationSender');
 
 
-const REVIEW_BASE_URL = '/';
+const NOTIFICATION_BASE_URL = '/review/detail?review_id=';
+// 댓글은 리뷰 상세 페이지로 이동 시킴.
 
 /* CREATE */
 router.post('/', verifyToken, async (req, res, next) => {
@@ -61,13 +62,6 @@ router.post('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '이미 리뷰가 등록된 주차공간입니다.' });
         }
 
-        /* ----- 알림 생성 ----- */
-        const notification_body = `${existUser.dataValues.name}님이 ${existPlace.dataValues.place_name}에 리뷰를 남기셨습니다.`;
-        const notification_type = 'review';
-        const notification_url = REVIEW_BASE_URL;
-        sendCreateNotification(existPlace.dataValues.user_id, notification_body, notification_type, notification_url);
-        /* ----- 알림 생성 완료 ----- */
-
         const createReview = await Review.create({
             user_id,
             rental_id: rentalID,
@@ -78,10 +72,17 @@ router.post('/', verifyToken, async (req, res, next) => {
         if (!createReview) {
             return res.status(202).send({ msg: 'failure' });
         }
-        res.status(201).send({ msg: 'success' });
+
+        /* ----- 알림 생성 ----- */
+        const notification_body = `${existUser.dataValues.name}님이 ${existPlace.dataValues.place_name}에 리뷰를 남기셨습니다.`;
+        const notification_type = 'review';
+        const notification_url = NOTIFICATION_BASE_URL + createReview.dataValues.review_id;
+        sendCreateNotification(existPlace.dataValues.user_id, notification_body, notification_type, notification_url);
+        /* ----- 알림 생성 완료 ----- */
+
+        return res.status(201).send({ msg: 'success' });
     } catch (e) {
         // DB 삽입 도중 오류 발생.
-        console.log(e)
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
