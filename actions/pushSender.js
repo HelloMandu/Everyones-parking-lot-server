@@ -23,20 +23,23 @@ const sendPushNotification = async (native_token, url, title, body) => {
                 },
                 data: {
                     title, body,
-                    redirectUrl: url,
+                    redirectUrl: 'https://intospace.kr/' + url,
                 }
             };
             const config = {
                 headers: {
-                    Authorization: `key=${process.env.PUSH_KEY.replace('\r\n', '')}`,
+                    Authorization: `key=${process.env.PUSH_KEY}`,
                     'Content-Type': 'application/json'
                 }
             }
             const res = await axios.post(URL, payload, config);
-            console.log(res);
-
+            if (!res.data.success) {
+                return false;
+            }
+            return true;
         } catch (err) {
             console.error(err);
+            return false;
         }
     }
 };
