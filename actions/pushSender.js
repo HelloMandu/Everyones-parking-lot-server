@@ -18,6 +18,7 @@ const sendPushNotification = async (native_token, title, body) => {
                 android: {
                     direct_boot_ok: true,
                 },
+                token: native_token
             };
             // const result = admin.messaging().send(message);
             // console.log(result);
