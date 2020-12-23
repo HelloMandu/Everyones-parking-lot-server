@@ -120,7 +120,7 @@ router.get('/my', verifyToken, async (req, res, next) => {
     /* request 데이터 읽어 옴. */
     try {
         const coupons = await Coupon.findAll({
-            where: { user_id },
+            where: { user_id, use_state: 0 },
             order: [['createdAt', 'DESC']]
         }); // 내 쿠폰 리스트 조회.
         return res.status(200).send({ msg: 'success', coupons });

@@ -45,7 +45,7 @@ const sendWithdrawPoint = async (user_id, point, text) => {
             use_type: true
         }); // 포인트 기록 생성.
         if (!createPointLog) { return false; }
-        return true;
+        return createPointLog;
     } catch (e) {
         return false;
     }
