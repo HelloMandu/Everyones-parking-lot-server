@@ -134,7 +134,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         });
         if (overlapOrderList.length) {
             // 겹치는 대여가 하나라도 있으면 대여할 수 없음.
-            return res.status(202).send({ msg: '타 주문과 대여 시간이 중복될 수 없습니다.' });
+            return res.status(202).send({ msg: '타 주문과 대여 시간이 중복될 수 없습니다.', detail_info: overlapOrderList });
         }
         /* ----- 대여 시간 비교 알고리즘 완료 ----- */
 
