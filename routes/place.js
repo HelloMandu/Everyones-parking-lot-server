@@ -174,10 +174,6 @@ router.get('/', async (req, res, next) => {
             oper_end_time: { [Op.lte]: end_date }
         }); // 출차 예정 시각 필터링 있으면 추가.
         */
-
-        console.log(filter)
-        console.log(typeof filter);
-
         filter && Array.isArray(filter) && whereArray.push({
             [Op.or]: filter.map(f => ({ place_type: parseInt(f) }))
         }); // 타입 필터가 배열로 넘어오면 추가.
