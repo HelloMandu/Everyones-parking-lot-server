@@ -182,7 +182,7 @@ router.get('/', async (req, res, next) => {
             [Op.or]: filter.map(f => ({ place_type: parseInt(f) }))
         }); // 타입 필터가 배열로 넘어오면 추가.
 
-        if (filter && Array.isArray(filter) && filter.length === 0) {
+        if (!Array.isArray(filter) || filter.length === 0) {
             // 필터링 항목이 없으면 반환 배열 0
             return res.status(200).send({ msg: 'success', places: [] });
         }
@@ -196,7 +196,6 @@ router.get('/', async (req, res, next) => {
         return res.status(200).send({ msg: 'success', places });
     } catch (e) {
         // DB 조회 도중 오류 발생.
-        console.log(e);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
