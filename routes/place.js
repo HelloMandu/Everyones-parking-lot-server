@@ -193,6 +193,7 @@ router.get('/', async (req, res, next) => {
         return res.status(200).send({ msg: 'success', places });
     } catch (e) {
         // DB 조회 도중 오류 발생.
+        console.log(e);
         if (e.table) {
             return res.status(202).send({ msg: foreignKeyChecker(e.table) });
         } else {
