@@ -146,8 +146,8 @@ router.post('/', verifyToken, async (req, res, next) => {
             const { rental_start_time: st, rental_end_time: et, cancel_time } = orderData;
             // 주문 목록에서 해당 주문의 대여 시간 정보를 가져옴.
             return !cancel_time
-            && (moment(rentalStartTime).isBetween(st, et, undefined, "[)")
-            || moment(rentalEndTime).isBetween(st, et, undefined, "(]"));
+            && (moment(st).isBetween(rentalStartTime, rentalEndTime, undefined, "[]") || moment(st).isBetween(rentalStartTime, rentalEndTime, undefined, "[]"))
+            && (moment(rentalStartTime).isBetween(st, et, undefined, "[)") || moment(rentalEndTime).isBetween(st, et, undefined, "(]"));
         });
         if (overlapOrderList.length) {
             // 겹치는 대여가 하나라도 있으면 대여할 수 없음.

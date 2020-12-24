@@ -8,6 +8,7 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { isValidDataType } = require('../lib/formatChecker');
+const timeFormatter = require('../lib/timeFormatter');
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -38,8 +39,8 @@ router.get('/', verifyToken, async (req, res, next) => {
     }
     try {
         const placeID = parseInt(place_id); // int 형 변환
-        const rentalStartTime = new Date(rental_start_time); // Date 형 변환
-        const rentalEndTime = new Date(rental_end_time); // Date 형 변환
+        const rentalStartTime = timeFormatter(new Date(rental_start_time)); // Date 형 변환
+        const rentalEndTime = timeFormatter(new Date(rental_end_time)); // Date 형 변환
         const validDataType = isValidDataType({
             rental_start_time: rentalStartTime,
             rental_end_time: rentalEndTime
@@ -67,8 +68,7 @@ router.get('/', verifyToken, async (req, res, next) => {
             oper_start_time, oper_end_time, place_fee
         } = orderPlace.dataValues;
         // 운영시간과 겹치는지 안 겹치는지.
-        if (!moment(rentalStartTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")
-            || !moment(rentalEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")) {
+        if (!moment(rentalStartTime).isBetween(oper_start_time, oper_end_time, undefined, "[]") || !moment(rentalEndTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")) {
             // 대여 시간이 운영 시간에 포함되지 않으면 대여할 수 없음.
             return res.status(202).send({ msg: '운영 시간 외에는 대여할 수 없습니다.' });
         }
@@ -81,12 +81,12 @@ router.get('/', verifyToken, async (req, res, next) => {
             }
         }); // 대여하려는 place의 대여 리스트를 가져옴.
         const overlapOrderList = diffOrderList.filter(orderData => {
-            console.log(orderData);
             const { rental_start_time: st, rental_end_time: et, cancel_time } = orderData;
             // 주문 목록에서 해당 주문의 대여 시간 정보를 가져옴.
+            console.log(orderData);
             return !cancel_time
-            && (moment(rentalStartTime).isBetween(st, et, undefined, "[)")
-            || moment(rentalEndTime).isBetween(st, et, undefined, "(]"));
+            && (moment(st).isBetween(rentalStartTime, rentalEndTime, undefined, "[]") || moment(st).isBetween(rentalStartTime, rentalEndTime, undefined, "[]"))
+            && (moment(rentalStartTime).isBetween(st, et, undefined, "[)") || moment(rentalEndTime).isBetween(st, et, undefined, "(]"));
         });
         if (overlapOrderList.length) {
             // 겹치는 대여가 하나라도 있으면 대여할 수 없음.
