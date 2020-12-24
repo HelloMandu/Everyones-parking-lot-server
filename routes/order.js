@@ -83,7 +83,6 @@ router.get('/', verifyToken, async (req, res, next) => {
         const overlapOrderList = diffOrderList.filter(orderData => {
             const { rental_start_time: st, rental_end_time: et, cancel_time } = orderData;
             // 주문 목록에서 해당 주문의 대여 시간 정보를 가져옴.
-            console.log(orderData);
             return !cancel_time
             && ((moment(st).isBetween(rentalStartTime, rentalEndTime, undefined, "[]") || moment(st).isBetween(rentalStartTime, rentalEndTime, undefined, "[]"))
             || (moment(rentalStartTime).isBetween(st, et, undefined, "[)") || moment(rentalEndTime).isBetween(st, et, undefined, "(]")));
