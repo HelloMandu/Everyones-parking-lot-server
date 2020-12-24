@@ -64,8 +64,7 @@ router.get('/', verifyToken, async (req, res, next) => {
             return res.status(202).send({ msg: '현재 이전 시간을 대여할 수 없습니다.' });
         }
         const {
-            oper_start_time, oper_end_time,
-            place_fee
+            oper_start_time, oper_end_time, place_fee
         } = orderPlace.dataValues;
         // 운영시간과 겹치는지 안 겹치는지.
         if (!moment(rentalStartTime).isBetween(oper_start_time, oper_end_time, undefined, "[]")
@@ -82,6 +81,7 @@ router.get('/', verifyToken, async (req, res, next) => {
             }
         }); // 대여하려는 place의 대여 리스트를 가져옴.
         const overlapOrderList = diffOrderList.filter(orderData => {
+            console.log(orderData);
             const { rental_start_time: st, rental_end_time: et, cancel_time } = orderData;
             // 주문 목록에서 해당 주문의 대여 시간 정보를 가져옴.
             return !cancel_time
