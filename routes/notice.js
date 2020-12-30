@@ -55,7 +55,7 @@ router.get('/', async (req, res, next) => {
         const notices = await Notice.findAll({
             order: [['createdAt', 'DESC']]
         }); // 공지사항 리스트 조회.
-        res.status(200).send({ msg: 'success', notices });
+        return res.status(200).send({ msg: 'success', notices });
     } catch (e) {
         // DB 조회 도중 오류 발생.
         if (e.table) {
@@ -117,7 +117,7 @@ router.put('/:notice_id', async (req, res, next) => {
             // 공지사항이 없으면 수정할 수 없음.
             return res.status(202).send({ msg: '조회할 수 없는 공지사항입니다.' });
         }
-        const updateNotice = Notice.update(updateObjectChecker({
+        const updateNotice = await Notice.update(updateObjectChecker({
             notice_title,
             notice_body,
             notice_images,
