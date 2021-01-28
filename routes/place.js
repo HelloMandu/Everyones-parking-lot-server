@@ -74,8 +74,8 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
         const insertLng = parseFloat(lng); // float 형 변환
         const placeType = parseInt(place_type); // int 형 변환
         const placeFee = parseInt(place_fee); // int 형 변환
-        const operStartTime = new Date(oper_start_time); // Date 형 변환
-        const operEndTime = new Date(oper_end_time); // Date 형 변환
+        const operStartTime = timeFormatter(new Date(oper_start_time)); // Date 형 변환
+        const operEndTime = timeFormatter(new Date(oper_end_time)); // Date 형 변환
         const validDataType = isValidDataType({
             lat: insertLat, lng: insertLng,
             place_fee: placeFee,
@@ -96,7 +96,7 @@ router.post('/', verifyToken, upload.array('place_images'), async (req, res, nex
             addr, addr_detail, addr_extra, post_num,
             lat: insertLat, lng: insertLng,
             place_type: placeType, place_name, place_comment, place_images: placeImages, place_fee: placeFee,
-            oper_start_time: timeFormatter(operStartTime), oper_end_time: timeFormatter(operEndTime)
+            oper_start_time: operStartTime, oper_end_time: operEndTime
         }); // 주차공간 생성.
         if (!createPlace) {
             filesDeleter(placeImages);
@@ -174,10 +174,14 @@ router.get('/', async (req, res, next) => {
             oper_end_time: { [Op.lte]: end_date }
         }); // 출차 예정 시각 필터링 있으면 추가.
         */
-
         filter && Array.isArray(filter) && whereArray.push({
             [Op.or]: filter.map(f => ({ place_type: parseInt(f) }))
         }); // 타입 필터가 배열로 넘어오면 추가.
+
+        if (!Array.isArray(filter) || filter.length === 0) {
+            // 필터링 항목이 없으면 반환 배열 0
+            return res.status(200).send({ msg: 'success', places: [] });
+        }
 
         const resultPlaces = await Place.findAll({
             where: { [Op.and]: whereArray }
@@ -373,8 +377,8 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
         const updateLng = parseFloat(lng); // float 형 변환
         const placeType = parseInt(place_type); // int 형 변환
         const placeFee = parseInt(place_fee); // int 형 변환
-        const operStartTime = new Date(oper_start_time); // Date 형 변환
-        const operEndTime = new Date(oper_end_time); // Date 형 변환
+        const operStartTime = timeFormatter(new Date(oper_start_time)); // Date 형 변환
+        const operEndTime = timeFormatter(new Date(oper_end_time)); // Date 형 변환
 
         const existPlace = await Place.findOne({
             where: { user_id, place_id: placeID }
@@ -394,11 +398,11 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
             }   
         }
         
-        const updatePlace = Place.update(updateObjectChecker({
+        const updatePlace = await Place.update(updateObjectChecker({
             addr, addr_detail, addr_extra, post_num,
             lat: updateLat, lng: updateLng,
             place_type: placeType, place_name, place_comment, place_images: placeImages, place_fee: placeFee,
-            oper_start_time: timeFormatter(operStartTime), oper_end_time: timeFormatter(operEndTime),
+            oper_start_time: operStartTime, oper_end_time: operEndTime,
         }), {
             where: { user_id, place_id: placeID }
         }); // 주차공간 수정.
@@ -408,7 +412,8 @@ router.put('/:place_id', verifyToken, upload.array('place_images'), async (req, 
         }
         const { place_images: prev_place_images } = existPlace.dataValues;
         filesDeleter(prev_place_images); // 주차 공간 이미지 제거
-        return res.status(201).send({ msg: 'success', place: await existPlace.reload() });
+        await existPlace.reload();
+        return res.status(201).send({ msg: 'success', place: existPlace });
     } catch (e) {
         // DB 수정 도중 오류 발생.
         filesDeleter(placeImages);

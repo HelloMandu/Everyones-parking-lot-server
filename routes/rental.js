@@ -17,7 +17,9 @@ const MINUTE = 60 * SECOND;
 
 const DEPOSIT = 10000; // 보증금
 
-const NOTIFICATION_BASE_URL = '/';
+const NOTIFICATION_BASE_URL = '/detail?place_id=';
+// 대여 신청은 주차공간 상세보기 페이지로 이동 시킴.
+
 
 
 /* CREATE */
@@ -80,7 +82,6 @@ router.post('/', verifyToken, async (req, res, next) => {
             // 데이터의 형식이 올바르지 않음.
             return res.status(202).send({ msg: validDataType.message });
         }
-        console.log('대여 시간: ', rentalStartTime, rentalEndTime);
         if (rentalDeposit !== DEPOSIT) {
             return res.status(202).send({ msg: '보증금이 올바르지 않습니다.' });
         }
@@ -145,12 +146,12 @@ router.post('/', verifyToken, async (req, res, next) => {
             const { rental_start_time: st, rental_end_time: et, cancel_time } = orderData;
             // 주문 목록에서 해당 주문의 대여 시간 정보를 가져옴.
             return !cancel_time
-            && (moment(rentalStartTime).isBetween(st, et, undefined, "[)")
-            || moment(rentalEndTime).isBetween(st, et, undefined, "(]"));
+            && ((moment(st).isBetween(rentalStartTime, rentalEndTime, undefined, "[]") || moment(st).isBetween(rentalStartTime, rentalEndTime, undefined, "[]"))
+            || (moment(rentalStartTime).isBetween(st, et, undefined, "[)") || moment(rentalEndTime).isBetween(st, et, undefined, "(]")));
         });
         if (overlapOrderList.length) {
             // 겹치는 대여가 하나라도 있으면 대여할 수 없음.
-            return res.status(202).send({ msg: '타 주문과 대여 시간이 중복될 수 없습니다.' });
+            return res.status(202).send({ msg: '타 주문과 대여 시간이 중복될 수 없습니다.', detail_info: overlapOrderList });
         }
         /* ----- 대여 시간 비교 알고리즘 완료 ----- */
 
@@ -234,7 +235,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${orderUser.dataValues.name}님이 ${orderPlace.dataValues.place_name}을 대여 신청하셨습니다.`;
         const notification_type = 'rental';
-        const notification_url = NOTIFICATION_BASE_URL;
+        const notification_url = NOTIFICATION_BASE_URL + place_id;
         sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
@@ -446,7 +447,7 @@ router.put('/:rental_id', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${cancelUser.dataValues.name}님이 ${cancelPlace.dataValues.place_name}을 대여 취소하셨습니다.`;
         const notification_type = 'cancel';
-        const notification_url = NOTIFICATION_BASE_URL;
+        const notification_url = NOTIFICATION_BASE_URL + place_id;
         sendCreateNotification(place_user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 

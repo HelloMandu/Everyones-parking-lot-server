@@ -62,11 +62,11 @@ router.post('/', verifyToken, async (req, res, next) => {
         */
 
         /* ----- 출금 기록 생성 ----- */
-        const withdrawResult = sendWithdrawPoint(user_id, withdrawPoint, "(계좌: " + account_number + ")");
+        const withdrawResult = await sendWithdrawPoint(user_id, withdrawPoint, "(계좌: " + account_number + ")");
         if (!withdrawResult) {
             return res.status(202).send({ msg: 'failure' });
         }
-        return res.status(201).send({ msg: 'success' });
+        return res.status(201).send({ msg: 'success', point_log: withdrawResult });
         /* ----- 출금 기록 생성 완료 ----- */
     } catch (e) {
         // DB 삽입 도중 오류 발생.

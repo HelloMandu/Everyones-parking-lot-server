@@ -9,7 +9,10 @@ const verifyToken = require('./middlewares/verifyToken');
 const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 
-const NOTIFICATION_BASE_URL = '/';
+const NOTIFICATION_BASE_URL = '/detail?place_id=';
+// 좋아요는 주차공간 상세보기 페이지로 이동 시킴.
+
+
 
 /* CREATE */
 router.post('/', verifyToken, async (req, res, next) => {
@@ -54,7 +57,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${existUser.dataValues.name}님이 ${existPlace.dataValues.place_name}을 즐겨찾기 하셨습니다.`;
         const notification_type = 'like';
-        const notification_url = NOTIFICATION_BASE_URL;
+        const notification_url = NOTIFICATION_BASE_URL + place_id;
         const notification_id = await sendCreateNotification(existPlace.dataValues.user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 

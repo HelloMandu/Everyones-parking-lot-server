@@ -8,7 +8,10 @@ const omissionChecker = require('../lib/omissionChecker');
 const foreignKeyChecker = require('../lib/foreignKeyChecker');
 const { sendCreateNotification } = require('../actions/notificationSender');
 
-const NOTIFICATION_BASE_URL = '/';
+const NOTIFICATION_BASE_URL = '/review/detail?review_id=';
+// 댓글은 리뷰 상세 페이지로 이동 시킴.
+
+
 
 /* CREATE */
 router.post('/', verifyToken, async (req, res, next) => {
@@ -47,7 +50,7 @@ router.post('/', verifyToken, async (req, res, next) => {
         /* ----- 알림 생성 ----- */
         const notification_body = `${existUser.dataValues.name}님이 리뷰에 댓글을 남기셨습니다.`;
         const notification_type = 'comment';
-        const notification_url = NOTIFICATION_BASE_URL;
+        const notification_url = NOTIFICATION_BASE_URL + review_id;
         sendCreateNotification(existReview.dataValues.user_id, notification_body, notification_type, notification_url);
         /* ----- 알림 생성 완료 ----- */
 
